@@ -10,7 +10,7 @@
 
 <!-- Logo Header -->
       <q-toolbar-title class="text-center flex flex-center q-mt-xs q-mb-xs">
-        <img src="../assets/U-Traffic-versión-horizontal-removebg-preview-removebg-preview.png" class="header-logo">
+        <img src="../assets/U-Traffic-versión-horizontal-removebg-preview-removebg-preview.png" class="header-logo">
       </q-toolbar-title>
       <q-space />
 
