@@ -239,4 +239,13 @@ defineComponent({
   position: absolute;
 }
 
+@media only screen and (min-width: 600px)  {
+  .table-card {
+    margin-right: 0px;
+  }
+
+  q-table {
+    display: flex;
+  }
+}
 </style>
