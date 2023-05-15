@@ -7,7 +7,7 @@
         flat
         bordered
         ref="tableRef"
-        :rows="rows"
+        :rows="tiquetes"
         :columns="columns"
         :table-colspan="6"
         row-key="name"
@@ -99,24 +99,49 @@
                           <div class="col-md-12">
                             <q-input
                               outlined
+                              v-model="concesion.nombre"
+                              dense
+                              label="Concesion"
+                              class="q-pa-md"
+                              readonly
+                            />
+                          </div>
+
+                          <div class="col-md-6">
+                            <!-- <q-input
+                              outlined
                               v-model="Fila.adoperadorcodigo"
                               dense
                               label="Peaje"
                               class="q-pa-md"
-                            />
+                            /> -->
+
+                            <q-select
+                              outlined
+                              v-model="Fila.peajes"
+                              :options="peajes"
+                              option-label="nombre"
+                              option-value="id"
+                              label="Peaje"
+                              dense
+                              class="q-pa-md"
+                            ></q-select>
                           </div>
 
                           <div class="col-md-6">
-                            <q-input
+                            <q-select
+                              label="Tema"
+                              transition-show="scale"
+                              transition-hide="scale"
                               outlined
-                              v-model="Fila.adoperadorcodigo"
+                              v-model="model"
                               dense
-                              label="Concesion"
+                              :options="['Incidentes', 'Ruqerimientos', 'PQR']"
                               class="q-pa-md"
                             />
                           </div>
 
-                          <div class="col-md-6">
+                          <div class="col-md-4">
                             <q-select
                               label="Tipo"
                               transition-show="scale"
@@ -124,13 +149,33 @@
                               outlined
                               v-model="model"
                               dense
-                              :options="[
-                                'Google',
-                                'Facebook',
-                                'Twitter',
-                                'Apple',
-                                'Oracle',
-                              ]"
+                              :options="['Dispotivo', 'Software', 'Red']"
+                              class="q-pa-md"
+                            />
+                          </div>
+
+                          <div class="col-md-4">
+                            <q-select
+                              label="SubTipo"
+                              transition-show="scale"
+                              transition-hide="scale"
+                              outlined
+                              v-model="model"
+                              dense
+                              :options="['Dispotivo', 'Software', 'Red']"
+                              class="q-pa-md"
+                            />
+                          </div>
+
+                          <div class="col-md-4">
+                            <q-select
+                              label="Prioridad"
+                              transition-show="scale"
+                              transition-hide="scale"
+                              outlined
+                              v-model="model"
+                              dense
+                              :options="['Alta', 'Media', 'Baja']"
                               class="q-pa-md"
                             />
                           </div>
@@ -141,7 +186,7 @@
                               v-model="Fila.adoperadorcodigo"
                               dense
                               type="textarea"
-                              label="Problema"
+                              label="Requerimiento"
                               class="q-pa-md"
                             />
                           </div>
@@ -196,7 +241,7 @@ import { api } from "boot/axios";
 //     .access_token
 // );
 
-// LocalStorage.getItem("Token");
+const idusuario = LocalStorage.getItem("IdUsuario");
 
 // const supabase = createClient(
 //   "https://xzovknjkdfykvximpgxh.supabase.co",
@@ -207,7 +252,10 @@ import { api } from "boot/axios";
 const selected = ref([]);
 // const seedSize = seed.length;
 
-const rows = ref([]);
+const tiquetes = ref([]);
+const concesion = ref({});
+const peajes = ref([]);
+const cliente = ref([]);
 
 const columns = [
   {
@@ -324,13 +372,8 @@ const columns = [
 ];
 
 const loadData = async () => {
-  // const { data, error } = await supabase.from("concesion").select();
-
-  // let { data: concesion, error } = await supabase.from("concesion").select("*");
-
-  api.get("tiquete?select=*").then((response) => {
-    console.log(response);
-    rows.value = response.data;
+  api.get("tiquete?").then((response) => {
+    tiquetes.value = response.data;
   });
 
   // supabase
@@ -351,8 +394,31 @@ const loadData = async () => {
   // console.log(concesion, error);
 };
 
+const DatosGenerales = async () => {
+  await api
+    .get(`cliente?usuario=eq.` + idusuario + `&select=*`)
+    .then((response) => {
+      console.log("cliente: ", response.data);
+      cliente.value = response.data;
+      // console.log(cliente_idconcesion.value);
+    });
+
+  await api
+    .get("concesion?id=eq." + cliente.value[0].concesion + "&select=*")
+    .then((response) => {
+      // console.log("consecion: ", response.data[0]);
+      concesion.value = response.data[0];
+    });
+
+  await api.get("peaje?select=*").then((response) => {
+    console.log("peaje: ", response.data);
+    peajes.value = response.data;
+  });
+};
+
 onMounted(() => {
   loadData();
+  DatosGenerales();
 });
 // for (let i = 0; i < 2; i++) {
 //   rows = rows.concat(

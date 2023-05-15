@@ -25,7 +25,7 @@ export const useMainStore = defineStore("main", {
       LocalStorage.set("Token", this.token);
       this.isAuthenticated = true;
       // this.perfilId = data.data.id;
-      // LocalStorage.set("perfilId", data.data.id);
+      LocalStorage.set("IdUsuario", data.user.id);
     },
     iniciosesion(iniSesion) {
       LocalStorage.set("AfterLogin", iniSesion);
