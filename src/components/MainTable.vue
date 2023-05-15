@@ -10,7 +10,7 @@
         :rows="tiquetes"
         :columns="columns"
         :table-colspan="6"
-        row-key="name"
+        row-key="id"
         selection="single"
         v-model:selected="selected"
         fixed-header
@@ -28,7 +28,7 @@
             color="secondary"
             size="md"
             @click="mostrarModal = true"
-            >Agregar Ticket
+            >Nuevo Ticket
             <!-- <q-tooltip class="bg-primary" :offset="[10, 10]">
             {{ $t("Atras") }}
           </q-tooltip> -->
@@ -92,11 +92,11 @@
             <q-card flat>
               <div class="q-pa-md">
                 <q-card>
-                  <q-form @submit.prevent="actualizarPerfil()" id="form">
+                  <q-form @submit.prevent="AgregarTicket()" id="form">
                     <div class="row">
                       <div class="col-12">
                         <div class="row" style="background: #ffffff">
-                          <div class="col-md-12">
+                          <div class="col-md-12 col-sm-12 col-xs-12">
                             <q-input
                               outlined
                               v-model="concesion.nombre"
@@ -107,7 +107,7 @@
                             />
                           </div>
 
-                          <div class="col-md-6">
+                          <div class="col-md-6 col-sm-6 col-xs-12">
                             <!-- <q-input
                               outlined
                               v-model="Fila.adoperadorcodigo"
@@ -118,72 +118,89 @@
 
                             <q-select
                               outlined
-                              v-model="Fila.peajes"
+                              v-model="Fila.peaje"
                               :options="peajes"
                               option-label="nombre"
                               option-value="id"
                               label="Peaje"
                               dense
                               class="q-pa-md"
+                              emit-value
+                              map-options
                             ></q-select>
                           </div>
 
-                          <div class="col-md-6">
+                          <!-- <div class="col-md-6 col-sm-6 col-xs-12">
                             <q-select
                               label="Tema"
                               transition-show="scale"
                               transition-hide="scale"
                               outlined
-                              v-model="model"
+                              v-model="Fila.tema"
                               dense
-                              :options="['Incidentes', 'Ruqerimientos', 'PQR']"
+                              :options="temas"
                               class="q-pa-md"
+                              emit-value
+                              map-options
                             />
-                          </div>
+                          </div> -->
 
-                          <div class="col-md-4">
+                          <div class="col-md-4 col-sm-6 col-xs-12">
                             <q-select
                               label="Tipo"
                               transition-show="scale"
                               transition-hide="scale"
                               outlined
-                              v-model="model"
+                              v-model="Fila.tipo"
                               dense
-                              :options="['Dispotivo', 'Software', 'Red']"
+                              :options="Tipos"
+                              option-label="descripcion"
+                              option-value="id"
+                              emit-value
+                              map-options
                               class="q-pa-md"
+                              @update:model-value="TipoSeleccion"
                             />
                           </div>
 
-                          <div class="col-md-4">
+                          <div class="col-md-4 col-sm-6 col-xs-12">
                             <q-select
                               label="SubTipo"
                               transition-show="scale"
                               transition-hide="scale"
                               outlined
-                              v-model="model"
+                              v-model="Fila.subtipo"
                               dense
-                              :options="['Dispotivo', 'Software', 'Red']"
+                              :options="SubtipoOptions"
+                              option-label="descripcion"
+                              option-value="id"
                               class="q-pa-md"
+                              emit-value
+                              map-options
                             />
                           </div>
 
-                          <div class="col-md-4">
+                          <div class="col-md-4 col-sm-6 col-xs-12">
                             <q-select
                               label="Prioridad"
                               transition-show="scale"
                               transition-hide="scale"
                               outlined
-                              v-model="model"
+                              v-model="Fila.prioridad"
                               dense
-                              :options="['Alta', 'Media', 'Baja']"
+                              :options="Prioridades"
+                              option-label="descripcion"
+                              option-value="id"
                               class="q-pa-md"
+                              emit-value
+                              map-options
                             />
                           </div>
 
-                          <div class="col-md-12">
+                          <div class="col-md-12 col-sm-12 col-xs-12">
                             <q-input
                               outlined
-                              v-model="Fila.adoperadorcodigo"
+                              v-model="Fila.requerimiento"
                               dense
                               type="textarea"
                               label="Requerimiento"
@@ -191,14 +208,48 @@
                             />
                           </div>
 
-                          <div class="col-md-12">
+                          <div class="col-md-12 col-sm-12 col-xs-12">
                             <q-input
                               outlined
-                              v-model="Fila.adoperadorcodigo"
+                              v-model="Fila.observaciones"
                               dense
                               type="text"
                               label="Observaciones"
                               class="q-pa-md"
+                            />
+                          </div>
+
+                          <div class="col-md-6 col-sm-6 col-xs-12">
+                            <q-select
+                              label="Estado"
+                              transition-show="scale"
+                              transition-hide="scale"
+                              outlined
+                              v-model="Fila.estado"
+                              dense
+                              :options="Estados"
+                              option-label="descripcion"
+                              option-value="id"
+                              class="q-pa-md"
+                              emit-value
+                              map-options
+                            />
+                          </div>
+
+                          <div class="col-md-6 col-sm-6 col-xs-12">
+                            <q-select
+                              label="Proceso"
+                              transition-show="scale"
+                              transition-hide="scale"
+                              outlined
+                              v-model="Fila.proceso"
+                              dense
+                              :options="Procesos"
+                              option-label="descripcion"
+                              option-value="id"
+                              class="q-pa-md"
+                              emit-value
+                              map-options
                             />
                           </div>
                         </div>
@@ -213,7 +264,7 @@
                           color="primary"
                           class="q-ma-md"
                           no-caps
-                          @click="ReenviarIntermediador()"
+                          type="submit"
                         />
                       </div>
                     </div>
@@ -230,7 +281,7 @@
 
 <script setup>
 import { defineComponent, ref, onMounted } from "vue";
-// import { supabase } from "../supabase";
+import { supabase } from "../supabase";
 import { LocalStorage } from "quasar";
 // import { columns, seed } from 'src/assets/js/tableModule'
 import { createClient } from "@supabase/supabase-js";
@@ -256,6 +307,18 @@ const tiquetes = ref([]);
 const concesion = ref({});
 const peajes = ref([]);
 const cliente = ref([]);
+const temas = ["Incidentes", "Requerimientos", "PQR"];
+const Tipos = ref([]);
+const Subtipos = ref([]);
+const SubtipoOptions = ref([]);
+const Prioridades = ref([]);
+const Estados = ref([]);
+const Procesos = ref([]);
+
+const mostrarModal = ref(false);
+const Fila = ref({});
+const tableRef = ref(null);
+const expanded = ref([]);
 
 const columns = [
   {
@@ -400,6 +463,7 @@ const DatosGenerales = async () => {
     .then((response) => {
       console.log("cliente: ", response.data);
       cliente.value = response.data;
+      Fila.value.cliente = cliente.value[0].id;
       // console.log(cliente_idconcesion.value);
     });
 
@@ -408,17 +472,77 @@ const DatosGenerales = async () => {
     .then((response) => {
       // console.log("consecion: ", response.data[0]);
       concesion.value = response.data[0];
+      Fila.value.concesion = cliente.value[0].id;
     });
 
   await api.get("peaje?select=*").then((response) => {
     console.log("peaje: ", response.data);
     peajes.value = response.data;
   });
+
+  await api.get("tipo?select=*").then((response) => {
+    console.log("tipos: ", response.data);
+    Tipos.value = response.data;
+  });
+
+  await api.get("subtipo?select=*").then((response) => {
+    console.log("Subtipos: ", response.data);
+    Subtipos.value = response.data;
+  });
+
+  await api.get("prioridad?select=*").then((response) => {
+    console.log("Prioridades: ", response.data);
+    Prioridades.value = response.data;
+    Prioridades.value.sort(function (b, a) {
+      return b.orden - a.orden;
+    });
+  });
+
+  await api.get("estado?select=*").then((response) => {
+    console.log("Estados: ", response.data);
+    Estados.value = response.data;
+  });
+
+  await api.get("proceso?select=*").then((response) => {
+    console.log("Procesos: ", response.data);
+    Procesos.value = response.data;
+  });
+
+  Fila.value.asignado = "4ca6c4d3-c2f9-4c1f-9411-de9271b9519f";
+  Fila.value.privado = null;
+  // const array = [5, 2, 9, 1, 3];
+  // array.sort(function (a, b) {
+  //   return b - a;
+  // });
+
+  // console.log(array);
+};
+
+const TipoSeleccion = (value) => {
+  SubtipoOptions.value = Subtipos.value.filter((tipo) => tipo.tipo == value);
+  Fila.value.subtipo = null;
+  console.log(SubtipoOptions.value);
+};
+
+const AgregarTicket = async () => {
+  console.log(Fila.value);
+  // const { error } = await supabase.from("tiquete").insert(Fila.value);
+  api
+    .post("tiquete", Fila.value)
+    .then((response) => {
+      console.log("Solicitud exitosa:", response.data);
+      loadData();
+      mostrarModal.value = false;
+    })
+    .catch((error) => {
+      console.error("Error al realizar la solicitud:", error);
+    });
 };
 
 onMounted(() => {
   loadData();
   DatosGenerales();
+  tableRef.value.scrollTo(10);
 });
 // for (let i = 0; i < 2; i++) {
 //   rows = rows.concat(
@@ -426,14 +550,9 @@ onMounted(() => {
 //   );
 // }
 
-const mostrarModal = ref(false);
-const Fila = ref({});
-const tableRef = ref(null);
-const expanded = ref([]);
-
-onMounted(() => {
-  tableRef.value.scrollTo(10);
-});
+// onMounted(() => {
+//   tableRef.value.scrollTo(10);
+// });
 
 defineComponent({
   name: "MainTable",
