@@ -1,5 +1,5 @@
 <template>
-  <div class="q-pa-md flex">
+  <div class="q-pa-md flex" v-if="table">
     <TransitionGroup name="fade">
       <q-table
         class="table-container"
@@ -15,7 +15,20 @@
         v-model:selected="selected"
         fixed-header
         v-model:expanded="expanded"
+        :visible-columns="[
+          'created_at',
+          'cliente',
+          'concesion',
+          'peaje',
+          'requerimiento',
+          'observaciones',
+          'estado',
+          'prioridad',
+          'tipo',
+          'subtipo',
+        ]"
       >
+        >
         <template v-slot:top>
           <!-- <q-btn color="secondary" size="md" @click="Atras()"
             >Mis Tickets
@@ -52,7 +65,35 @@
         <template v-slot:body="props">
           <q-tr :props="props" @click="props.selected = !props.selected">
             <q-td v-for="col in props.cols" :key="col.name" :props="props">
-              {{ col.value }}
+              <div v-if="col.name == 'cliente'">
+                {{ cliente.filter((p) => p.id == col.value)[0].nombres }}
+              </div>
+              <div v-else-if="col.name == 'concesion'">
+                {{ concesion.filter((p) => p.id == col.value)[0].nombre }}
+              </div>
+              <div v-else-if="col.name == 'peaje'">
+                {{ peajes.filter((p) => p.id == col.value)[0].nombre }}
+              </div>
+              <div v-else-if="col.name == 'estado'">
+                {{ Estados.filter((p) => p.id == col.value)[0].descripcion }}
+              </div>
+              <div v-else-if="col.name == 'prioridad'">
+                {{
+                  Prioridades.filter((p) => p.id == col.value)[0].descripcion
+                }}
+              </div>
+              <div v-else-if="col.name == 'tipo'">
+                {{ Tipos.filter((p) => p.id == col.value)[0].descripcion }}
+              </div>
+              <div v-else-if="col.name == 'subtipo'">
+                {{ Subtipos.filter((p) => p.id == col.value)[0].descripcion }}
+              </div>
+              <!-- <div v-else-if="col.name == 'proceso'">
+                {{ Procesos.filter((p) => p.id == col.value)[0].descripcion }}
+              </div> -->
+              <div v-else>
+                {{ col.value }}
+              </div>
             </q-td>
           </q-tr>
         </template>
@@ -99,7 +140,7 @@
                           <div class="col-md-12 col-sm-12 col-xs-12">
                             <q-input
                               outlined
-                              v-model="concesion.nombre"
+                              v-model="concesion[0].nombre"
                               dense
                               label="Concesion"
                               class="q-pa-md"
@@ -107,7 +148,7 @@
                             />
                           </div>
 
-                          <div class="col-md-6 col-sm-6 col-xs-12">
+                          <div class="col-md-4 col-sm-6 col-xs-12">
                             <!-- <q-input
                               outlined
                               v-model="Fila.adoperadorcodigo"
@@ -126,6 +167,8 @@
                               dense
                               class="q-pa-md"
                               emit-value
+                              :rules="rules"
+                              lazy-rules
                               map-options
                             ></q-select>
                           </div>
@@ -160,6 +203,8 @@
                               map-options
                               class="q-pa-md"
                               @update:model-value="TipoSeleccion"
+                              :rules="rules"
+                              lazy-rules
                             />
                           </div>
 
@@ -177,10 +222,39 @@
                               class="q-pa-md"
                               emit-value
                               map-options
+                              hint="Debe seleccionar un Tipo"
+                              :rules="rules"
+                              lazy-rules
                             />
                           </div>
 
-                          <div class="col-md-4 col-sm-6 col-xs-12">
+                          <div class="col-md-12 col-sm-12 col-xs-12">
+                            <q-input
+                              outlined
+                              v-model="Fila.requerimiento"
+                              dense
+                              type="textarea"
+                              label="Requerimiento"
+                              class="q-pa-md"
+                              :rules="rules"
+                              lazy-rules
+                            />
+                          </div>
+
+                          <div class="col-md-12 col-sm-12 col-xs-12">
+                            <q-input
+                              outlined
+                              v-model="Fila.observaciones"
+                              dense
+                              type="text"
+                              label="Observaciones"
+                              class="q-pa-md"
+                              :rules="rules"
+                              lazy-rules
+                            />
+                          </div>
+
+                          <div class="col-md-6 col-sm-6 col-xs-12">
                             <q-select
                               label="Prioridad"
                               transition-show="scale"
@@ -194,28 +268,8 @@
                               class="q-pa-md"
                               emit-value
                               map-options
-                            />
-                          </div>
-
-                          <div class="col-md-12 col-sm-12 col-xs-12">
-                            <q-input
-                              outlined
-                              v-model="Fila.requerimiento"
-                              dense
-                              type="textarea"
-                              label="Requerimiento"
-                              class="q-pa-md"
-                            />
-                          </div>
-
-                          <div class="col-md-12 col-sm-12 col-xs-12">
-                            <q-input
-                              outlined
-                              v-model="Fila.observaciones"
-                              dense
-                              type="text"
-                              label="Observaciones"
-                              class="q-pa-md"
+                              :rules="rules"
+                              lazy-rules
                             />
                           </div>
 
@@ -233,10 +287,12 @@
                               class="q-pa-md"
                               emit-value
                               map-options
+                              :rules="rules"
+                              lazy-rules
                             />
                           </div>
 
-                          <div class="col-md-6 col-sm-6 col-xs-12">
+                          <div v-if="false" class="col-md-6 col-sm-6 col-xs-12">
                             <q-select
                               label="Proceso"
                               transition-show="scale"
@@ -282,7 +338,7 @@
 <script setup>
 import { defineComponent, ref, onMounted } from "vue";
 import { supabase } from "../supabase";
-import { LocalStorage } from "quasar";
+import { LocalStorage, date } from "quasar";
 // import { columns, seed } from 'src/assets/js/tableModule'
 import { createClient } from "@supabase/supabase-js";
 import { api } from "boot/axios";
@@ -319,6 +375,8 @@ const mostrarModal = ref(false);
 const Fila = ref({});
 const tableRef = ref(null);
 const expanded = ref([]);
+const rules = [(val) => !!val || "* Campo Obligatorio"];
+const table = ref(false);
 
 const columns = [
   {
@@ -335,6 +393,7 @@ const columns = [
     label: "Creacion",
     field: "created_at",
     sortable: true,
+    format: (val) => `${date.formatDate(val, "DD/MM/YYYY HH:mm:ss")}`,
   },
   {
     name: "numero",
@@ -414,7 +473,7 @@ const columns = [
   {
     name: "tipo",
     align: "left",
-    label: "Subtipo",
+    label: "Tipo",
     field: "tipo",
     sortable: true,
   },
@@ -437,6 +496,7 @@ const columns = [
 const loadData = async () => {
   api.get("tiquete?").then((response) => {
     tiquetes.value = response.data;
+    DatosGenerales();
   });
 
   // supabase
@@ -470,13 +530,13 @@ const DatosGenerales = async () => {
   await api
     .get("concesion?id=eq." + cliente.value[0].concesion + "&select=*")
     .then((response) => {
-      // console.log("consecion: ", response.data[0]);
-      concesion.value = response.data[0];
+      console.log("consecion: ", response.data);
+      concesion.value = response.data;
       Fila.value.concesion = cliente.value[0].id;
     });
 
   await api.get("peaje?select=*").then((response) => {
-    console.log("peaje: ", response.data);
+    console.log("peajes: ", response.data);
     peajes.value = response.data;
   });
 
@@ -506,10 +566,13 @@ const DatosGenerales = async () => {
   await api.get("proceso?select=*").then((response) => {
     console.log("Procesos: ", response.data);
     Procesos.value = response.data;
+    table.value = true;
   });
 
-  Fila.value.asignado = "4ca6c4d3-c2f9-4c1f-9411-de9271b9519f";
+  // Fila.value.asignado = "4ca6c4d3-c2f9-4c1f-9411-de9271b9519f";
+  Fila.value.asignado = null;
   Fila.value.privado = null;
+  Fila.value.proceso = null;
   // const array = [5, 2, 9, 1, 3];
   // array.sort(function (a, b) {
   //   return b - a;
@@ -541,8 +604,8 @@ const AgregarTicket = async () => {
 
 onMounted(() => {
   loadData();
-  DatosGenerales();
-  tableRef.value.scrollTo(10);
+
+  // tableRef.value.scrollTo(10);
 });
 // for (let i = 0; i < 2; i++) {
 //   rows = rows.concat(
