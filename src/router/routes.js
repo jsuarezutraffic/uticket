@@ -11,6 +11,11 @@ const routes = [
     component: () => import("layouts/MainLayout.vue"),
     children: [
       {
+        path: "/Operation/index",
+        meta: { requireLogin: true },
+        component: () => import("pages/DashboardPage.vue"),
+      },
+      {
         path: "/Operation/dashboard",
         meta: { requireLogin: true },
         component: () => import("pages/DashboardPage.vue"),

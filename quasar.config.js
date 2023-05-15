@@ -11,6 +11,7 @@
 const ESLintPlugin = require("eslint-webpack-plugin");
 
 const { configure } = require("quasar/wrappers");
+// const Dotenv = require("dotenv-webpack");
 
 module.exports = configure(function (ctx) {
   return {
@@ -44,6 +45,8 @@ module.exports = configure(function (ctx) {
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-webpack/quasar-config-js#Property%3A-build
     build: {
+      // plugins: [new Dotenv()],
+      env: require("dotenv").config().parsed,
       vueRouterMode: "hash", // available values: 'hash', 'history'
 
       // transpile: false,

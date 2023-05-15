@@ -46,6 +46,7 @@ export default route(function (/* { store, ssrContext } */) {
         to.matched.some((record) => record.meta.requireLogin) &&
         !store.isAuthenticated == true
       ) {
+        console.log("aqui mal");
         next({
           name: "Login",
           query: { to: to.path },
