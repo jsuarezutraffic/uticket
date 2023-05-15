@@ -42,6 +42,7 @@
         </q-tr>
       </template>
     </q-table>
+
     <q-card class="table-card" v-if="selected.length > 0" key="card">
       <div class="q-pa-sm q-mt-xs box-order">
       <span class="text-h5 q-pa-md text-bold">Detalles de ticket</span>
@@ -166,16 +167,18 @@ defineComponent({
 }
 
 .table-card {
-  margin-top: 20px;
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   display: flex;
   width: fit-content;
   height: fit-content;
   justify-content: center;
-  margin-right: 200px;
+  margin: 0 auto;
   align-items: center;
   flex-direction: column;
+  justify-items: center;
+  margin-top: 20px;
+
 }
 
 .second-card {
@@ -239,7 +242,7 @@ defineComponent({
   position: absolute;
 }
 
-@media only screen and (min-width: 600px)  {
+@media only screen and (max-width: 600px)  {
   .table-card {
     margin-right: 0px;
   }
