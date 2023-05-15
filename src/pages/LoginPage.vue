@@ -32,6 +32,13 @@
       <q-btn class="login-btn bg-dark no-padding" @click="login()" flat
         >Login</q-btn
       >
+      <q-btn
+        width="100%"
+        class="login-btn bg-primary no-padding"
+        to="/register"
+        flat
+        >Sign Up</q-btn
+      >
     </q-card>
 
     <q-page-container>

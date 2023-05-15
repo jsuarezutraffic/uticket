@@ -88,12 +88,11 @@
               <div v-else-if="col.name == 'subtipo'">
                 {{ Subtipos.filter((p) => p.id == col.value)[0].descripcion }}
               </div>
-              <!-- <div v-else-if="col.name == 'proceso'">
-                {{ Procesos.filter((p) => p.id == col.value)[0].descripcion }}
-              </div> -->
+
               <div v-else>
                 {{ col.value }}
               </div>
+              <!-- {{ col.value }} -->
             </q-td>
           </q-tr>
         </template>
@@ -360,7 +359,7 @@ const selected = ref([]);
 // const seedSize = seed.length;
 
 const tiquetes = ref([]);
-const concesion = ref({});
+const concesion = ref([]);
 const peajes = ref([]);
 const cliente = ref([]);
 const temas = ["Incidentes", "Requerimientos", "PQR"];
@@ -413,7 +412,7 @@ const columns = [
   {
     name: "concesion",
     align: "left",
-    label: "Conceción",
+    label: "Concesión",
     field: "concesion",
     sortable: true,
   },
@@ -494,10 +493,12 @@ const columns = [
 ];
 
 const loadData = async () => {
-  api.get("tiquete?").then((response) => {
-    tiquetes.value = response.data;
-    DatosGenerales();
-  });
+  api
+    .get("tiquete?cliente=eq." + cliente.value[0].id + "&select=*")
+    .then((response) => {
+      tiquetes.value = response.data;
+      console.log("tiquetes: ", tiquetes.value);
+    });
 
   // supabase
   //   .from("tiquete")
@@ -532,7 +533,7 @@ const DatosGenerales = async () => {
     .then((response) => {
       console.log("consecion: ", response.data);
       concesion.value = response.data;
-      Fila.value.concesion = cliente.value[0].id;
+      Fila.value.concesion = concesion.value[0].id;
     });
 
   await api.get("peaje?select=*").then((response) => {
@@ -584,7 +585,7 @@ const DatosGenerales = async () => {
 const TipoSeleccion = (value) => {
   SubtipoOptions.value = Subtipos.value.filter((tipo) => tipo.tipo == value);
   Fila.value.subtipo = null;
-  console.log(SubtipoOptions.value);
+  // console.log(SubtipoOptions.value);
 };
 
 const AgregarTicket = async () => {
@@ -602,7 +603,8 @@ const AgregarTicket = async () => {
     });
 };
 
-onMounted(() => {
+onMounted(async () => {
+  await DatosGenerales();
   loadData();
 
   // tableRef.value.scrollTo(10);
