@@ -1,17 +1,39 @@
 export const columns = [
   {
-    name: 'desc',
-    required: true,
+    name: 'id',
     label: '# Tickets',
     align: 'center',
-    field: row => row.name,
-    format: val => `${val}`,
+    field: 'id',
     sortable: true
   },
-  { name: 'cliente', align: 'center', label: 'Cliente', field: 'cliente', sortable: true },
-  { name: 'tipo', align: 'center', label: 'Tipo', field: 'tipo', sortable: true, style: 'width: 10px' },
-  { name: 'prioridad', align: 'center', label: 'Prioridad', field: 'prioridad', sortable: true },
-  { name: 'estado', align: 'center', label: 'Estado', field: 'estado', sortable: true }
+  {
+    name: 'cliente',
+    label: 'Cliente',
+    align: 'center',
+    field: 'cliente',
+    sortable: true
+  },
+  {
+    name: 'tipo',
+    label: 'Tipo',
+    align: 'center',
+    field: 'tipo',
+    sortable: true
+  },
+  {
+    name: 'prioridad',
+    label: 'Prioridad',
+    align: 'center',
+    field: 'prioridad',
+    sortable: true
+  },
+  {
+    name: 'estado',
+    label: 'Estado',
+    align: 'center',
+    field: 'estado',
+    sortable: true
+  }
 ]
 
 export const seed = [
