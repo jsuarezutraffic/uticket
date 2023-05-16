@@ -41,7 +41,7 @@ export default route(function (/* { store, ssrContext } */) {
     const storeConfig = useConfigStore();
     const store = useMainStore();
     let nivelUrl = to.fullPath.includes(storeConfig.config.nivel);
-    if (nivelUrl || to.fullPath.includes("login")) {
+    if (nivelUrl || to.fullPath.includes("login") || to.fullPath == "/") {
       if (
         to.matched.some((record) => record.meta.requireLogin) &&
         !store.isAuthenticated == true

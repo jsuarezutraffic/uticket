@@ -74,7 +74,7 @@ const IniciarSesion = async () => {
   });
   const toPath = `/${config.nivel}/index`;
   router.push(toPath);
-  store.inicio(data.session.access_token);
+  store.inicio(data);
 };
 
 const prueba = async () => {

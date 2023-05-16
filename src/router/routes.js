@@ -5,6 +5,11 @@ const routes = [
     component: () => import("pages/LoginPage.vue"),
   },
   {
+    name: "SinPermisos",
+    path: "/sinpermisos",
+    component: () => import("pages/ErrorNotFound.vue"),
+  },
+  {
     name: "Operation",
     path: "/",
     meta: { requireLogin: true },
@@ -12,11 +17,6 @@ const routes = [
     children: [
       {
         path: "/Operation/index",
-        meta: { requireLogin: true },
-        component: () => import("pages/DashboardPage.vue"),
-      },
-      {
-        path: "/Operation/dashboard",
         meta: { requireLogin: true },
         component: () => import("pages/DashboardPage.vue"),
       },
@@ -31,7 +31,7 @@ const routes = [
       {
         path: "/BackOffice/index",
         meta: { requireLogin: true },
-        component: () => import("pages/IndexSupabase.vue"),
+        component: () => import("pages/GestionarTiquete.vue"),
       },
     ],
   },

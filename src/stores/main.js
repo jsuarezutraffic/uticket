@@ -17,12 +17,13 @@ export const useMainStore = defineStore("main", {
     buscarAutenticado: (state) => state.isAuthenticated,
   },
   actions: {
-    inicio(Token) {
-      this.token = Token;
+    inicio(data) {
+      this.token = data.session.access_token;
       this.isAuthenticated = true;
       api.defaults.headers.common.apikey = this.supabase_Key;
       api.defaults.headers.common.Authorization = "Bearer " + this.token;
       LocalStorage.set("token", this.token);
+      LocalStorage.set("IdUsuario", data.user.id);
     },
 
     // iniciosesion(iniSesion) {
