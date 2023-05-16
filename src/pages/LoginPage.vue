@@ -42,46 +42,48 @@
 </template>
 
 <script setup>
-import { defineComponent, ref } from "vue";
-import { createClient } from "@supabase/supabase-js";
-import { useMainStore } from "src/stores/main";
-import { useConfigStore } from "src/stores/config";
-import { api } from "boot/axios";
-import { useRouter, useRoute } from "vue-router";
+import { defineComponent, ref } from 'vue'
+import { createClient } from '@supabase/supabase-js'
+import { useMainStore } from 'src/stores/main'
+import { useConfigStore } from 'src/stores/config'
+import { api } from 'boot/axios'
+import { useRouter } from 'vue-router'
 // import { supabase } from "../supabase";
-//stores
-const store = useMainStore();
-const config = useConfigStore().config;
+// stores
+const store = useMainStore()
+const config = useConfigStore().config
 
-//supabase
-const supabaseKey = store.supabase_Key;
-const supabaseUrl = store.supabase_Url;
-const supabase = createClient(supabaseUrl, supabaseKey);
+// supabase
+const supabaseKey = store.supabase_Key
+const supabaseUrl = store.supabase_Url
+const supabase = createClient(supabaseUrl, supabaseKey)
 
-const datos = ref(null);
-const router = useRouter();
+const datos = ref(null)
+const router = useRouter()
 defineComponent({
   // eslint-disable-next-line vue/multi-word-component-names
-  name: "LoginPage",
-});
-const username = ref("");
-const password = ref("");
-console.log(config);
+  name: 'LoginPage'
+})
+const username = ref('')
+const password = ref('')
+console.log(config)
 const IniciarSesion = async () => {
+  // eslint-disable-next-line no-unused-vars
   const { data, error } = await supabase.auth.signInWithPassword({
     email: username.value,
-    password: password.value,
-  });
-  const toPath = `/${config.nivel}/index`;
-  router.push(toPath);
-  store.inicio(data);
-};
+    password: password.value
+  })
+  const toPath = `/${config.nivel}/index`
+  router.push(toPath)
+  store.inicio(data)
+}
 
+// eslint-disable-next-line no-unused-vars
 const prueba = async () => {
-  api.get(`tiquete?select=*`).then((response) => {
-    console.log(response.data);
-  });
-};
+  api.get('tiquete?select=*').then((response) => {
+    console.log(response.data)
+  })
+}
 </script>
 
 <style scoped>

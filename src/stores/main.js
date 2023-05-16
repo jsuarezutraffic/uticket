@@ -1,29 +1,29 @@
-import { defineStore } from "pinia";
-import { LocalStorage } from "quasar";
-import { api } from "src/boot/axios";
+import { defineStore } from 'pinia'
+import { LocalStorage } from 'quasar'
+import { api } from 'src/boot/axios'
 // import { loadLocalData } from "boot/global";
 
-export const useMainStore = defineStore("main", {
+export const useMainStore = defineStore('main', {
   state: () => ({
-    token: "",
+    token: '',
     isAuthenticated: false,
-    identificacion: "",
+    identificacion: '',
     supabase_Key: process.env.API_KEY,
-    supabase_Url: "https://xzovknjkdfykvximpgxh.supabase.co",
+    supabase_Url: 'https://xzovknjkdfykvximpgxh.supabase.co'
   }),
 
   getters: {
     buscarToken: (state) => state.token,
-    buscarAutenticado: (state) => state.isAuthenticated,
+    buscarAutenticado: (state) => state.isAuthenticated
   },
   actions: {
-    inicio(data) {
-      this.token = data.session.access_token;
-      this.isAuthenticated = true;
-      api.defaults.headers.common.apikey = this.supabase_Key;
-      api.defaults.headers.common.Authorization = "Bearer " + this.token;
-      LocalStorage.set("token", this.token);
-      LocalStorage.set("IdUsuario", data.user.id);
+    inicio (data) {
+      this.token = data.session.access_token
+      this.isAuthenticated = true
+      api.defaults.headers.common.apikey = this.supabase_Key
+      api.defaults.headers.common.Authorization = 'Bearer ' + this.token
+      LocalStorage.set('token', this.token)
+      LocalStorage.set('IdUsuario', data.user.id)
     },
 
     // iniciosesion(iniSesion) {
@@ -144,22 +144,22 @@ export const useMainStore = defineStore("main", {
     //   LocalStorage.infoTiqAuditables.clear();
     // },
 
-    borrar() {
-      LocalStorage.clear();
+    borrar () {
+      LocalStorage.clear()
     },
 
-    init() {
-      const token = LocalStorage.getItem("token");
+    init () {
+      const token = LocalStorage.getItem('token')
       if (token) {
-        this.token = token;
-        this.isAuthenticated = true;
-        LocalStorage.set("token", token);
-        api.defaults.headers.common.apikey = this.supabase_Key;
-        api.defaults.headers.common.Authorization = "Bearer " + this.token;
+        this.token = token
+        this.isAuthenticated = true
+        LocalStorage.set('token', token)
+        api.defaults.headers.common.apikey = this.supabase_Key
+        api.defaults.headers.common.Authorization = 'Bearer ' + this.token
         // LocalStorage.set("Verificador", []);
       } else {
-        this.borrar();
+        this.borrar()
       }
-    },
-  },
-});
+    }
+  }
+})

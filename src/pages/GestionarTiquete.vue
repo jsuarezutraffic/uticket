@@ -395,146 +395,146 @@
 </template>
 
 <script setup>
-import { defineComponent, ref, onMounted } from "vue";
-import { LocalStorage } from "quasar";
-import { api } from "boot/axios";
+import { defineComponent, ref, onMounted } from 'vue'
+import { LocalStorage } from 'quasar'
+import { api } from 'boot/axios'
 
-const idusuario = LocalStorage.getItem("IdUsuario");
-const selected = ref([]);
+const idusuario = LocalStorage.getItem('IdUsuario')
+const selected = ref([])
 
-const tiquetes = ref([]);
-const concesion = ref({});
-const peajes = ref([]);
-const cliente = ref([]);
-const temas = ["Incidentes", "Requerimientos", "PQR"];
-const Tipos = ref([]);
-const Subtipos = ref([]);
-const SubtipoOptions = ref([]);
-const Prioridades = ref([]);
-const Estados = ref([]);
-const Procesos = ref([]);
+const tiquetes = ref([])
+const concesion = ref({})
+const peajes = ref([])
+const cliente = ref([])
+const temas = ['Incidentes', 'Requerimientos', 'PQR']
+const Tipos = ref([])
+const Subtipos = ref([])
+const SubtipoOptions = ref([])
+const Prioridades = ref([])
+const Estados = ref([])
+const Procesos = ref([])
 
-const mostrarModal = ref(false);
-const Fila = ref({});
-const tableRef = ref(null);
-const expanded = ref([]);
-const table = ref(false);
+const mostrarModal = ref(false)
+const Fila = ref({})
+const tableRef = ref(null)
+const expanded = ref([])
+const table = ref(false)
 const columns = [
   {
-    name: "id",
+    name: 'id',
     required: true,
-    label: "ID",
-    align: "left",
-    field: "id",
-    sortable: true,
+    label: 'ID',
+    align: 'left',
+    field: 'id',
+    sortable: true
   },
   {
-    name: "created_at",
-    align: "left",
-    label: "Creacion",
-    field: "created_at",
-    sortable: true,
+    name: 'created_at',
+    align: 'left',
+    label: 'Creacion',
+    field: 'created_at',
+    sortable: true
   },
   {
-    name: "numero",
-    align: "left",
-    label: "Número",
-    field: "numero",
-    sortable: true,
+    name: 'numero',
+    align: 'left',
+    label: 'Número',
+    field: 'numero',
+    sortable: true
   },
   {
-    name: "cliente",
-    align: "left",
-    label: "Cliente",
-    field: "cliente",
-    sortable: true,
+    name: 'cliente',
+    align: 'left',
+    label: 'Cliente',
+    field: 'cliente',
+    sortable: true
   },
 
   {
-    name: "concesion",
-    align: "left",
-    label: "Conceción",
-    field: "concesion",
-    sortable: true,
+    name: 'concesion',
+    align: 'left',
+    label: 'Conceción',
+    field: 'concesion',
+    sortable: true
   },
 
   {
-    name: "peaje",
-    align: "left",
-    label: "Peaje",
-    field: "peaje",
-    sortable: true,
+    name: 'peaje',
+    align: 'left',
+    label: 'Peaje',
+    field: 'peaje',
+    sortable: true
   },
 
   {
-    name: "requerimiento",
-    align: "left",
-    label: "Requerimiento",
-    field: "requerimiento",
-    sortable: true,
+    name: 'requerimiento',
+    align: 'left',
+    label: 'Requerimiento',
+    field: 'requerimiento',
+    sortable: true
   },
   {
-    name: "observaciones",
-    align: "left",
-    label: "Observaciones",
-    field: "observaciones",
-    sortable: true,
+    name: 'observaciones',
+    align: 'left',
+    label: 'Observaciones',
+    field: 'observaciones',
+    sortable: true
   },
 
   {
-    name: "estado",
-    align: "left",
-    label: "Estado",
-    field: "estado",
-    sortable: true,
+    name: 'estado',
+    align: 'left',
+    label: 'Estado',
+    field: 'estado',
+    sortable: true
   },
   {
-    name: "privado",
-    align: "left",
-    label: "Privado",
-    field: "privado",
-    sortable: true,
+    name: 'privado',
+    align: 'left',
+    label: 'Privado',
+    field: 'privado',
+    sortable: true
   },
   {
-    name: "prioridad",
-    align: "left",
-    label: "Prioridad",
-    field: "prioridad",
-    sortable: true,
+    name: 'prioridad',
+    align: 'left',
+    label: 'Prioridad',
+    field: 'prioridad',
+    sortable: true
   },
   {
-    name: "proceso",
-    align: "left",
-    label: "Proceso",
-    field: "proceso",
-    sortable: true,
+    name: 'proceso',
+    align: 'left',
+    label: 'Proceso',
+    field: 'proceso',
+    sortable: true
   },
 
   {
-    name: "tipo",
-    align: "left",
-    label: "Subtipo",
-    field: "tipo",
-    sortable: true,
+    name: 'tipo',
+    align: 'left',
+    label: 'Subtipo',
+    field: 'tipo',
+    sortable: true
   },
   {
-    name: "subtipo",
-    align: "left",
-    label: "Subtipo",
-    field: "subtipo",
-    sortable: true,
+    name: 'subtipo',
+    align: 'left',
+    label: 'Subtipo',
+    field: 'subtipo',
+    sortable: true
   },
   {
-    name: "asignado",
-    align: "left",
-    label: "Asignado",
-    field: "asignado",
-    sortable: true,
-  },
-];
+    name: 'asignado',
+    align: 'left',
+    label: 'Asignado',
+    field: 'asignado',
+    sortable: true
+  }
+]
 
 const clickRow = (row) => {
-  console.log(row);
+  console.log(row)
   Fila.value = {
     concesion: row.concesion,
     peaje: row.peaje,
@@ -545,73 +545,73 @@ const clickRow = (row) => {
     observaciones: row.observaciones,
     estado: row.estado,
     proceso: row.proceso,
-    id: row.id,
-  };
+    id: row.id
+  }
 
   api
     .get(`detalletiquete?tiquete=eq.${Fila.value.id}&select=*`)
     .then((response) => {
       // tiquetes.value = response.data;
-      console.log(response.data);
+      console.log(response.data)
       // Fila.value = response.data;
-    });
-};
+    })
+}
 
 const loadData = async () => {
-  api.get("tiquete?").then((response) => {
-    tiquetes.value = response.data;
-    console.log(tiquetes.value);
-    Fila.value = response.data;
-  });
-};
+  api.get('tiquete?').then((response) => {
+    tiquetes.value = response.data
+    console.log(tiquetes.value)
+    Fila.value = response.data
+  })
+}
 
 const DatosGenerales = async () => {
-  await api.get(`cliente?select=*`).then((response) => {
-    cliente.value = response.data;
-    Fila.value.cliente = cliente.value[0].id;
-  });
+  await api.get('cliente?select=*').then((response) => {
+    cliente.value = response.data
+    Fila.value.cliente = cliente.value[0].id
+  })
 
-  await api.get("concesion?select=*").then((response) => {
-    concesion.value = response.data;
-    console.log(concesion.value);
+  await api.get('concesion?select=*').then((response) => {
+    concesion.value = response.data
+    console.log(concesion.value)
     // Fila.value.concesion = cliente.value[0].id;
-  });
+  })
 
-  await api.get("peaje?select=*").then((response) => {
-    peajes.value = response.data;
-  });
+  await api.get('peaje?select=*').then((response) => {
+    peajes.value = response.data
+  })
 
-  await api.get("tipo?select=*").then((response) => {
-    Tipos.value = response.data;
-  });
+  await api.get('tipo?select=*').then((response) => {
+    Tipos.value = response.data
+  })
 
-  await api.get("subtipo?select=*").then((response) => {
-    Subtipos.value = response.data;
-  });
+  await api.get('subtipo?select=*').then((response) => {
+    Subtipos.value = response.data
+  })
 
-  await api.get("prioridad?select=*").then((response) => {
-    Prioridades.value = response.data;
+  await api.get('prioridad?select=*').then((response) => {
+    Prioridades.value = response.data
     Prioridades.value.sort(function (b, a) {
-      return b.orden - a.orden;
-    });
-  });
+      return b.orden - a.orden
+    })
+  })
 
-  await api.get("estado?select=*").then((response) => {
-    Estados.value = response.data;
-  });
+  await api.get('estado?select=*').then((response) => {
+    Estados.value = response.data
+  })
 
-  await api.get("proceso?select=*").then((response) => {
-    Procesos.value = response.data;
-    table.value = true;
-  });
+  await api.get('proceso?select=*').then((response) => {
+    Procesos.value = response.data
+    table.value = true
+  })
 
-  Fila.value.asignado = "4ca6c4d3-c2f9-4c1f-9411-de9271b9519f";
-  Fila.value.privado = null;
+  Fila.value.asignado = '4ca6c4d3-c2f9-4c1f-9411-de9271b9519f'
+  Fila.value.privado = null
   // const array = [5, 2, 9, 1, 3];
   // array.sort(function (a, b) {
   //   return b - a;
   // });
-};
+}
 
 // const TipoSeleccion = (value) => {
 //   SubtipoOptions.value = Subtipos.value.filter((tipo) => tipo.tipo == value);
@@ -620,25 +620,25 @@ const DatosGenerales = async () => {
 // };
 
 const AgregarTicket = async () => {
-  console.log(Fila.value);
+  console.log(Fila.value)
   // const { error } = await supabase.from("tiquete").insert(Fila.value);
   api
-    .post("tiquete", Fila.value)
+    .post('tiquete', Fila.value)
     .then((response) => {
-      console.log("Solicitud exitosa:", response.data);
-      loadData();
-      mostrarModal.value = false;
+      console.log('Solicitud exitosa:', response.data)
+      loadData()
+      mostrarModal.value = false
     })
     .catch((error) => {
-      console.error("Error al realizar la solicitud:", error);
-    });
-};
+      console.error('Error al realizar la solicitud:', error)
+    })
+}
 
 onMounted(async () => {
-  await DatosGenerales();
-  loadData();
+  await DatosGenerales()
+  loadData()
   // tableRef.value.scrollTo(10);
-});
+})
 // for (let i = 0; i < 2; i++) {
 //   rows = rows.concat(
 //     seed.map((r, j) => ({ ...r, index: i * seedSize + j + 1 }))
@@ -650,8 +650,8 @@ onMounted(async () => {
 // });
 
 defineComponent({
-  name: "MainTable",
-});
+  name: 'MainTable'
+})
 </script>
 
 <style lang="scss">

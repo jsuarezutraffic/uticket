@@ -4,7 +4,7 @@
  }
 
  body {
-  background-color: #f5f6fa;
+  background-color: #f4f4f4;
  }
 
  .card-header {
@@ -110,10 +110,10 @@
   margin: 0 auto;
   margin-top: 20px;
   margin-bottom: 20px;
-  width: 90%;
+  width: fit-content;
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-  max-width: 800px;
+  max-width: fit-content;
   min-width: 550px;
 }
 
