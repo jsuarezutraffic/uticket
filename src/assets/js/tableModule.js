@@ -7,6 +7,13 @@ export const columns = [
     sortable: true
   },
   {
+    name: 'creacion',
+    label: 'Creacion',
+    align: 'center',
+    field: 'creacion',
+    sortable: true
+  },
+  {
     name: 'cliente',
     label: 'Cliente',
     align: 'center',
@@ -14,10 +21,31 @@ export const columns = [
     sortable: true
   },
   {
-    name: 'tipo',
-    label: 'Tipo',
+    name: 'concesion',
+    label: 'Concesion',
     align: 'center',
-    field: 'tipo',
+    field: 'concesion',
+    sortable: true
+  },
+  {
+    name: 'solicitud',
+    label: 'Tipo de solicitud',
+    align: 'center',
+    field: 'solicitud',
+    sortable: true
+  },
+  {
+    name: 'peaje',
+    label: 'Peaje',
+    align: 'center',
+    field: 'peaje',
+    sortable: true
+  },
+  {
+    name: 'estado',
+    label: 'Estado',
+    align: 'center',
+    field: 'estado',
     sortable: true
   },
   {
@@ -28,10 +56,17 @@ export const columns = [
     sortable: true
   },
   {
-    name: 'estado',
-    label: 'Estado',
+    name: 'tipo',
+    label: 'Tipo',
     align: 'center',
-    field: 'estado',
+    field: 'tipo',
+    sortable: true
+  },
+  {
+    name: 'subtipo',
+    label: 'Subtipo',
+    align: 'center',
+    field: 'subtipo',
     sortable: true
   }
 ]

@@ -4,7 +4,7 @@
 }
 
 body {
-  background-color: #f5f6fa;
+  background-color: #f4f4f4;
 }
 
 .card-header {
@@ -111,13 +111,21 @@ body {
 //Table Styles
 .table-container {
   margin: 0 auto;
-  // margin-top: 00px;
+  <<<<<<< HEAD // margin-top: 00px;
   // margin-bottom: 20px;
   width: 100%;
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   // max-width: 800px;
   // min-width: 550px;
+  =======margin-top: 20px;
+  margin-bottom: 20px;
+  width: fit-content;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  max-width: fit-content;
+  min-width: 550px;
+  >>>>>>>c224dfac5a391b99770a2edb7e2499f9a2d65098
 }
 
 //Media Queries

@@ -50,7 +50,7 @@ import { api } from "boot/axios";
 import { useRouter, useRoute } from "vue-router";
 import { mostrarMensajes, getSelectedString } from "boot/global";
 // import { supabase } from "../supabase";
-//stores
+// stores
 const store = useMainStore();
 const config = useConfigStore().config;
 
