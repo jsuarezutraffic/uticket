@@ -1,5 +1,8 @@
 <template>
-  <div class="q-pa-md flex" >
+<div v-if="table">
+  <div class="q-pa-md flex" v-if="usuarios.filter(
+                          (p) => p.id == idusuario
+                        )[0].nivel === 2">
     <TransitionGroup name="fade">
     <q-table v-if="table"
       key="table"
@@ -147,8 +150,6 @@
             :columns="historial"
             :table-colspan="6"
             row-key="id"
-            selection="single"
-            v-model:selected="selected"
             v-model:expanded="expanded"
             >
 
@@ -167,7 +168,7 @@
             </template>
 
             <template v-slot:body="props">
-              <q-tr :props="props" @click="props.selected = !props.selected; clickRow(props.row)">
+              <q-tr :props="props">
                 <q-td
                   v-for="col in props.cols"
                   :key="col.name"
@@ -182,6 +183,22 @@
                       }}
                     </div>
                   </div>
+                  <div
+                    v-else-if="
+                      col.name == 'campomodificador' ||
+                      col.name == 'valoranterior' ||
+                      col.name == 'valornuevo' ||
+                      col.name == 'comentarios'
+                      ">
+                      <div v-if="col.value == null">
+                        {{ col.value }}
+                      </div>
+                      <div v-else>
+                        <div
+                          v-html="col.value.replace(/(?:\r\n|\r|\n)/g, '<br />')"
+                        ></div>
+                      </div>
+                    </div>
                   <div v-else>{{ col.value }}</div>
                 </q-td>
               </q-tr>
@@ -192,13 +209,16 @@
       </div>
 
       <div class="q-pa-md button-gestionar">
-        <q-btn label="Gestionar" color="primary" text-color="white" @click="dialog = true" />
+        <q-btn label="Gestionar" color="primary" text-color="white" @click="dialog = true" :disable="estado.filter(
+                          (p) => p.id == Fila.estado
+                        )[0].descripcion !== 'Asignado'" />
         <q-dialog v-model="dialog">
           <q-card>
 
             <q-card-section>
               <div class="q-pa-md" style="max-width: 500px">
                 <p class="text-h6">Asignar estado:</p>
+
                 <q-select square filled v-model="ticketState" :options="optionState" option-value="id" option-label="descripcion" label="Estado" class="q-mb-md" />
                 <div class="text-h6">Observaciones: </div>
                   <q-input
@@ -236,6 +256,12 @@
     </q-card>
   </TransitionGroup>
   </div>
+  <div v-if="usuarios.filter(
+                          (p) => p.id == idusuario
+                        )[0].nivel === 3">
+    <BackOffice />
+  </div>
+</div>
 </template>
 
 <script setup>
@@ -243,6 +269,7 @@ import { defineComponent, ref, onMounted } from 'vue'
 // import { columns } from 'src/assets/js/tableModule'
 import { api } from 'boot/axios'
 import { LocalStorage } from 'quasar'
+import BackOffice from '../pages/GestionarTiquete.vue'
 
 const dialog = ref(false)
 const selected = ref([])
@@ -498,13 +525,26 @@ async function clickRow (row) {
   console.log(row)
 }
 
+const agregarSaltosDeLinea = (text) => {
+  const words = text.split(' ')
+  const result = []
+  for (let i = 0; i < words.length; i++) {
+    result.push(words[i])
+    if ((i + 1) % 5 === 0) {
+      result.push('\n')
+    }
+  }
+  return result.join(' ')
+}
+
 function gestionarTicket () {
   Fila.value.estado = ticketState.value.id
   FilaDetalle.value.tiquete = Fila.value.id
   FilaDetalle.value.campomodificador = 'Estado'
   FilaDetalle.value.valoranterior = 'Asignado'
-  FilaDetalle.value.valornuevo = Fila.value.estado
+  FilaDetalle.value.valornuevo = ticketState.value.descripcion
   FilaDetalle.value.operador = idusuario
+  FilaDetalle.value.comentarios = agregarSaltosDeLinea(FilaDetalle.value.comentarios)
 
   api
     .post('detalletiquete', FilaDetalle.value)
