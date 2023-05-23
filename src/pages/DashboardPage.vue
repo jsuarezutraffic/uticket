@@ -1,6 +1,7 @@
 <template>
 <!-- Table Component -->
   <MainTable />
+
 </template>
 
 <script setup>

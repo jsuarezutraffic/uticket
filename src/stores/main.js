@@ -9,7 +9,7 @@ export const useMainStore = defineStore('main', {
     isAuthenticated: false,
     identificacion: '',
     supabase_Key: process.env.API_KEY,
-    supabase_Url: process.env.API_URL,
+    supabase_Url: process.env.API_URL
     // supabase_Url: "https://xzovknjkdfykvximpgxh.supabase.co",
   }),
 
@@ -18,17 +18,17 @@ export const useMainStore = defineStore('main', {
     buscarAutenticado: (state) => state.isAuthenticated
   },
   actions: {
-    inicio(data) {
-      this.token = data.access_token;
-      this.isAuthenticated = true;
+    inicio (data) {
+      this.token = data.access_token
+      this.isAuthenticated = true
       api.defaults.headers.common = {
         apikey: this.supabase_Key,
-        Authorization: "Bearer " + this.token,
-        "Content-Type": "application/json",
-        Prefer: "return=minimal",
-      };
-      LocalStorage.set("token", this.token);
-      LocalStorage.set("IdUsuario", data.user.id);
+        Authorization: 'Bearer ' + this.token,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal'
+      }
+      LocalStorage.set('token', this.token)
+      LocalStorage.set('IdUsuario', data.user.id)
     },
 
     // iniciosesion(iniSesion) {
