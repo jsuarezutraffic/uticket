@@ -1,19 +1,20 @@
 // app global css in SCSS form
 * {
   font-family: "Roboto", sans-serif;
- }
+}
 
- body {
+body {
   background-color: #f5f6fa;
- }
+}
 
- .card-header {
+.card-header {
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
   flex-wrap: wrap;
- }
+}
+
 .r {
   padding: 12px !important;
   width: fit-content !important;
@@ -97,6 +98,7 @@
   color: $primary;
   margin-left: 5px;
 }
+
 .fade-enter-from {
   opacity: 0;
 }
@@ -105,21 +107,22 @@
 .fade-enter-active {
   transition: all 1s ease-in-out;
 }
+
 //Table Styles
 .table-container {
   margin: 0 auto;
-  margin-top: 20px;
-  margin-bottom: 20px;
-  width: 90%;
+  // margin-top: 00px;
+  // margin-bottom: 20px;
+  width: 100%;
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-  max-width: 800px;
-  min-width: 550px;
+  // max-width: 800px;
+  // min-width: 550px;
 }
 
 //Media Queries
 
-@media only screen and (max-width: 600px){
+@media only screen and (max-width: 600px) {
   .card-container {
     max-width: 350px;
   }

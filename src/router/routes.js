@@ -25,13 +25,18 @@ const routes = [
   {
     name: "BackOffice",
     path: "/",
-    meta: { requireLogin: true },
+    // meta: { requireLogin: true },
     component: () => import("layouts/MainLayout.vue"),
     children: [
       {
         path: "/BackOffice/index",
         meta: { requireLogin: true },
         component: () => import("pages/GestionarTiquete.vue"),
+      },
+      {
+        path: "/BackOffice/prueba",
+        // meta: { requireLogin: true },
+        component: () => import("pages/IndexSupabase.vue"),
       },
     ],
   },

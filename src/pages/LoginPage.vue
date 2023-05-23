@@ -48,15 +48,16 @@ import { useMainStore } from "src/stores/main";
 import { useConfigStore } from "src/stores/config";
 import { api } from "boot/axios";
 import { useRouter, useRoute } from "vue-router";
+import { mostrarMensajes, getSelectedString } from "boot/global";
 // import { supabase } from "../supabase";
 //stores
 const store = useMainStore();
 const config = useConfigStore().config;
 
 //supabase
-const supabaseKey = store.supabase_Key;
-const supabaseUrl = store.supabase_Url;
-const supabase = createClient(supabaseUrl, supabaseKey);
+// const supabaseKey = store.supabase_Key;
+// const supabaseUrl = store.supabase_Url;
+// const supabase = createClient(supabaseUrl, supabaseKey);
 
 const datos = ref(null);
 const router = useRouter();
@@ -66,21 +67,29 @@ defineComponent({
 });
 const username = ref("");
 const password = ref("");
-console.log(config);
+api.defaults.headers.common.apikey = store.supabase_Key;
 const IniciarSesion = async () => {
-  const { data, error } = await supabase.auth.signInWithPassword({
+  const credenciales = {
     email: username.value,
     password: password.value,
-  });
-  const toPath = `/${config.nivel}/index`;
-  router.push(toPath);
-  store.inicio(data);
-};
-
-const prueba = async () => {
-  api.get(`tiquete?select=*`).then((response) => {
-    console.log(response.data);
-  });
+  };
+  await api
+    .post(
+      "https://xzovknjkdfykvximpgxh.supabase.co/auth/v1/token?grant_type=password",
+      credenciales
+    )
+    .then((response) => {
+      store.inicio(response.data);
+      const toPath = `/${config.nivel}/index`;
+      router.push(toPath);
+    })
+    .catch((error) => {
+      mostrarMensajes({
+        tipomensaje: 4,
+        mensaje:
+          "Credensiales invalidas, por favor verificar correo y contraseña",
+      });
+    });
 };
 </script>
 
