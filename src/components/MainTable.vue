@@ -103,9 +103,7 @@
 
             <div v-else-if="col.name == 'creacion'">
               {{
-                creacion.filter(
-                  (p) => p.id == col.value
-                )[0].created_at
+                creacion.filter((p) => p.id == col.value)[0].created_at
               }}
             </div>
 
@@ -118,7 +116,7 @@
       </template>
     </q-table>
 
-    <q-card class="table-card" v-if="selected.length > 0" key="card">
+    <q-card class="table-card" v-if="tablaDetalle && selected.length > 0" key="card">
 
       <div class="q-pa-sm q-mt-xs box-order">
         <span class="text-h5 q-pa-md text-bold text-center text-uppercase title-card-style" >Detalles de ticket</span>
@@ -139,7 +137,7 @@
         </div>
 
         <div class="q-pa-md">
-          <q-table v-if="detalleTiquete.length > 0"
+          <q-table v-if="detalleTiquete.length > 0 && tablaDetalle === true"
             key="table"
             class="table-container"
             separator="horizontal"
@@ -175,10 +173,17 @@
                   :key="col.name"
                   :props="props"
                 >
-                  <div>{{ col.value }}</div>
-
+                  <div v-if="col.name == 'operador'">
+                    <div v-if="usuarios !== null">
+                      {{
+                        usuarios.filter(
+                          (p) => p.id == col.value
+                        )[0].nombre
+                      }}
+                    </div>
+                  </div>
+                  <div v-else>{{ col.value }}</div>
                 </q-td>
-
               </q-tr>
             </template>
 
@@ -194,17 +199,17 @@
             <q-card-section>
               <div class="q-pa-md" style="max-width: 500px">
                 <p class="text-h6">Asignar estado:</p>
-                <q-select square filled v-model="dialogState" :options="options" label="Estado" class="q-mb-md" />
+                <q-select square filled v-model="ticketState" :options="optionState" option-value="id" option-label="descripcion" label="Estado" class="q-mb-md" />
                 <div class="text-h6">Observaciones: </div>
                   <q-input
-                    v-model="text"
+                    v-model="FilaDetalle.comentarios"
                     filled
                     type="textarea"
                   />
               </div>
               <div class="q-gutter-md row items-start q-ml-xs">
                 <q-file
-                  v-model="files"
+                  v-model="FilaDetalle.adjunto_url"
                   label="Adjuntar archivos"
                   filled
                   counter
@@ -222,7 +227,7 @@
 
             <q-card-section class="second-card buttons no-padding">
               <q-btn v-close-popup label="Volver" color="primary" class="q-mr-md close-buttons" text-color="dark"/>
-              <q-btn v-close-popup label="Enviar" color="primary" class="q-mr-md close-buttons" text-color="dark"/>
+              <q-btn v-close-popup label="Enviar" color="primary" class="q-mr-md close-buttons" text-color="dark" @click="gestionarTicket"/>
             </q-card-section>
 
           </q-card>
@@ -239,7 +244,6 @@ import { defineComponent, ref, onMounted } from 'vue'
 import { api } from 'boot/axios'
 import { LocalStorage } from 'quasar'
 
-const text = ref('')
 const dialog = ref(false)
 const selected = ref([])
 const detalleTiquete = ref([])
@@ -261,20 +265,23 @@ const estadoDisplay = ref('')
 const peaje = ref([])
 const subtipo = ref([])
 const creacion = ref([])
+const usuarios = ref([])
+const tablaDetalle = ref(false)
+const idusuario = LocalStorage.getItem('IdUsuario')
+const optionState = ref([])
 
-const files = ref([])
 function counterLabelFn ({ totalSize, filesNumber, maxFiles }) {
   return `${filesNumber} files of ${maxFiles} | ${totalSize}`
 }
-const options = ['Escalado', 'Cerrado']
-const dialogState = ref('')
+const ticketState = ref(null)
 
 const table = ref(false)
 const Fila = ref({})
+const FilaDetalle = ref({})
 const columns = [
   {
     name: 'id',
-    label: '# Tickets',
+    label: '# Ticket',
     align: 'center',
     field: 'id',
     sortable: true
@@ -373,24 +380,31 @@ const historial = [
     sortable: true
   },
   {
-    name: 'estado',
-    label: 'Estado',
+    name: 'campomodificador',
+    label: 'Campo modificado',
     align: 'center',
-    field: 'estado',
+    field: 'campomodificador',
     sortable: true
   },
   {
-    name: 'prioridad',
-    label: 'Prioridad',
+    name: 'valoranterior',
+    label: 'Valor Anterior',
     align: 'center',
-    field: 'prioridad',
+    field: 'valoranterior',
+    sortable: true
+  },
+  {
+    name: 'valornuevo',
+    label: 'Valor Nuevo',
+    align: 'center',
+    field: 'valornuevo',
     sortable: true
   }
 ]
 
 async function getData () {
   await api
-    .get(`tiquete?asignado=eq.${LocalStorage.getItem('IdUsuario')}&select=*`)
+    .get(`tiquete?asignado=eq.${idusuario}&select=*`)
     .then((response) => {
       console.log(response.data)
       tiquete.value = response.data
@@ -431,16 +445,28 @@ async function getData () {
   await api.get('tiquete?select=created_at').then((response) => {
     creacion.value = response.data
   })
+
+  await api
+    .get('usuarios?select=*')
+    .then((response) => {
+      console.log(response.data)
+      usuarios.value = response.data
+      console.log(usuarios.value[0].nombre)
+    })
   table.value = true
 }
 
 async function clickRow (row) {
   Fila.value = row
+
+  optionState.value = estado.value.filter((p) => p.descripcion === 'Escalado' || p.descripcion === 'Solucionado')
+  console.log(optionState.value)
   await api
     .get(`detalletiquete?tiquete=eq.${Fila.value.id}&select=*`)
     .then((response) => {
       console.log(response.data)
       detalleTiquete.value = response.data
+      tablaDetalle.value = true
     })
 
   tipoDisplay.value = tipo.value.filter((p) => p.id === row.tipo)[0].descripcion
@@ -470,6 +496,26 @@ async function clickRow (row) {
     colorPrioridad.value = 'red'
   }
   console.log(row)
+}
+
+function gestionarTicket () {
+  Fila.value.estado = ticketState.value.id
+  FilaDetalle.value.tiquete = Fila.value.id
+  FilaDetalle.value.campomodificador = 'Estado'
+  FilaDetalle.value.valoranterior = 'Asignado'
+  FilaDetalle.value.valornuevo = Fila.value.estado
+  FilaDetalle.value.operador = idusuario
+
+  api
+    .post('detalletiquete', FilaDetalle.value)
+    .then((response) => {
+      console.log(response.data)
+      api
+        .put(`tiquete?id=eq.${Fila.value.id}`, Fila.value)
+        .then((response) => {
+          console.log(response.data)
+        })
+    })
 }
 
 onMounted(() => {
