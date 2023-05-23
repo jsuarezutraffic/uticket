@@ -114,6 +114,12 @@
         </template>
       </q-table>
     </div>
+    <q-inner-loading
+      :showing="visible"
+      label="Cargando..."
+      label-class="text-teal"
+      label-style="font-size: 1.1em"
+    />
   </div>
 
   <!-- Modal Principal de accion de tiquete -->
@@ -714,6 +720,41 @@
       </div>
     </q-card>
   </q-dialog>
+
+  <!-- Modal de imagen -->
+  <q-dialog v-model="mostrarImagen">
+    <q-card style="width: 35em">
+      <div class="column" style="margin: 20px">
+        <div class="col-4" style="margin: auto; padding: 10px">
+          <q-icon name="error_outline" size="6em" />
+        </div>
+        <div class="col-4" style="margin: auto; padding: 10px">
+          <span style="font-size: 18px"> {{ mensaje }}</span>
+        </div>
+        <div class="col-2" style="margin: auto; padding: 10px">
+          <q-btn
+            v-if="accion == 'CerrarTicket'"
+            label="No"
+            v-close-popup
+            color="negative"
+          />
+          <span style="padding-right: 40px"></span>
+          <q-btn
+            v-if="accion == 'CerrarTicket'"
+            label="Si"
+            color="primary"
+            @click="GestionTiquete('ConfimarCerrar')"
+          />
+          <q-btn
+            v-show="accion == 'alerta'"
+            label="Cerrar"
+            color="grey"
+            v-close-popup
+          />
+        </div>
+      </div>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script setup>
@@ -721,10 +762,15 @@ import { defineComponent, ref, onMounted } from "vue";
 import { LocalStorage } from "quasar";
 import { api } from "boot/axios";
 import { mostrarMensajes, getSelectedString } from "boot/global";
+import { supabase } from "src/supabase";
+import { useMainStore } from "src/stores/main";
+import { createClient } from "@supabase/supabase-js";
 
+//supabase
+// const supabaseKey = store.supabase_Key;
 const idusuario = LocalStorage.getItem("IdUsuario");
 const selected = ref([]);
-
+const store = useMainStore();
 const tiquetes = ref([]);
 const tiquetesDetalles = ref([]);
 const concesion = ref({});
@@ -737,6 +783,7 @@ const Prioridades = ref([]);
 const Estados = ref([]);
 const Procesos = ref([]);
 const solicitudes = ref([]);
+const visible = ref(false);
 const next = ref({
   nivel: null,
   operador: null,
@@ -749,6 +796,7 @@ const mostrarModal = ref(false);
 const mostrarConfirm = ref(false);
 const mostrarAsignarTiquetes = ref(false);
 const mostrarSolucionarTiquetes = ref(false);
+const mostrarImagen = ref(false);
 const accion = ref("");
 const mensaje = ref("");
 const Fila = ref({});
@@ -947,6 +995,21 @@ const columnsDetalles = [
   },
 ];
 
+//------------------------------------------
+// let ff = await supabase.from("tiquete").select("*");
+const tiquete = supabase
+  .channel("custom-update-channel")
+  .on(
+    "postgres_changes",
+    { event: "UPDATE", schema: "public", table: "tiquete" },
+    (payload) => {
+      console.log("Change received1!", payload);
+      LoadData();
+    }
+  )
+  .subscribe();
+//------------------------------------------
+
 //-------------------------------------------------------
 //Metodos
 const clickRow = (row) => {
@@ -1080,7 +1143,7 @@ const GestionTiquete = async (accionValue) => {
       Fila.value.prioridad = Prioridades.value.filter(
         (p) => p.descripcion == "Baja"
       )[0].id;
-
+      Fila.value.asignado = idusuario;
       //agregar saltos de linea al campo Comentarios
       FilaDetalle.value.comentarios = agregarSaltosDeLinea(
         FilaDetalle.value.comentarios
@@ -1122,51 +1185,70 @@ const AccionTiquete = (key) => {
   accion.value = key;
   FilaDetalle.value.comentarios = "";
   FilaDetalle.value.adjunto_url = "";
-  if (
-    Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion ==
-      "Solucionado" ||
-    Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion ==
-      "Cerrado" ||
-    Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion ==
-      "Finalizado"
-  ) {
-    accion.value = "alerta";
-    mensaje.value = `No se puede realizar esta acción. El ticket se encuentra ${
-      Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
-    }`;
-    mostrarConfirm.value = true;
-  } else {
-    switch (key) {
-      case "AsignarTicket":
-        if (
-          Procesos.value.filter((p) => p.id > Fila.value.proceso).length == 0
-        ) {
-          accion.value = "alerta";
-          mensaje.value =
-            "No se puede asignar. El ticket se encuentra en el nivel maximo de asignación";
-          mostrarConfirm.value = true;
-        } else {
-          next.value.nivel = null;
-          next.value.operador = null;
-          mostrarAsignarTiquetes.value = true;
-        }
-        break;
-      case "SolucionarTicket":
+  const ValidadorEstado = () => {
+    if (
+      Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion ==
+        "Solucionado" ||
+      Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion ==
+        "Cerrado" ||
+      Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion ==
+        "Finalizado"
+    ) {
+      if (
+        key == "CerrarTicket" &&
+        Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion ==
+          "Solucionado"
+      ) {
+        return false;
+      } else {
+        accion.value = "alerta";
+        mensaje.value = `No se puede realizar esta acción. El ticket se encuentra ${
+          Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
+        }`;
+        mostrarConfirm.value = true;
+        return true;
+      }
+    }
+  };
+  switch (key) {
+    case "AsignarTicket":
+      if (ValidadorEstado()) {
+        console.log("no estra AsignarTicket");
+      } else if (
+        Procesos.value.filter((p) => p.id > Fila.value.proceso).length == 0
+      ) {
+        accion.value = "alerta";
+        mensaje.value =
+          "No se puede asignar. El ticket se encuentra en el nivel maximo de asignación";
+        mostrarConfirm.value = true;
+      } else {
+        next.value.nivel = null;
+        next.value.operador = null;
+        mostrarAsignarTiquetes.value = true;
+      }
+      break;
+    case "SolucionarTicket":
+      if (ValidadorEstado()) {
+        console.log("no estra AsignarTicket");
+      } else {
         mostrarSolucionarTiquetes.value = true;
-
-        break;
-      case "CerrarTicket":
+      }
+      break;
+    case "CerrarTicket":
+      if (ValidadorEstado()) {
+        console.log("no estra AsignarTicket");
+      } else {
         mensaje.value = "¿Está seguro de cerrar el tickete?";
         mostrarSolucionarTiquetes.value = true;
-        break;
-
-      default:
-        break;
-    }
+      }
+      break;
+    default:
+      break;
   }
 };
 
 const DatosGenerales = async () => {
+  visible.value = true;
   await api.get(`cliente?select=*`).then((response) => {
     cliente.value = response.data;
   });
@@ -1216,6 +1298,7 @@ const DatosGenerales = async () => {
   // array.sort(function (a, b) {
   //   return b - a;
   // });
+  visible.value = false;
   table.value = true;
 };
 
@@ -1248,15 +1331,6 @@ onMounted(async () => {
   LoadData();
   // tableRef.value.scrollTo(10);
 });
-// for (let i = 0; i < 2; i++) {
-//   rows = rows.concat(
-//     seed.map((r, j) => ({ ...r, index: i * seedSize + j + 1 }))
-//   );
-// }
-
-// onMounted(() => {
-//   tableRef.value.scrollTo(10);
-// });
 
 defineComponent({
   name: "MainTable",
