@@ -19,11 +19,20 @@ const routes = [
         meta: { requireLogin: true },
         component: () => import("pages/IndexPage.vue"),
       },
+      {
+        path: "/prueba",
+        meta: { requireLogin: true },
+        component: () => import("pages/pruebaPage.vue"),
+      },
     ],
   },
 
   // Always leave this as last one,
   // but you can also remove it
+  {
+    path: "/access_token=:token",
+    component: () => import("src/pages/RegisterSuccessful.vue"),
+  },
   {
     path: "/:catchAll(.*)*",
     component: () => import("pages/ErrorNotFound.vue"),

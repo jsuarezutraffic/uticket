@@ -21,11 +21,12 @@ export const useMainStore = defineStore("main", {
     inicio(data) {
       // this.TOKEN = TOKEN;
       console.log(data);
-      this.token = data.session.access_token;
+      this.token = data.access_token;
       LocalStorage.set("Token", this.token);
       this.isAuthenticated = true;
       // this.perfilId = data.data.id;
       LocalStorage.set("IdUsuario", data.user.id);
+      LocalStorage.set("email", data.user.email);
     },
     iniciosesion(iniSesion) {
       LocalStorage.set("AfterLogin", iniSesion);

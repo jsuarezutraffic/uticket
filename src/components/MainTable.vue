@@ -1,7 +1,8 @@
 <template>
-  <div class="q-pa-md flex" v-if="table">
-    <TransitionGroup name="fade">
+  <div class="q-pa-md flex">
+    <TransitionGroup>
       <q-table
+        v-if="table"
         class="table-container"
         separator="horizontal"
         flat
@@ -13,6 +14,7 @@
         row-key="id"
         selection="single"
         v-model:selected="selected"
+        v-model:pagination="pagination"
         fixed-header
         v-model:expanded="expanded"
         :visible-columns="[
@@ -20,12 +22,13 @@
           'cliente',
           'concesion',
           'peaje',
-          'requerimiento',
+          'solicitud',
           'observaciones',
           'estado',
           'prioridad',
           'tipo',
           'subtipo',
+          'finalizar',
         ]"
       >
         >
@@ -74,19 +77,40 @@
               <div v-else-if="col.name == 'peaje'">
                 {{ peajes.filter((p) => p.id == col.value)[0].nombre }}
               </div>
+              <div v-else-if="col.name == 'solicitud'">
+                {{ Solicitudes.filter((p) => p.id == col.value)[0].nombre }}
+              </div>
               <div v-else-if="col.name == 'estado'">
                 {{ Estados.filter((p) => p.id == col.value)[0].descripcion }}
               </div>
               <div v-else-if="col.name == 'prioridad'">
-                {{
-                  Prioridades.filter((p) => p.id == col.value)[0].descripcion
-                }}
+                <q-badge
+                  :color="Prioridades.filter((p) => p.id == col.value)[0].color"
+                >
+                  {{
+                    Prioridades.filter((p) => p.id == col.value)[0].descripcion
+                  }}
+                </q-badge>
               </div>
               <div v-else-if="col.name == 'tipo'">
                 {{ Tipos.filter((p) => p.id == col.value)[0].descripcion }}
               </div>
               <div v-else-if="col.name == 'subtipo'">
                 {{ Subtipos.filter((p) => p.id == col.value)[0].descripcion }}
+              </div>
+              <div v-else-if="col.name == 'finalizar'">
+                <q-btn
+                  class="q-px-sm"
+                  color="primary"
+                  size="sm"
+                  no-caps
+                  dense
+                  @click="(FilaFinalizar = props.row), (mostrarConfirm = true)"
+                  >Finalizar
+                  <!-- <q-tooltip class="bg-primary" :offset="[10, 10]">
+            {{ $t("Atras") }}
+          </q-tooltip> -->
+                </q-btn>
               </div>
 
               <div v-else>
@@ -97,12 +121,19 @@
           </q-tr>
         </template>
       </q-table>
-      <q-card class="table-card" v-if="selected.length > 0">
+
+      <!-- <q-card class="table-card" v-if="false">
         <q-card-section>
           {{ selected[0] }}
         </q-card-section>
-      </q-card>
+      </q-card> -->
     </TransitionGroup>
+    <q-inner-loading
+      :showing="visible"
+      label="Cargando..."
+      label-class="text-teal"
+      label-style="font-size: 1.1em"
+    />
   </div>
 
   <q-dialog
@@ -172,20 +203,24 @@
                             ></q-select>
                           </div>
 
-                          <!-- <div class="col-md-6 col-sm-6 col-xs-12">
+                          <div class="col-md-4 col-sm-6 col-xs-12">
                             <q-select
-                              label="Tema"
+                              label="Solicitud"
                               transition-show="scale"
                               transition-hide="scale"
                               outlined
-                              v-model="Fila.tema"
+                              v-model="Fila.solicitud"
                               dense
-                              :options="temas"
+                              :options="Solicitudes"
+                              option-label="nombre"
+                              option-value="id"
                               class="q-pa-md"
                               emit-value
                               map-options
+                              :rules="rules"
+                              lazy-rules
                             />
-                          </div> -->
+                          </div>
 
                           <div class="col-md-4 col-sm-6 col-xs-12">
                             <q-select
@@ -227,33 +262,7 @@
                             />
                           </div>
 
-                          <div class="col-md-12 col-sm-12 col-xs-12">
-                            <q-input
-                              outlined
-                              v-model="Fila.requerimiento"
-                              dense
-                              type="textarea"
-                              label="Requerimiento"
-                              class="q-pa-md"
-                              :rules="rules"
-                              lazy-rules
-                            />
-                          </div>
-
-                          <div class="col-md-12 col-sm-12 col-xs-12">
-                            <q-input
-                              outlined
-                              v-model="Fila.observaciones"
-                              dense
-                              type="text"
-                              label="Observaciones"
-                              class="q-pa-md"
-                              :rules="rules"
-                              lazy-rules
-                            />
-                          </div>
-
-                          <div class="col-md-6 col-sm-6 col-xs-12">
+                          <div v-if="false" class="col-md-4 col-sm-6 col-xs-12">
                             <q-select
                               label="Prioridad"
                               transition-show="scale"
@@ -272,7 +281,7 @@
                             />
                           </div>
 
-                          <div class="col-md-6 col-sm-6 col-xs-12">
+                          <div v-if="false" class="col-md-4 col-sm-6 col-xs-12">
                             <q-select
                               label="Estado"
                               transition-show="scale"
@@ -289,6 +298,75 @@
                               :rules="rules"
                               lazy-rules
                             />
+                          </div>
+
+                          <div class="col-md-4 col-sm-6 col-xs-12">
+                            <q-btn
+                              label="Cargar Evidencia"
+                              style="color: white"
+                              class="q-ma-md bg-primary"
+                              no-caps
+                              @click="openFile()"
+                            >
+                              <q-file
+                                class="q-ma-"
+                                no-caps
+                                label="Cargar Evidencia"
+                                borderless
+                                dense
+                                v-model="filaavatar"
+                                label-color="white"
+                                style="background-color: white; width: 100%"
+                                v-show="false"
+                                ref="file"
+                              ></q-file>
+                            </q-btn>
+
+                            <!-- <q-input
+                              @update:model-value="
+                                (val) => {
+                                  filaavatar = val;
+                                }
+                              "
+                              class="q-pa-md"
+                              outlined
+                              dense
+                              hint="Evidencia"
+                              type="file"
+                            /> -->
+                          </div>
+
+                          <div class="col-md-8 col-sm-12 col-xs-12">
+                            <q-input
+                              outlined
+                              v-model="Fila.observaciones"
+                              dense
+                              type="textarea"
+                              label="Observaciones"
+                              class="q-pa-md"
+                              :rules="rules"
+                              lazy-rules
+                            />
+                          </div>
+
+                          <div
+                            class="col-md-4 col-sm-12 col-xs-12 avatar-container"
+                          >
+                            <q-avatar
+                              square
+                              font-size="82px"
+                              color="white"
+                              class="avatar"
+                            >
+                              <q-img
+                                :src="Fila.evidencia"
+                                alt=""
+                                spinner-color="red"
+                                fit="scale-down"
+                                class="avatar"
+                              >
+                              </q-img>
+                            </q-avatar>
                           </div>
 
                           <div v-if="false" class="col-md-6 col-sm-6 col-xs-12">
@@ -332,15 +410,44 @@
       </div>
     </q-card>
   </q-dialog>
+
+  <q-dialog v-model="mostrarConfirm">
+    <q-card style="width: 35em">
+      <div class="column" style="margin: 20px">
+        <div class="col-4" style="margin: auto; padding: 10px">
+          <q-icon name="error_outline" size="6em" />
+        </div>
+        <div class="col-4" style="margin: auto; padding: 10px">
+          <span style="font-size: 18px">
+            ¿Esta seguro de Finalizar el Ticket?</span
+          >
+        </div>
+        <div class="col-2" style="margin: auto; padding: 10px">
+          <q-btn label="No" v-close-popup color="negative" />
+          <span style="padding-right: 40px"></span>
+          <q-btn label="Si" color="primary" @click="Finalizar()" />
+        </div>
+      </div>
+    </q-card>
+  </q-dialog>
+  <!-- <button @click="enviarCorreo">Enviar Correo</button> -->
 </template>
 
 <script setup>
-import { defineComponent, ref, onMounted } from "vue";
+import { defineComponent, ref, onMounted, watch } from "vue";
 import { supabase } from "../supabase";
 import { LocalStorage, date } from "quasar";
 // import { columns, seed } from 'src/assets/js/tableModule'
 import { createClient } from "@supabase/supabase-js";
 import { api } from "boot/axios";
+import { useQuasar } from "quasar";
+import { createBase64Image } from "boot/global";
+// import nodemailer from "nodemailer";
+// import { sgMail } from "@sendgrid/mail";
+
+// sgMail.setApiKey(
+//   "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"
+// );
 
 // console.log(
 //   JSON.parse(LocalStorage.getItem("sb-xzovknjkdfykvximpgxh-auth-token"))
@@ -348,7 +455,8 @@ import { api } from "boot/axios";
 // );
 
 const idusuario = LocalStorage.getItem("IdUsuario");
-
+const email = LocalStorage.getItem("email");
+let $q = useQuasar();
 // const supabase = createClient(
 //   "https://xzovknjkdfykvximpgxh.supabase.co",
 //   JSON.parse(LocalStorage.getItem("sb-xzovknjkdfykvximpgxh-auth-token"))
@@ -357,30 +465,37 @@ const idusuario = LocalStorage.getItem("IdUsuario");
 
 const selected = ref([]);
 // const seedSize = seed.length;
+const pagination = ref({
+  rowsPerPage: 10,
+});
 
 const tiquetes = ref([]);
 const concesion = ref([]);
 const peajes = ref([]);
 const cliente = ref([]);
-const temas = ["Incidentes", "Requerimientos", "PQR"];
 const Tipos = ref([]);
 const Subtipos = ref([]);
 const SubtipoOptions = ref([]);
 const Prioridades = ref([]);
 const Estados = ref([]);
 const Procesos = ref([]);
+const Solicitudes = ref([]);
+const Usuarios = ref([]);
 
 const mostrarModal = ref(false);
+const mostrarConfirm = ref(false);
 const Fila = ref({});
+const FilaFinalizar = ref({});
 const tableRef = ref(null);
 const expanded = ref([]);
 const rules = [(val) => !!val || "* Campo Obligatorio"];
 const table = ref(false);
+const visible = ref(false);
 
 const columns = [
   {
     name: "id",
-    required: true,
+    // required: true,
     label: "ID",
     align: "left",
     field: "id",
@@ -426,10 +541,10 @@ const columns = [
   },
 
   {
-    name: "requerimiento",
+    name: "solicitud",
     align: "left",
-    label: "Requerimiento",
-    field: "requerimiento",
+    label: "Solicitud",
+    field: "solicitud",
     sortable: true,
   },
   {
@@ -490,6 +605,13 @@ const columns = [
     field: "asignado",
     sortable: true,
   },
+  {
+    name: "finalizar",
+    align: "left",
+    label: "",
+    field: "finalizar",
+    sortable: true,
+  },
 ];
 
 const loadData = async () => {
@@ -497,7 +619,6 @@ const loadData = async () => {
     .get("tiquete?cliente=eq." + cliente.value[0].id + "&select=*")
     .then((response) => {
       tiquetes.value = response.data;
-      console.log("tiquetes: ", tiquetes.value);
     });
 
   // supabase
@@ -519,12 +640,13 @@ const loadData = async () => {
 };
 
 const DatosGenerales = async () => {
+  visible.value = true;
   await api
     .get(`cliente?usuario=eq.` + idusuario + `&select=*`)
     .then((response) => {
       console.log("cliente: ", response.data);
       cliente.value = response.data;
-      Fila.value.cliente = cliente.value[0].id;
+
       // console.log(cliente_idconcesion.value);
     });
 
@@ -533,13 +655,14 @@ const DatosGenerales = async () => {
     .then((response) => {
       console.log("consecion: ", response.data);
       concesion.value = response.data;
-      Fila.value.concesion = concesion.value[0].id;
     });
 
-  await api.get("peaje?select=*").then((response) => {
-    console.log("peajes: ", response.data);
-    peajes.value = response.data;
-  });
+  await api
+    .get("peaje?concesion=eq." + concesion.value[0].id + "&select=*")
+    .then((response) => {
+      console.log("peajes: ", response.data);
+      peajes.value = response.data;
+    });
 
   await api.get("tipo?select=*").then((response) => {
     console.log("tipos: ", response.data);
@@ -564,16 +687,25 @@ const DatosGenerales = async () => {
     Estados.value = response.data;
   });
 
+  await api.get("solicitud?select=*").then((response) => {
+    console.log("Solicitudes: ", response.data);
+    Solicitudes.value = response.data;
+  });
+
   await api.get("proceso?select=*").then((response) => {
     console.log("Procesos: ", response.data);
     Procesos.value = response.data;
     table.value = true;
+    visible.value = false;
+  });
+
+  await api.get("usuarios?select=*").then((response) => {
+    console.log("usuarios: ", response.data);
+    Usuarios.value = response.data;
   });
 
   // Fila.value.asignado = "4ca6c4d3-c2f9-4c1f-9411-de9271b9519f";
-  Fila.value.asignado = null;
-  Fila.value.privado = null;
-  Fila.value.proceso = null;
+
   // const array = [5, 2, 9, 1, 3];
   // array.sort(function (a, b) {
   //   return b - a;
@@ -590,18 +722,133 @@ const TipoSeleccion = (value) => {
 
 const AgregarTicket = async () => {
   console.log(Fila.value);
-  // const { error } = await supabase.from("tiquete").insert(Fila.value);
+  // enviarCorreo(Fila.value);
+  Fila.value.cliente = cliente.value[0].id;
+  Fila.value.concesion = concesion.value[0].id;
+  Fila.value.asignado = Usuarios.value.filter(
+    (p) => p.nivel == 1 && p.estado == true
+  )[0].id;
+  Fila.value.privado = null;
+  Fila.value.proceso = 1;
+  Fila.value.estado = 1;
+
+  if (Fila.value.solicitud == 1 || Fila.value.solicitud == 3) {
+    Fila.value.prioridad = 1;
+  } else if (Fila.value.solicitud == 2) {
+    Fila.value.prioridad = 2;
+  } else {
+    Fila.value.prioridad = 3;
+  }
+  // enviarCorreo(Fila.value);
   api
     .post("tiquete", Fila.value)
     .then((response) => {
-      console.log("Solicitud exitosa:", response.data);
+      console.log("Solicitud exitosa:", response);
       loadData();
       mostrarModal.value = false;
+
+      if (response.status == 201 || response.status == 200) {
+        $q.notify({
+          type: "positive",
+          message: "Ticket Creado exitosamente",
+          timeout: 4000,
+        });
+        Fila.value.estado = "Creado";
+        Fila.value.mensaje1 =
+          "La solicitud sera atendida por el equipo de soporte de";
+        Fila.value.mensaje2 =
+          "Sera informado por este medio y el aplicativo cuando se solucione la problematica";
+        enviarCorreo(Fila.value);
+      }
     })
     .catch((error) => {
-      console.error("Error al realizar la solicitud:", error);
+      // Capturar el error y mostrarlo al usuario
+      if (error.response) {
+        // Error de respuesta HTTP (por ejemplo, 404, 500, etc.)
+        console.error("Error de respuesta:", error.response.status);
+        console.error("Mensaje de error:", error.response.data);
+      } else if (error.request) {
+        // Error de solicitud sin respuesta (por ejemplo, timeout)
+        console.error("Error de solicitud:", error.request);
+      } else {
+        // Error de configuración u otro tipo de error
+        console.error("Error:", error.message);
+      }
     });
 };
+
+const Finalizar = () => {
+  mostrarConfirm.value = false;
+  console.log(FilaFinalizar.value);
+  FilaFinalizar.value.estado = 6;
+  api
+    .put("tiquete?id=eq." + FilaFinalizar.value.id, FilaFinalizar.value)
+    .then((response) => {
+      console.log("Solicitud exitosa:", response);
+      loadData();
+      mostrarModal.value = false;
+      Fila.value.estado = "Finalizado";
+      Fila.value.mensaje1 =
+        "La solicitud fue revisada y finalizada por el equipo de soporte de";
+      Fila.value.mensaje2 = "";
+      enviarCorreo(Fila.value);
+
+      if (response.status == 201 || response.status == 200) {
+        $q.notify({
+          type: "positive",
+          message: "Ticket Finalizado exitosamente",
+          timeout: 4000,
+        });
+      }
+    });
+};
+
+const openFile = () => {
+  file.value.pickFiles();
+};
+
+function clearImage(value) {
+  filaavatar.value = "";
+  Fila.value.avatar = avatarold.value;
+}
+
+const filaavatar = ref("");
+const avatarold = ref("");
+const loadingImage = ref(false);
+const file = ref(null);
+
+async function convertirBase64() {
+  // loadingImage.value = true;
+  avatarold.value = Fila.value.evidencia;
+  if (filaavatar.value != null) {
+    Fila.value.evidencia = await createBase64Image(filaavatar.value);
+  }
+  // loadingImage.value = false;
+}
+
+const enviarCorreo = (data) => {
+  data.email = email;
+
+  // var data = { correo: "jsuarez@utraffic.co", nombre: "hola" };
+
+  const axios = require("axios");
+
+  const url = "http://localhost:3000/enviar-correo";
+
+  axios
+    .post(url, data)
+    .then((response) => {
+      console.log(response.data); // Maneja la respuesta de la petición aquí
+      Fila.value = {};
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+};
+
+watch(filaavatar, (currentValue, oldValue) => {
+  convertirBase64();
+});
 
 onMounted(async () => {
   await DatosGenerales();
@@ -625,6 +872,18 @@ defineComponent({
 </script>
 
 <style lang="scss">
+.avatar-container {
+  display: flex;
+  justify-content: center; /* Centrar horizontalmente */
+  align-items: center; /* Centrar verticalmente */
+  height: 200px; /* Ajusta la altura del contenedor según tus necesidades */
+}
+
+.avatar {
+  width: 150px; /* Ajusta el tamaño del avatar según tus necesidades */
+  height: 120px; /* Ajusta el tamaño del avatar según tus necesidades */
+  border: 1px solid #8a8a8a; /* Ancho y color del borde */
+}
 .th-text {
   color: $dark !important;
   font-weight: bold !important;

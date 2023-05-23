@@ -53,32 +53,64 @@ import { supabase } from "../supabase";
 import { useMainStore } from "stores/main";
 import { useRouter, useRoute } from "vue-router";
 import { api } from "src/boot/axios";
-
+import { useQuasar } from "quasar";
 defineComponent({
   // eslint-disable-next-line vue/multi-word-component-names
   name: "LoginPage",
 });
-
+let $q = useQuasar();
 const store = useMainStore();
 const router = useRouter();
+
+const apiUrl =
+  "https://xzovknjkdfykvximpgxh.supabase.co/auth/v1/token?grant_type=password";
+const supabaseKey =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6b3ZrbmprZGZ5a3Z4aW1wZ3hoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY4MzMyMjY2NCwiZXhwIjoxOTk4ODk4NjY0fQ.Vm7vlm4xnk5FxXwTR66_GcFw8iF5SISvo8U9JRwXvh0";
+
+const headers = {
+  apikey: supabaseKey,
+  "Content-Type": "application/json",
+};
 
 const username = ref("");
 const password = ref("");
 
 const login = async () => {
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email: username.value,
-    password: password.value,
-  });
+  // const { data, error } = await supabase.auth.signInWithPassword({
+  //   email: username.value,
+  //   password: password.value,
+  // });
 
-  const toPath = "/";
-  router.push(toPath);
-  api.defaults.headers.common.Authorization =
-    "Bearer " + data.session.access_token;
-  api.defaults.headers.common.apikey =
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6b3ZrbmprZGZ5a3Z4aW1wZ3hoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY4MzMyMjY2NCwiZXhwIjoxOTk4ODk4NjY0fQ.Vm7vlm4xnk5FxXwTR66_GcFw8iF5SISvo8U9JRwXvh0";
+  // console.log(data.error_description);
+  // // console.log(JSON.parse(error));
 
-  store.inicio(data);
+  // if (error.length !== 0) {
+  //   $q.notify({
+  //     type: "negative",
+  //     message: error.error_description,
+  //     timeout: 4000,
+  //   });
+  // }
+
+  api
+    .post(
+      "https://xzovknjkdfykvximpgxh.supabase.co/auth/v1/token?grant_type=password",
+      { email: username.value, password: password.value },
+      { headers }
+    )
+    .then((response) => {
+      console.log(response.data);
+      const toPath = "/";
+      router.push(toPath);
+      api.defaults.headers.common.Authorization =
+        "Bearer " + response.data.access_token;
+      api.defaults.headers.common.apikey = supabaseKey;
+
+      store.inicio(response.data);
+    })
+    .catch((error) => {
+      console.error(error);
+    });
 };
 </script>
 
