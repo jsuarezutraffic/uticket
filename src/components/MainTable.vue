@@ -81,7 +81,11 @@
                 {{ Solicitudes.filter((p) => p.id == col.value)[0].nombre }}
               </div>
               <div v-else-if="col.name == 'estado'">
-                {{ Estados.filter((p) => p.id == col.value)[0].descripcion }}
+                <q-badge
+                  :color="Estados.filter((p) => p.id == col.value)[0].color"
+                >
+                  {{ Estados.filter((p) => p.id == col.value)[0].descripcion }}
+                </q-badge>
               </div>
               <div v-else-if="col.name == 'prioridad'">
                 <q-badge
