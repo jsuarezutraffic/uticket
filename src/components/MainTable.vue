@@ -81,11 +81,20 @@
                 {{ Solicitudes.filter((p) => p.id == col.value)[0].nombre }}
               </div>
               <div v-else-if="col.name == 'estado'">
-                <q-badge
-                  :color="Estados.filter((p) => p.id == col.value)[0].color"
+                <div
+                  v-if="Estados.filter((p) => p.id == col.value)[0].vercliente"
                 >
-                  {{ Estados.filter((p) => p.id == col.value)[0].descripcion }}
-                </q-badge>
+                  <q-badge
+                    :color="Estados.filter((p) => p.id == col.value)[0].color"
+                  >
+                    {{
+                      Estados.filter((p) => p.id == col.value)[0].descripcion
+                    }}
+                  </q-badge>
+                </div>
+                <div v-else>
+                  <q-badge color="red"> Iniciado </q-badge>
+                </div>
               </div>
               <div v-else-if="col.name == 'prioridad'">
                 <q-badge
@@ -761,7 +770,7 @@ const AgregarTicket = async () => {
         Fila.value.mensaje1 =
           "La solicitud sera atendida por el equipo de soporte de";
         Fila.value.mensaje2 =
-          "Sera informado por este medio y el aplicativo cuando se solucione la problematica";
+          "Sera informado por este medio y el aplicativo cuando se solucione la problematica.";
         enviarCorreo(Fila.value);
       }
     })
@@ -832,6 +841,7 @@ async function convertirBase64() {
 
 const enviarCorreo = (data) => {
   data.email = email;
+  Fila.value = {};
 
   // var data = { correo: "jsuarez@utraffic.co", nombre: "hola" };
 
@@ -843,7 +853,6 @@ const enviarCorreo = (data) => {
     .post(url, data)
     .then((response) => {
       console.log(response.data); // Maneja la respuesta de la petición aquí
-      Fila.value = {};
     })
     .catch((error) => {
       console.error(error);
