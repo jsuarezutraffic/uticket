@@ -724,35 +724,14 @@
   <!-- Modal de imagen -->
   <q-dialog v-model="mostrarImagen">
     <q-card style="width: 35em">
-      <div class="column" style="margin: 20px">
-        <div class="col-4" style="margin: auto; padding: 10px">
-          <q-icon name="error_outline" size="6em" />
-        </div>
-        <div class="col-4" style="margin: auto; padding: 10px">
-          <span style="font-size: 18px"> {{ mensaje }}</span>
-        </div>
-        <div class="col-2" style="margin: auto; padding: 10px">
-          <q-btn
-            v-if="accion == 'CerrarTicket'"
-            label="No"
-            v-close-popup
-            color="negative"
-          />
-          <span style="padding-right: 40px"></span>
-          <q-btn
-            v-if="accion == 'CerrarTicket'"
-            label="Si"
-            color="primary"
-            @click="GestionTiquete('ConfimarCerrar')"
-          />
-          <q-btn
-            v-show="accion == 'alerta'"
-            label="Cerrar"
-            color="grey"
-            v-close-popup
-          />
-        </div>
-      </div>
+      <q-img
+        :src="Fila.evidencia"
+        alt=""
+        spinner-color="red"
+        style="height: 190px"
+        fit="scale-down"
+      >
+      </q-img>
     </q-card>
   </q-dialog>
 </template>
@@ -792,6 +771,7 @@ const next = ref({
 const pagination = ref({
   rowsPerPage: 10,
 });
+const oldProridad = ref(null);
 const mostrarModal = ref(false);
 const mostrarConfirm = ref(false);
 const mostrarAsignarTiquetes = ref(false);
@@ -1004,6 +984,8 @@ const tiquete = supabase
     { event: "UPDATE", schema: "public", table: "tiquete" },
     (payload) => {
       console.log("Change received1!", payload);
+      mensaje.value = `Se genero un nuevo tiquete `;
+      mostrarConfirm.value = true;
       LoadData();
     }
   )
@@ -1014,6 +996,7 @@ const tiquete = supabase
 //Metodos
 const clickRow = (row) => {
   Fila.value = row;
+  oldProridad.value = row.prioridad;
   next.value.prioridad = Fila.value.prioridad;
   console.log(row);
 };
@@ -1076,17 +1059,37 @@ const GestionTiquete = async (accionValue) => {
       });
     await getDetalleTiquete();
   } else if (accion.value == "AsignarTicket") {
-    FilaDetalle.value.campomodificador = `- Estado \n- Nivel`;
+    if (oldProridad.value != next.value.prioridad) {
+      FilaDetalle.value.campomodificador = `- Estado \n- Nivel \n- Prioridad`;
 
-    FilaDetalle.value.valoranterior = `- ${
-      Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
-    }\n- ${
-      Procesos.value.filter((p) => p.id == Fila.value.proceso)[0].descripcion
-    }`;
+      FilaDetalle.value.valoranterior = `- ${
+        Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
+      }\n- ${
+        Procesos.value.filter((p) => p.id == Fila.value.proceso)[0].descripcion
+      }\n- ${
+        Prioridades.value.filter((p) => p.id == oldProridad.value)[0]
+          .descripcion
+      }`;
 
-    FilaDetalle.value.valornuevo = `- Asignado\n- ${
-      Procesos.value.filter((p) => p.id == next.value.nivel)[0].descripcion
-    }`;
+      FilaDetalle.value.valornuevo = `- Asignado\n- ${
+        Procesos.value.filter((p) => p.id == next.value.nivel)[0].descripcion
+      }\n- ${
+        Prioridades.value.filter((p) => p.id == next.value.prioridad)[0]
+          .descripcion
+      }`;
+    } else {
+      FilaDetalle.value.campomodificador = `- Estado \n- Nivel`;
+
+      FilaDetalle.value.valoranterior = `- ${
+        Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
+      }\n- ${
+        Procesos.value.filter((p) => p.id == Fila.value.proceso)[0].descripcion
+      }`;
+
+      FilaDetalle.value.valornuevo = `- Asignado\n- ${
+        Procesos.value.filter((p) => p.id == next.value.nivel)[0].descripcion
+      }`;
+    }
 
     FilaDetalle.value.tiquete = Fila.value.id;
 
@@ -1160,7 +1163,9 @@ const GestionTiquete = async (accionValue) => {
                 tipomensaje: 1,
                 mensaje: "El ticket se cerro correctamente",
               });
-              // console.log(response);
+              //--------------ENVIAR CORREO
+
+              //--------------
             });
         })
         .catch((error) => {
@@ -1212,6 +1217,7 @@ const AccionTiquete = (key) => {
   };
   switch (key) {
     case "AsignarTicket":
+      next.value.prioridad = Fila.value.prioridad;
       if (ValidadorEstado()) {
         console.log("no estra AsignarTicket");
       } else if (
@@ -1325,6 +1331,7 @@ const agregarSaltosDeLinea = (text) => {
 
 const VerEvidencias = () => {
   console.log("ver evidencias");
+  mostrarImagen.value = true;
 };
 onMounted(async () => {
   await DatosGenerales();
@@ -1377,11 +1384,13 @@ defineComponent({
 .fade-leave-active {
   position: absolute;
 }
+
 .container {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100vh; /* Ajusta la altura según tus necesidades */
+  height: 100vh;
+  /* Ajusta la altura según tus necesidades */
 }
 
 .centered-button {
