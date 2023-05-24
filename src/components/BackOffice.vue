@@ -7,7 +7,7 @@
         flat
         bordered
         ref="tableRef"
-        :rows="tiquetes"
+        :rows="tiquetesReactivos"
         :columns="columns"
         :table-colspan="6"
         row-key="id"
@@ -737,7 +737,7 @@
 </template>
 
 <script setup>
-import { defineComponent, ref, onMounted } from "vue";
+import { defineComponent, ref, onMounted, reactive } from "vue";
 import { LocalStorage } from "quasar";
 import { api } from "boot/axios";
 import { mostrarMensajes, getSelectedString } from "boot/global";
@@ -749,7 +749,8 @@ import { createClient } from "@supabase/supabase-js";
 const idusuario = LocalStorage.getItem("IdUsuario");
 const selected = ref([]);
 const store = useMainStore();
-const tiquetes = ref([]);
+const tiquetes = reactive([]);
+const tiquetesReactivos = ref(tiquetes);
 const tiquetesDetalles = ref([]);
 const concesion = ref({});
 const peajes = ref([]);
@@ -789,6 +790,14 @@ const inputRules = [
   (val) => (val && val.length > 0) || "Por favor llenar el campo",
 ];
 const columns = [
+  {
+    name: "tiempoRestante",
+    required: true,
+    label: "Tiempo Restante",
+    align: "left",
+    field: "tiempoRestante",
+    sortable: false,
+  },
   {
     name: "id",
     // required: true,
@@ -1165,7 +1174,8 @@ const GestionTiquete = async (accionValue) => {
 
 const LoadData = async () => {
   api.get("tiquete?select=*").then((response) => {
-    tiquetes.value = response.data;
+    tiquetesReactivos.value = response.data;
+    // tiquetes.value = response.data;
   });
 };
 

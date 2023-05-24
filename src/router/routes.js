@@ -15,6 +15,19 @@ const routes = [
     component: () => import('pages/ErrorNotFound.vue')
   },
   {
+    name: 'index',
+    path: '/',
+    meta: { requireLogin: true },
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      {
+        path: '/',
+        meta: { requireLogin: true },
+        component: () => import('pages/IndexPage.vue')
+      },
+    ]
+  },
+  {
     name: 'Operation',
     path: '/',
     meta: { requireLogin: true },

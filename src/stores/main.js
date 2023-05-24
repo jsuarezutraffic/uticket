@@ -29,6 +29,7 @@ export const useMainStore = defineStore('main', {
       }
       LocalStorage.set('token', this.token)
       LocalStorage.set('IdUsuario', data.user.id)
+      LocalStorage.set("email", data.user.email);
     },
 
     // iniciosesion(iniSesion) {
