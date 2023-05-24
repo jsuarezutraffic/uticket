@@ -805,7 +805,7 @@ const Finalizar = () => {
   mostrarConfirm.value = false;
   console.log("FINALIZAR: ", FilaFinalizar.value);
 
-  if ((FilaFinalizar.value.estado = 6)) {
+  if (FilaFinalizar.value.estado == 6) {
     $q.notify({
       type: "warning",
       message: "Ticket ya fue Finalizado",
