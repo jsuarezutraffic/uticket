@@ -13,7 +13,7 @@
         <q-space />
 
         <!-- Logo Header -->
-        <q-toolbar-title class="text-center flex flex-center q-mt-xs q-mb-xs">
+        <q-toolbar-title class="text-center flex flex-center q-mt-xs q-mb-xs q-ml-lg">
           <img
             src="../assets/U-Traffic-versión-horizontal-removebg-preview-removebg-preview.png"
             class="header-logo"
@@ -90,35 +90,36 @@
 </template>
 
 <script setup>
-import { defineComponent, ref } from "vue";
-import MenuBar from "src/components/MenuBar.vue";
-import { useMainStore } from "stores/main";
-import { useRouter, useRoute } from "vue-router";
+import { defineComponent, ref } from 'vue'
+import MenuBar from 'src/components/MenuBar.vue'
+import { useMainStore } from 'stores/main'
+import { useRouter, useRoute } from 'vue-router'
 
-const router = useRouter();
+const router = useRouter()
 
-const store = useMainStore();
-const leftDrawerOpen = ref(false);
+const store = useMainStore()
+const leftDrawerOpen = ref(false)
 defineComponent({
-  name: "MainLayout",
+  name: 'MainLayout',
   components: {
-    MenuBar,
-  },
-});
+    MenuBar
+  }
+})
 
-function toggleLeftDrawer() {
-  leftDrawerOpen.value = !leftDrawerOpen.value;
+function toggleLeftDrawer () {
+  leftDrawerOpen.value = !leftDrawerOpen.value
 }
 
 const cerrarSesion = () => {
-  store.borrar();
-  router.push("/login");
-};
+  store.borrar()
+  router.push('/login')
+}
 </script>
 
 <style lang="scss" scoped>
 .header-logo {
   width: 120px;
+  margin-left: 40px;
 }
 
 .header-content {
