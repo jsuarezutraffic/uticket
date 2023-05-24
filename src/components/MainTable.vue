@@ -1,266 +1,302 @@
 <template>
-<div v-if="table">
-  <div class="q-pa-md flex" v-if="usuarios.filter(
-                          (p) => p.id == idusuario
-                        )[0].nivel === 2">
+<q-inner-loading
+      :showing="visible"
+      label="Cargando..."
+      label-class="text-teal"
+      label-style="font-size: 1.1em"
+    />
+  <div v-if="table">
+  <div class="q-pa-md flex" v-if="usuarios.filter((p) => p.id == idusuario)[0].nivel === 2">
     <TransitionGroup name="fade">
-    <q-table v-if="table"
-      key="table"
-      class="table-container"
-      separator="horizontal"
-      flat bordered
-      ref="tableRef"
-      :rows="tiquete"
-      :columns="columns"
-      :table-colspan="6"
-      row-key="id"
-      selection="single"
-      v-model:selected="selected"
-      v-model:expanded="expanded"
-      >
+      <q-table v-if="table"
+        key="table"
+        class="table-container"
+        separator="horizontal"
+        flat bordered
+        ref="tableRef"
+        :rows="tiquete"
+        :columns="columns"
+        :table-colspan="6"
+        row-key="id"
+        selection="single"
+        v-model:selected="selected"
+        v-model:expanded="expanded"
+        >
 
-      <template v-slot:header="props">
-        <q-tr :props="props" class="bg-primary head-styles">
-          <q-th
-            class="th-text head-styles"
-            auto-width
-            v-for="col in props.cols"
-            :key="col.name"
-            :props="props"
-          >
-            {{ col.label }}
-          </q-th>
-        </q-tr>
-      </template>
+        <template v-slot:header="props">
+          <q-tr :props="props" class="bg-primary head-styles">
+            <q-th
+              class="th-text head-styles"
+              auto-width
+              v-for="col in props.cols"
+              :key="col.name"
+              :props="props"
+            >
+              {{ col.label }}
+            </q-th>
+          </q-tr>
+        </template>
 
-      <template v-slot:body="props">
-        <q-tr :props="props" @click="props.selected = !props.selected; clickRow(props.row)">
-          <q-td
-            v-for="col in props.cols"
-            :key="col.name"
-            :props="props"
-          >
-            <div v-if="col.name == 'tipo'">
+        <template v-slot:body="props">
+          <q-tr :props="props" @click="props.selected = !props.selected; clickRow(props.row)">
+            <q-td
+              v-for="col in props.cols"
+              :key="col.name"
+              :props="props"
+            >
+              <div v-if="col.name == 'tipo'">
+                  {{
+                    tipo.filter(
+                      (p) => p.id == col.value
+                    )[0].descripcion
+                  }}
+              </div>
+
+              <div v-else-if="col.name == 'cliente'">
                 {{
-                  tipo.filter(
+                  cliente.filter(
+                    (p) => p.id == col.value
+                  )[0].nombres
+                }}
+              </div>
+
+              <div v-else-if="col.name == 'prioridad'">
+                {{
+                  prioridad.filter(
                     (p) => p.id == col.value
                   )[0].descripcion
                 }}
-            </div>
+              </div>
 
-            <div v-else-if="col.name == 'cliente'">
-              {{
-                cliente.filter(
-                  (p) => p.id == col.value
-                )[0].nombres
-              }}
-            </div>
+              <div v-else-if="col.name == 'estado'">
+                {{
+                  estado.filter(
+                    (p) => p.id == col.value
+                  )[0].descripcion
+                }}
+              </div>
 
-            <div v-else-if="col.name == 'prioridad'">
-              {{
-                prioridad.filter(
-                  (p) => p.id == col.value
-                )[0].descripcion
-              }}
-            </div>
+              <div v-else-if="col.name == 'concesion'">
+                {{
+                  concesion.filter(
+                    (p) => p.id == col.value
+                  )[0].nombre
+                }}
+              </div>
 
-            <div v-else-if="col.name == 'estado'">
-              {{
-                estado.filter(
-                  (p) => p.id == col.value
-                )[0].descripcion
-              }}
-            </div>
+              <div v-else-if="col.name == 'solicitud'">
+                {{
+                  solicitud.filter(
+                    (p) => p.id == col.value
+                  )[0].nombre
+                }}
+              </div>
 
-            <div v-else-if="col.name == 'concesion'">
-              {{
-                concesion.filter(
-                  (p) => p.id == col.value
-                )[0].nombre
-              }}
-            </div>
+              <div v-else-if="col.name == 'peaje'">
+                {{
+                  peaje.filter(
+                    (p) => p.id == col.value
+                  )[0].nombre
+                }}
+              </div>
 
-            <div v-else-if="col.name == 'solicitud'">
-              {{
-                solicitud.filter(
-                  (p) => p.id == col.value
-                )[0].nombre
-              }}
-            </div>
+              <div v-else-if="col.name == 'subtipo'">
+                {{
+                  subtipo.filter(
+                    (p) => p.id == col.value
+                  )[0].descripcion
+                }}
+              </div>
 
-            <div v-else-if="col.name == 'peaje'">
-              {{
-                peaje.filter(
-                  (p) => p.id == col.value
-                )[0].nombre
-              }}
-            </div>
+              <div v-else-if="col.name == 'creacion'">
+                {{
+                  creacion.filter((p) => p.id == col.value)[0].created_at
+                }}
+              </div>
 
-            <div v-else-if="col.name == 'subtipo'">
-              {{
-                subtipo.filter(
-                  (p) => p.id == col.value
-                )[0].descripcion
-              }}
-            </div>
+              <div v-else>
+                {{ col.value }}
+              </div>
+            </q-td>
 
-            <div v-else-if="col.name == 'creacion'">
-              {{
-                creacion.filter((p) => p.id == col.value)[0].created_at
-              }}
-            </div>
+          </q-tr>
+        </template>
+      </q-table>
 
-            <div v-else>
-              {{ col.value }}
-            </div>
-          </q-td>
+      <q-card class="table-card" v-if="tablaDetalle && selected.length > 0" key="card">
 
-        </q-tr>
-      </template>
-    </q-table>
+        <div class="q-pa-sm q-mt-xs box-order">
+          <span class="text-h5 q-pa-md text-bold text-center text-uppercase title-card-style" >Detalles de ticket</span>
+          <div class="row-class-state">
 
-    <q-card class="table-card" v-if="tablaDetalle && selected.length > 0" key="card">
+            <q-chip clickable @click="onClick" color="green" text-color="white" icon="fa-solid fa-bookmark" class="q-ml-md q-pa-md">
+              Estado: {{ estadoDisplay }}
+            </q-chip>
 
-      <div class="q-pa-sm q-mt-xs box-order">
-        <span class="text-h5 q-pa-md text-bold text-center text-uppercase title-card-style" >Detalles de ticket</span>
-        <div class="row-class-state">
+            <q-chip clickable @click="onClick" :color="colorPrioridad" text-color="white" icon="info" class="q-ml-md q-pa-md">
+              Prioridad: {{ prioridadDisplay }}
+            </q-chip>
 
-          <q-chip clickable @click="onClick" color="green" text-color="white" icon="fa-solid fa-bookmark" class="q-ml-md q-pa-md">
-            Estado: {{ estadoDisplay }}
-          </q-chip>
+            <q-chip clickable @click="onClick" :color="colorTipo" text-color="white" icon="fa-solid fa-tag" class="q-ml-md q-pa-md">
+              Tipo: {{ tipoDisplay }}
+            </q-chip>
 
-          <q-chip clickable @click="onClick" :color="colorPrioridad" text-color="white" icon="info" class="q-ml-md q-pa-md">
-            Prioridad: {{ prioridadDisplay }}
-          </q-chip>
+            <q-chip clickable label="Ver evidencias" @click="VerEvidencias" color="purple" text-color="white" icon="image" class="q-ml-md q-pa-md">
+            </q-chip>
 
-          <q-chip clickable @click="onClick" :color="colorTipo" text-color="white" icon="fa-solid fa-tag" class="q-ml-md q-pa-md">
-            Tipo: {{ tipoDisplay }}
-          </q-chip>
+          </div>
 
-        </div>
+          <div class="q-pa-md">
+            <q-table v-if="detalleTiquete.length > 0 && tablaDetalle === true"
+              key="table"
+              class="table-container"
+              separator="horizontal"
+              flat bordered
+              ref="tableRef"
+              :rows="detalleTiquete"
+              :columns="historial"
+              :table-colspan="6"
+              row-key="id"
+              v-model:expanded="expanded"
+              >
 
-        <div class="q-pa-md">
-          <q-table v-if="detalleTiquete.length > 0 && tablaDetalle === true"
-            key="table"
-            class="table-container"
-            separator="horizontal"
-            flat bordered
-            ref="tableRef"
-            :rows="detalleTiquete"
-            :columns="historial"
-            :table-colspan="6"
-            row-key="id"
-            v-model:expanded="expanded"
-            >
+              <template v-slot:header="props">
+                <q-tr :props="props" class="bg-primary head-styles">
+                  <q-th
+                    class="th-text head-styles"
+                    auto-width
+                    v-for="col in props.cols"
+                    :key="col.name"
+                    :props="props"
+                  >
+                    {{ col.label }}
+                  </q-th>
+                </q-tr>
+              </template>
 
-            <template v-slot:header="props">
-              <q-tr :props="props" class="bg-primary head-styles">
-                <q-th
-                  class="th-text head-styles"
-                  auto-width
-                  v-for="col in props.cols"
-                  :key="col.name"
-                  :props="props"
-                >
-                  {{ col.label }}
-                </q-th>
-              </q-tr>
-            </template>
-
-            <template v-slot:body="props">
-              <q-tr :props="props">
-                <q-td
-                  v-for="col in props.cols"
-                  :key="col.name"
-                  :props="props"
-                >
-                  <div v-if="col.name == 'operador'">
-                    <div v-if="usuarios !== null">
-                      {{
-                        usuarios.filter(
-                          (p) => p.id == col.value
-                        )[0].nombre
-                      }}
-                    </div>
-                  </div>
-                  <div
-                    v-else-if="
-                      col.name == 'campomodificador' ||
-                      col.name == 'valoranterior' ||
-                      col.name == 'valornuevo' ||
-                      col.name == 'comentarios'
-                      ">
-                      <div v-if="col.value == null">
-                        {{ col.value }}
-                      </div>
-                      <div v-else>
-                        <div
-                          v-html="col.value.replace(/(?:\r\n|\r|\n)/g, '<br />')"
-                        ></div>
+              <template v-slot:body="props">
+                <q-tr :props="props">
+                  <q-td
+                    v-for="col in props.cols"
+                    :key="col.name"
+                    :props="props"
+                  >
+                    <div v-if="col.name == 'operador'">
+                      <div v-if="usuarios !== null">
+                        {{
+                          usuarios.filter(
+                            (p) => p.id == col.value
+                          )[0].nombre
+                        }}
                       </div>
                     </div>
-                  <div v-else>{{ col.value }}</div>
-                </q-td>
-              </q-tr>
-            </template>
+                    <div
+                      v-else-if="
+                        col.name == 'campomodificador' ||
+                        col.name == 'valoranterior' ||
+                        col.name == 'valornuevo' ||
+                        col.name == 'comentarios'
+                        ">
+                        <div v-if="col.value == null">
+                          {{ col.value }}
+                        </div>
+                        <div v-else>
+                          <div
+                            v-html="col.value.replace(/(?:\r\n|\r|\n)/g, '<br />')"
+                          ></div>
+                        </div>
+                      </div>
+                    <div v-else>{{ col.value }}</div>
+                  </q-td>
+                </q-tr>
+              </template>
 
-          </q-table>
+            </q-table>
+          </div>
         </div>
-      </div>
 
-      <div class="q-pa-md button-gestionar">
-        <q-btn label="Gestionar" color="primary" text-color="white" @click="dialog = true" :disable="estado.filter(
-                          (p) => p.id == Fila.estado
-                        )[0].descripcion !== 'Asignado'" />
-        <q-dialog v-model="dialog">
-          <q-card>
+        <div class="q-pa-md button-gestionar">
+          <q-btn label="Gestionar" color="primary" text-color="white" @click="dialog = true" :disable="estado.filter(
+                            (p) => p.id == Fila.estado
+                          )[0].descripcion !== 'Asignado'" />
+          <q-dialog v-model="dialog">
+            <q-card>
 
-            <q-card-section>
-              <div class="q-pa-md" style="max-width: 500px">
-                <p class="text-h6">Asignar estado:</p>
+              <q-card-section>
+                <div class="q-pa-md" style="max-width: 500px">
+                  <p class="text-h6">Asignar estado:</p>
 
-                <q-select square filled v-model="ticketState" :options="optionState" option-value="id" option-label="descripcion" label="Estado" class="q-mb-md" />
-                <div class="text-h6">Observaciones: </div>
-                  <q-input
-                    v-model="FilaDetalle.comentarios"
+                  <q-select square filled v-model="ticketState" :options="optionState" option-value="id" option-label="descripcion" label="Estado" class="q-mb-md" />
+                  <div class="text-h6">Observaciones: </div>
+                    <q-input
+                      v-model="FilaDetalle.comentarios"
+                      filled
+                      type="textarea"
+                    />
+                </div>
+                <!-- <div class="q-gutter-md row items-start q-ml-xs">
+                  <q-file
+                    v-model="FilaDetalle.adjunto_url"
+                    label="Adjuntar archivos"
                     filled
-                    type="textarea"
-                  />
-              </div>
-              <div class="q-gutter-md row items-start q-ml-xs">
-                <q-file
-                  v-model="FilaDetalle.adjunto_url"
-                  label="Adjuntar archivos"
-                  filled
-                  counter
-                  :counter-label="counterLabelFn"
-                  max-files="3"
-                  multiple
-                  style="max-width: 300px"
-                >
-                  <template v-slot:prepend>
-                    <q-icon name="attach_file" />
-                  </template>
-                </q-file>
-              </div>
-            </q-card-section>
+                    counter
+                    :counter-label="counterLabelFn"
+                    max-files="3"
+                    multiple
+                    style="max-width: 300px"
+                  >
+                    <template v-slot:prepend>
+                      <q-icon name="attach_file" />
+                    </template>
+                  </q-file>
+                </div> -->
+              </q-card-section>
 
-            <q-card-section class="second-card buttons no-padding">
-              <q-btn v-close-popup label="Volver" color="primary" class="q-mr-md close-buttons" text-color="dark"/>
-              <q-btn v-close-popup label="Enviar" color="primary" class="q-mr-md close-buttons" text-color="dark" @click="gestionarTicket"/>
-            </q-card-section>
+              <q-card-section class="second-card buttons no-padding">
+                <q-btn v-close-popup label="Volver" color="primary" class="q-mr-md close-buttons" text-color="white"/>
+                <q-btn v-popup label="Enviar" color="primary" class="q-mr-md " text-color="white" @click="dialog2 = true"/>
 
-          </q-card>
-        </q-dialog>
-      </div>
-    </q-card>
-  </TransitionGroup>
+                <q-dialog v-model="dialog2">
+                  <q-card>
+
+                    <q-card-section>
+                      <div class="q-pa-md" style="max-width: 500px">
+                        <p class="text-h5">¿Desea confirmar los cambios?</p>
+                      </div>
+                    </q-card-section>
+
+                    <q-card-section class="second-card buttons no-padding">
+                      <q-btn v-close-popup="2" label="Aceptar" color="primary" class="q-mr-md close-buttons" text-color="white" @click="gestionarTicket()"/>
+                      <q-btn v-close-popup label="Cancelar" color="negative" class="q-mr-md close-buttons" text-color="white" />
+                    </q-card-section>
+
+                  </q-card>
+                </q-dialog>
+              </q-card-section>
+
+            </q-card>
+          </q-dialog>
+        </div>
+      </q-card>
+    </TransitionGroup>
+
   </div>
-  <div v-if="usuarios.filter(
-                          (p) => p.id == idusuario
-                        )[0].nivel === 3">
+  <div v-if="usuarios.filter((p) => p.id == idusuario)[0].nivel === 3">
     <BackOffice />
   </div>
+    <!-- Modal de imagen -->
+  <q-dialog v-model="mostrarImagen">
+    <q-card style="width: 100%;">
+      <q-img
+        :src="Fila.evidencia"
+        alt=""
+        spinner-color="red"
+        style="height: 100%"
+        fit="fill"
+      >
+      </q-img>
+    </q-card>
+  </q-dialog>
 </div>
 </template>
 
@@ -271,6 +307,7 @@ import { api } from 'boot/axios'
 import { LocalStorage } from 'quasar'
 import BackOffice from '../pages/GestionarTiquete.vue'
 
+const dialog2 = ref(false)
 const dialog = ref(false)
 const selected = ref([])
 const detalleTiquete = ref([])
@@ -296,10 +333,11 @@ const usuarios = ref([])
 const tablaDetalle = ref(false)
 const idusuario = LocalStorage.getItem('IdUsuario')
 const optionState = ref([])
-
-function counterLabelFn ({ totalSize, filesNumber, maxFiles }) {
-  return `${filesNumber} files of ${maxFiles} | ${totalSize}`
-}
+const mostrarImagen = ref(false)
+const visible = ref(false)
+// function counterLabelFn ({ totalSize, filesNumber, maxFiles }) {
+//   return `${filesNumber} files of ${maxFiles} | ${totalSize}`
+// }
 const ticketState = ref(null)
 
 const table = ref(false)
@@ -430,6 +468,7 @@ const historial = [
 ]
 
 async function getData () {
+  visible.value = true
   await api
     .get(`tiquete?asignado=eq.${idusuario}&select=*`)
     .then((response) => {
@@ -481,6 +520,7 @@ async function getData () {
       console.log(usuarios.value[0].nombre)
     })
   table.value = true
+  visible.value = false
 }
 
 async function clickRow (row) {
@@ -535,6 +575,10 @@ const agregarSaltosDeLinea = (text) => {
     }
   }
   return result.join(' ')
+}
+
+const VerEvidencias = () => {
+  mostrarImagen.value = true
 }
 
 function gestionarTicket () {
