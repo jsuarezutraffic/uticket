@@ -23,7 +23,7 @@
 
         <!-- Header Right-side -->
         <div class="q-gutter-sm row items-center no-wrap">
-          <q-btn
+          <!-- <q-btn
             round
             dense
             flat
@@ -37,7 +37,7 @@
           <q-btn round dense flat color="grey-8" icon="notifications">
             <q-badge color="red" text-color="white" floating> 2 </q-badge>
             <q-tooltip>Notifications</q-tooltip>
-          </q-btn>
+          </q-btn> -->
 
           <q-btn round flat>
             <q-avatar size="26px">

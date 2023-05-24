@@ -126,6 +126,17 @@
                 </q-btn>
               </div>
 
+              <div v-else-if="col.name == 'observaciones'">
+                <div v-if="col.value == null">
+                  {{ col.value }}
+                </div>
+                <div v-else>
+                  <div
+                    v-html="col.value.replace(/(?:\r\n|\r|\n)/g, '<br />')"
+                  ></div>
+                </div>
+              </div>
+
               <div v-else>
                 {{ col.value }}
               </div>
@@ -792,7 +803,16 @@ const AgregarTicket = async () => {
 
 const Finalizar = () => {
   mostrarConfirm.value = false;
-  console.log(FilaFinalizar.value);
+  console.log("FINALIZAR: ", FilaFinalizar.value);
+
+  if ((FilaFinalizar.value.estado = 6)) {
+    $q.notify({
+      type: "warning",
+      message: "Ticket ya fue Finalizado",
+      timeout: 4000,
+    });
+    return;
+  }
   FilaFinalizar.value.estado = 6;
   api
     .put("tiquete?id=eq." + FilaFinalizar.value.id, FilaFinalizar.value)
