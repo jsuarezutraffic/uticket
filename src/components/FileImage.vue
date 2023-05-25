@@ -52,6 +52,7 @@
 </template>
 
 <script setup>
+/*eslint-disable */
 import { ref, watch } from "vue";
 import { createBase64Image } from "boot/global";
 

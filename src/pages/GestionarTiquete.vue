@@ -1,3 +1,4 @@
+/* eslint-disable */
 <template>
   <div class="q-pa-md flex">
     <div class="q-pa-md flex" v-if="table">
@@ -771,6 +772,7 @@
 </template>
 
 <script setup>
+/*eslint-disable */
 import { defineComponent, ref, onMounted, watch } from "vue";
 import { LocalStorage } from "quasar";
 import { api } from "boot/axios";
@@ -784,7 +786,7 @@ import { useMainStore } from "src/stores/main";
 import { useConfigStore } from "src/stores/config";
 import { createClient } from "@supabase/supabase-js";
 import FileInput from "src/components/FileImage.vue";
-//supabase
+// supabase
 
 const valorDatosExportado = ref("");
 function actualizarValorDatosExportado(nuevoValor) {
@@ -1038,8 +1040,8 @@ const columnsDetalles = [
   },
 ];
 
-//-------------------------------------------------------
-//Metodos
+// -------------------------------------------------------
+// Metodos
 const clickRow = (row) => {
   Fila.value = row;
   oldProridad.value = row.prioridad;
@@ -1060,8 +1062,8 @@ const getDetalleTiquete = async () => {
 };
 const GestionTiquete = async (accionValue) => {
   if (accion.value == "SolucionarTicket") {
-    //JSON de tabla de detalles, Se modifican los estados de acuerdo a la base de datos, basandose en la descripcion
-    //y no el el id -----PARA LA SOLUCION SOLO CAMBIA EL CAMPO ##SOLUCIONAR##
+    // JSON de tabla de detalles, Se modifican los estados de acuerdo a la base de datos, basandose en la descripcion
+    // y no el el id -----PARA LA SOLUCION SOLO CAMBIA EL CAMPO ##SOLUCIONAR##
 
     FilaDetalle.value.campomodificador = "Estado";
     FilaDetalle.value.valoranterior = "Iniciado";
@@ -1069,12 +1071,12 @@ const GestionTiquete = async (accionValue) => {
     FilaDetalle.value.tiquete = Fila.value.id;
     FilaDetalle.value.operador = idusuario;
     // FilaDetalle.value.evidencia = archivos2.value;
-    //se actualiza el campo del tiquete que se esta modificando
+    // se actualiza el campo del tiquete que se esta modificando
     Fila.value.estado = Estados.value.filter(
       (p) => p.descripcion == FilaDetalle.value.valornuevo
     )[0].id;
 
-    //agregar saltos de linea al campo Comentarios
+    // agregar saltos de linea al campo Comentarios
     FilaDetalle.value.comentarios = agregarSaltosDeLinea(
       FilaDetalle.value.comentarios
     );
@@ -1083,7 +1085,7 @@ const GestionTiquete = async (accionValue) => {
 
     // post a la tabla de detalles tiquetes------------------
     await api
-      .post(`detalletiquete`, FilaDetalle.value)
+      .post("detalletiquete", FilaDetalle.value)
       .then((response) => {
         api
           .patch(`tiquete?id=eq.${Fila.value.id}`, Fila.value)
@@ -1104,7 +1106,7 @@ const GestionTiquete = async (accionValue) => {
     await getDetalleTiquete();
   } else if (accion.value == "AsignarTicket") {
     if (oldProridad.value != next.value.prioridad) {
-      FilaDetalle.value.campomodificador = `- Estado \n- Nivel \n- Prioridad`;
+      FilaDetalle.value.campomodificador = "- Estado \n- Nivel \n- Prioridad";
 
       FilaDetalle.value.valoranterior = `- ${
         Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
@@ -1122,7 +1124,7 @@ const GestionTiquete = async (accionValue) => {
           .descripcion
       }`;
     } else {
-      FilaDetalle.value.campomodificador = `- Estado \n- Nivel`;
+      FilaDetalle.value.campomodificador = "- Estado \n- Nivel";
 
       FilaDetalle.value.valoranterior = `- ${
         Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
@@ -1139,7 +1141,7 @@ const GestionTiquete = async (accionValue) => {
 
     FilaDetalle.value.operador = idusuario;
 
-    //se actualiza el campo del tiquete que se esta modificando
+    // se actualiza el campo del tiquete que se esta modificando
     Fila.value.estado = Estados.value.filter(
       (p) => p.descripcion == "Asignado"
     )[0].id;
@@ -1147,14 +1149,14 @@ const GestionTiquete = async (accionValue) => {
 
     Fila.value.asignado = next.value.operador;
     Fila.value.prioridad = next.value.prioridad;
-    //agregar saltos de linea al campo Comentarios
+    // agregar saltos de linea al campo Comentarios
     FilaDetalle.value.comentarios = agregarSaltosDeLinea(
       FilaDetalle.value.comentarios
     );
     FilaDetalle.value.evidencia = valorDatosExportado.value;
     mostrarAsignarTiquetes.value = false;
     await api
-      .post(`detalletiquete`, FilaDetalle.value)
+      .post("detalletiquete", FilaDetalle.value)
       .then((response) => {
         api
           .patch(`tiquete?id=eq.${Fila.value.id}`, Fila.value)
@@ -1175,15 +1177,15 @@ const GestionTiquete = async (accionValue) => {
   } else if (accion.value == "CerrarTicket") {
     mostrarConfirm.value = true;
     if (accionValue == "ConfimarCerrar") {
-      FilaDetalle.value.campomodificador = `Estado`;
+      FilaDetalle.value.campomodificador = "Estado";
       FilaDetalle.value.valoranterior = `${
         Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
       }`;
-      FilaDetalle.value.valornuevo = `Cerrado`;
+      FilaDetalle.value.valornuevo = "Cerrado";
       FilaDetalle.value.tiquete = Fila.value.id;
       FilaDetalle.value.operador = idusuario;
 
-      //se actualiza el campo del tiquete que se esta modificando
+      // se actualiza el campo del tiquete que se esta modificando
       Fila.value.estado = Estados.value.filter(
         (p) => p.descripcion == "Cerrado"
       )[0].id;
@@ -1191,12 +1193,12 @@ const GestionTiquete = async (accionValue) => {
       //   (p) => p.descripcion == "Baja"
       // )[0].id;
       Fila.value.asignado = idusuario;
-      //agregar saltos de linea al campo Comentarios
+      // agregar saltos de linea al campo Comentarios
       FilaDetalle.value.comentarios = agregarSaltosDeLinea(
         FilaDetalle.value.comentarios
       );
       await api
-        .post(`detalletiquete`, FilaDetalle.value)
+        .post("detalletiquete", FilaDetalle.value)
         .then((response) => {
           api
             .patch(`tiquete?id=eq.${Fila.value.id}`, Fila.value)
@@ -1249,7 +1251,8 @@ const AccionTiquete = (key) => {
         "Solucionado"
     ) {
       accion.value = "alerta";
-      mensaje.value = `No se puede realizar esta acción. El ticket debe estar solucionado `;
+      mensaje.value =
+        "No se puede realizar esta acción. El ticket debe estar solucionado ";
       mostrarConfirm.value = true;
       return true;
     } else if (
@@ -1313,7 +1316,7 @@ const AccionTiquete = (key) => {
 
 const DatosGenerales = async () => {
   visible.value = true;
-  await api.get(`cliente?select=*`).then((response) => {
+  await api.get("cliente?select=*").then((response) => {
     cliente.value = response.data;
   });
 
@@ -1359,10 +1362,10 @@ const DatosGenerales = async () => {
   table.value = true;
 };
 
-//-------------------------------------------------------
-//Funciones generales
+// -------------------------------------------------------
+// Funciones generales
 const enviarCorreo = () => {
-  var data = {};
+  const data = {};
   data.email = cliente.value.filter(
     (p) => p.id == Fila.value.cliente
   )[0].correo;
@@ -1411,7 +1414,7 @@ defineComponent({
   name: "MainTable",
 });
 
-//------------------------------------------
+// ------------------------------------------
 supabase
   .channel("custom-update-channel")
   .on(
@@ -1433,14 +1436,14 @@ supabase
     { event: "INSERT", schema: "public", table: "tiquete" },
     (payload) => {
       accion.value = "alerta";
-      mensaje.value = `Se genero un nuevo tiquete `;
+      mensaje.value = "Se genero un nuevo tiquete ";
       mostrarConfirm.value = true;
       LoadData();
     }
   )
   .subscribe();
 
-//------------------------------------------
+// ------------------------------------------
 </script>
 
 <style lang="scss">
