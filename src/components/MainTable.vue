@@ -1,6 +1,41 @@
 <template>
   <div class="q-pa-md flex">
     <TransitionGroup>
+      <div class="container">
+        <q-card class="q-my-md q-mr-md row justify-evenly" v-if="table">
+          <apex-donut
+            :Series="countArrayEstado"
+            :cliente="cliente"
+            :prioridades="Prioridades"
+            title="Estados"
+            width="320"
+          />
+
+          <apex-donut
+            :Series="countArrayPrioridad"
+            :cliente="cliente"
+            :prioridades="Prioridades"
+            title="Prioridades"
+            width="320"
+          />
+
+          <apex-donut
+            :Series="countArraySolicitud"
+            :cliente="cliente"
+            :prioridades="Prioridades"
+            title="Solicitudes"
+            width="320"
+          />
+
+          <apex-donut
+            :Series="countArrayTipo"
+            :cliente="cliente"
+            :prioridades="Prioridades"
+            title="Tipos"
+            width="320"
+          />
+        </q-card>
+      </div>
       <q-table
         v-if="table"
         class="table-container"
@@ -145,6 +180,18 @@
           </q-tr>
         </template>
       </q-table>
+
+      <!-- <q-card class="q-my-md q-mr-md row justify-evenly" v-if="table">
+
+      </q-card>
+
+      <q-card class="q-my-md q-mr-md row justify-evenly" v-if="table">
+
+      </q-card>
+
+      <q-card class="q-my-md q-mr-md row justify-evenly" v-if="table">
+
+      </q-card> -->
 
       <!-- <q-card class="table-card" v-if="false">
         <q-card-section>
@@ -458,7 +505,14 @@
 </template>
 
 <script setup>
-import { defineComponent, ref, onMounted, watch } from "vue";
+import {
+  defineComponent,
+  ref,
+  onMounted,
+  watch,
+  watchEffect,
+  computed,
+} from "vue";
 import { supabase } from "../supabase";
 import { LocalStorage, date } from "quasar";
 // import { columns, seed } from 'src/assets/js/tableModule'
@@ -466,6 +520,7 @@ import { createClient } from "@supabase/supabase-js";
 import { api } from "boot/axios";
 import { useQuasar } from "quasar";
 import { createBase64Image } from "boot/global";
+import ApexDonut from "src/components/Charts/ApexDonut.vue";
 // import nodemailer from "nodemailer";
 // import { sgMail } from "@sendgrid/mail";
 
@@ -515,6 +570,10 @@ const expanded = ref([]);
 const rules = [(val) => !!val || "* Campo Obligatorio"];
 const table = ref(false);
 const visible = ref(false);
+const countArrayEstado = ref([]);
+const countArrayPrioridad = ref([]);
+const countArrayTipo = ref([]);
+const countArraySolicitud = ref([]);
 
 const columns = [
   {
@@ -668,7 +727,7 @@ const DatosGenerales = async () => {
   await api
     .get(`cliente?usuario=eq.` + idusuario + `&select=*`)
     .then((response) => {
-      console.log("cliente: ", response.data);
+      // console.log("cliente: ", response.data);
       cliente.value = response.data;
 
       // console.log(cliente_idconcesion.value);
@@ -677,29 +736,29 @@ const DatosGenerales = async () => {
   await api
     .get("concesion?id=eq." + cliente.value[0].concesion + "&select=*")
     .then((response) => {
-      console.log("consecion: ", response.data);
+      // console.log("consecion: ", response.data);
       concesion.value = response.data;
     });
 
   await api
     .get("peaje?concesion=eq." + concesion.value[0].id + "&select=*")
     .then((response) => {
-      console.log("peajes: ", response.data);
+      // console.log("peajes: ", response.data);
       peajes.value = response.data;
     });
 
   await api.get("tipo?select=*").then((response) => {
-    console.log("tipos: ", response.data);
+    // console.log("tipos: ", response.data);
     Tipos.value = response.data;
   });
 
   await api.get("subtipo?select=*").then((response) => {
-    console.log("Subtipos: ", response.data);
+    // console.log("Subtipos: ", response.data);
     Subtipos.value = response.data;
   });
 
   await api.get("prioridad?select=*").then((response) => {
-    console.log("Prioridades: ", response.data);
+    // console.log("Prioridades: ", response.data);
     Prioridades.value = response.data;
     Prioridades.value.sort(function (b, a) {
       return b.orden - a.orden;
@@ -707,24 +766,24 @@ const DatosGenerales = async () => {
   });
 
   await api.get("estado?select=*").then((response) => {
-    console.log("Estados: ", response.data);
+    // console.log("Estados: ", response.data);
     Estados.value = response.data;
   });
 
   await api.get("solicitud?select=*").then((response) => {
-    console.log("Solicitudes: ", response.data);
+    // console.log("Solicitudes: ", response.data);
     Solicitudes.value = response.data;
   });
 
   await api.get("proceso?select=*").then((response) => {
-    console.log("Procesos: ", response.data);
+    // console.log("Procesos: ", response.data);
     Procesos.value = response.data;
     table.value = true;
     visible.value = false;
   });
 
   await api.get("usuarios?select=*").then((response) => {
-    console.log("usuarios: ", response.data);
+    // console.log("usuarios: ", response.data);
     Usuarios.value = response.data;
   });
 
@@ -745,7 +804,7 @@ const TipoSeleccion = (value) => {
 };
 
 const AgregarTicket = async () => {
-  console.log(Fila.value);
+  // console.log(Fila.value);
   // enviarCorreo(Fila.value);
   Fila.value.cliente = cliente.value[0].id;
   Fila.value.concesion = concesion.value[0].id;
@@ -767,7 +826,7 @@ const AgregarTicket = async () => {
   api
     .post("tiquete", Fila.value)
     .then((response) => {
-      console.log("Solicitud exitosa:", response);
+      // console.log("Solicitud exitosa:", response);
       loadData();
       mostrarModal.value = false;
 
@@ -883,12 +942,169 @@ watch(filaavatar, (currentValue, oldValue) => {
   convertirBase64();
 });
 
+watchEffect(() => {
+  {
+    const countByEstado = {};
+    const countByPrioridad = {};
+    const countByTipo = {};
+    const countBySolicitud = {};
+
+    // Contar la cantidad de objetos por estado
+    tiquetes.value.forEach((obj) => {
+      const estado = obj.estado;
+      const prioridad = obj.prioridad;
+      const tipo = obj.tipo;
+      const solicitud = obj.solicitud;
+
+      let label;
+      let labelPrioridad;
+      let labelTipo;
+      let labelSolicitud;
+
+      switch (estado) {
+        case 1:
+          label = "Iniciado";
+          break;
+        case 5:
+          label = "Cerrado";
+          break;
+        case 6:
+          label = "Finalizado";
+          break;
+        default:
+          label = "Estado interno";
+          break;
+      }
+
+      switch (prioridad) {
+        case 1:
+          labelPrioridad = "Alta";
+          break;
+        case 2:
+          labelPrioridad = "Media";
+          break;
+        case 3:
+          labelPrioridad = "Baja";
+          break;
+      }
+
+      switch (tipo) {
+        case 1:
+          labelTipo = "Dispositivos";
+          break;
+        case 2:
+          labelTipo = "Software";
+          break;
+        case 3:
+          labelTipo = "Red";
+          break;
+      }
+
+      switch (tipo) {
+        case 1:
+          labelSolicitud = "Incidentes";
+          break;
+        case 2:
+          labelSolicitud = "Requerimiento";
+          break;
+        case 3:
+          labelSolicitud = "PQR";
+          break;
+      }
+
+      // if (estado === 1 || estado === 5 || estado === 6) {
+      //   countByEstado[label] = {
+      //     label: label,
+      //     value: (countByEstado[label]?.value || 0) + 1,
+      //   };
+
+      //   countByEstadoarray.push({
+      //     label: label,
+      //     value: (countByEstado[label]?.value || 0) + 1,
+      //   });
+      // } else {
+      //   countByEstado[label] = {
+      //     label: label,
+      //     value: (countByEstado.privado?.value || 0) + 1,
+      //   };
+
+      //   countByEstadoarray.push({
+      //     label: label,
+      //     value: (countByEstado.privado?.value || 0) + 1,
+      //   });
+      // }
+
+      if (estado === 1 || estado === 5 || estado === 6) {
+        if (!countByEstado[label]) {
+          countByEstado[label] = {
+            label: label,
+            value: 1,
+          };
+        } else {
+          countByEstado[label].value++;
+        }
+      } else {
+        if (!countByEstado.privado) {
+          countByEstado.privado = {
+            label: "Estado Interno",
+            value: 1,
+          };
+        } else {
+          countByEstado.privado.value++;
+        }
+      }
+
+      if (!countByPrioridad[labelPrioridad]) {
+        countByPrioridad[labelPrioridad] = {
+          label: labelPrioridad,
+          value: 1,
+        };
+      } else {
+        countByPrioridad[labelPrioridad].value++;
+      }
+
+      if (!countByTipo[labelTipo]) {
+        countByTipo[labelTipo] = {
+          label: labelTipo,
+          value: 1,
+        };
+      } else {
+        countByTipo[labelTipo].value++;
+      }
+
+      if (!countBySolicitud[labelSolicitud]) {
+        countBySolicitud[labelSolicitud] = {
+          label: labelSolicitud,
+          value: 1,
+        };
+      } else {
+        countBySolicitud[labelSolicitud].value++;
+      }
+    });
+
+    // const filteredArray = computed(() => {
+    //   return tiquetes.value.filter((item1) =>
+    //     Prioridades.value.some((item2) => item2.id === item1.prioridad)
+    //   );
+    // });
+    countArrayEstado.value = Object.values(countByEstado);
+    countArrayPrioridad.value = Object.values(countByPrioridad);
+    countArrayTipo.value = Object.values(countByTipo);
+    countArraySolicitud.value = Object.values(countBySolicitud);
+    console.log("countArraySolicitud: ", countArraySolicitud.value);
+  }
+});
+
 onMounted(async () => {
   await DatosGenerales();
   loadData();
 
   // tableRef.value.scrollTo(10);
 });
+setInterval(() => {
+  loadData();
+}, 30000);
+
 // for (let i = 0; i < 2; i++) {
 //   rows = rows.concat(
 //     seed.map((r, j) => ({ ...r, index: i * seedSize + j + 1 }))
@@ -955,5 +1171,13 @@ defineComponent({
 
 .fade-leave-active {
   position: absolute;
+}
+
+.container {
+  width: 100%; /* Ancho completo de la pantalla */
+  display: flex;
+  justify-content: center; /* Centrar horizontalmente */
+  align-items: center; /* Centrar verticalmente */
+  // height: 100vh; /* Altura completa de la pantalla (viewport) */
 }
 </style>
