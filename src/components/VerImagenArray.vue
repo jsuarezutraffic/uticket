@@ -27,7 +27,6 @@
 
 <script setup>
 import { ref, watch } from "vue";
-import { createBase64Image } from "boot/global";
 import { defineProps } from "vue";
 
 const props = defineProps({
