@@ -105,3 +105,8 @@ watch(DatosExportado, (currentValue) => {
   emit("datos-exportado-cambiado", currentValue);
 });
 </script>
+<style>
+.FileSelected .q-field__native {
+  display: none;
+}
+</style>

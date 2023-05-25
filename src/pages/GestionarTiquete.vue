@@ -1,7 +1,8 @@
 <template>
   <div class="q-pa-md flex">
-    <div class="q-pa-md flex" v-if="table">
+    <TransitionGroup>
       <q-table
+        v-if="table"
         class="table-container"
         separator="horizontal"
         flat
@@ -113,7 +114,8 @@
           </q-tr>
         </template>
       </q-table>
-    </div>
+    </TransitionGroup>
+
     <q-inner-loading
       :showing="visible"
       label="Cargando..."
@@ -757,16 +759,7 @@
 
   <!-- Modal de imagen -->
   <q-dialog v-model="mostrarImagen">
-    <q-card style="width: 40em">
-      <q-img
-        :src="imagen"
-        alt=""
-        spinner-color="red"
-        style="height: fit-content"
-        fit="scale-down"
-      >
-      </q-img>
-    </q-card>
+    <VerImagenArray :datoProp="imagen"></VerImagenArray>
   </q-dialog>
 </template>
 
@@ -784,6 +777,7 @@ import { useMainStore } from "src/stores/main";
 import { useConfigStore } from "src/stores/config";
 import { createClient } from "@supabase/supabase-js";
 import FileInput from "src/components/FileImage.vue";
+import VerImagenArray from "src/components/VerImagenArray.vue";
 //supabase
 
 const valorDatosExportado = ref("");
@@ -1490,13 +1484,5 @@ supabase
   align-items: center;
   height: 100vh;
   /* Ajusta la altura según tus necesidades */
-}
-
-.centered-button {
-  /* Agrega estilos adicionales si lo deseas */
-}
-
-.FileSelected .q-field__native {
-  display: none;
 }
 </style>
