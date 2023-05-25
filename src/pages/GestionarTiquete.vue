@@ -129,13 +129,13 @@
     transition-show="scale"
     transition-hide="scale"
   >
-    <q-card style="width: 1000px; max-width: 100%; height: 90vh">
+    <q-card style="width: 90%; max-width: 100%; height: 90vh">
       <q-card-section>
         <div class="row">
           <div class="col-11 self-center">
             <span
               style="font-size: 18px; font-weight: bold; margin: 10px 0 0 15px"
-              >Gestionar Ticket</span
+              >Gestionar Ticket N° {{ Fila.id }}</span
             >
           </div>
 
@@ -319,7 +319,7 @@
                           <q-btn
                             label="Ver evidencias"
                             color="grey"
-                            @click="VerEvidencias()"
+                            @click="VerEvidencias(selected[0])"
                           />
                         </div>
 
@@ -342,6 +342,7 @@
             </q-card>
           </div>
         </div>
+
         <div class="row">
           <div class="col-auto">
             <q-card flat>
@@ -356,9 +357,20 @@
                   :table-colspan="6"
                   row-key="id"
                   selection="single"
-                  v-model:selected="selected"
+                  v-model:selected="selectedDetalle"
                   fixed-header
                   v-model:expanded="expanded"
+                  :visible-columns="[
+                    'operador',
+                    'comentarios',
+                    'campomodificador',
+                    'valoranterior',
+                    'valornuevo',
+                    'observaciones',
+                    'created_at',
+                    'adjunto_url',
+                    'verevidencias',
+                  ]"
                 >
                   <template v-slot:header="props">
                     <q-tr :props="props" class="head-styles">
@@ -420,6 +432,20 @@
                             ></div>
                           </div>
                         </div>
+                        <div v-else-if="col.name == 'created_at'">
+                          {{ formatDate(col.value) }}
+                        </div>
+                        <div v-else-if="col.name == 'verevidencias'">
+                          <q-btn
+                            class="q-px-sm"
+                            color="primary"
+                            size="sm"
+                            no-caps
+                            dense
+                            @click="VerEvidencias(props.row)"
+                            >Ver Evidencias
+                          </q-btn>
+                        </div>
                         <div v-else>
                           {{ col.value }}
                         </div>
@@ -454,6 +480,7 @@
               @click="AccionTiquete('SolucionarTicket')"
             />
             <q-btn
+              :disable="disable"
               label="Cerrar Ticket"
               style="margin-left: auto; margin-right: auto"
               color="primary"
@@ -570,6 +597,9 @@
                     label="Adjuntar Url"
                     class="q-pa-md"
                   />
+                  <FileInput
+                    @datos-exportado-cambiado="actualizarValorDatosExportado"
+                  ></FileInput>
                   <q-input
                     :rules="inputRules"
                     outlined
@@ -615,7 +645,7 @@
     transition-show="scale"
     transition-hide="scale"
   >
-    <q-card style="max-width: 1000px; width: 600px">
+    <q-card style="max-width: 100%; width: 70%">
       <q-form autofocus @submit.prevent="GestionTiquete(accion)">
         <q-card-section>
           <div style="font-size: 18px; font-weight: bold; align-self: center">
@@ -628,7 +658,6 @@
               <div class="row" style="background: #ffffff">
                 <div class="col-md-12 col-sm-12 col-xs-12">
                   <q-input
-                    v-if="accion != 'CerrarTicket'"
                     outlined
                     v-model="FilaDetalle.adjunto_url"
                     dense
@@ -636,6 +665,11 @@
                     label="Adjuntar Url"
                     class="q-pa-md"
                   />
+
+                  <FileInput
+                    @datos-exportado-cambiado="actualizarValorDatosExportado"
+                  ></FileInput>
+
                   <q-input
                     outlined
                     v-model="FilaDetalle.comentarios"
@@ -725,7 +759,7 @@
   <q-dialog v-model="mostrarImagen">
     <q-card style="width: 40em">
       <q-img
-        :src="Fila.evidencia"
+        :src="imagen"
         alt=""
         spinner-color="red"
         style="height: fit-content"
@@ -737,18 +771,32 @@
 </template>
 
 <script setup>
-import { defineComponent, ref, onMounted } from "vue";
+import { defineComponent, ref, onMounted, watch } from "vue";
 import { LocalStorage } from "quasar";
 import { api } from "boot/axios";
-import { mostrarMensajes, getSelectedString } from "boot/global";
+import {
+  mostrarMensajes,
+  getSelectedString,
+  createBase64Image,
+} from "boot/global";
 import { supabase } from "src/supabase";
 import { useMainStore } from "src/stores/main";
+import { useConfigStore } from "src/stores/config";
 import { createClient } from "@supabase/supabase-js";
-
+import FileInput from "src/components/FileImage.vue";
 //supabase
+
+const valorDatosExportado = ref("");
+function actualizarValorDatosExportado(nuevoValor) {
+  valorDatosExportado.value = nuevoValor;
+}
+
+const files = ref(null);
 const idusuario = LocalStorage.getItem("IdUsuario");
 const selected = ref([]);
+const selectedDetalle = ref([]);
 const store = useMainStore();
+const configStore = useConfigStore();
 const tiquetes = ref([]);
 const tiquetesDetalles = ref([]);
 const concesion = ref({});
@@ -762,6 +810,7 @@ const Estados = ref([]);
 const Procesos = ref([]);
 const solicitudes = ref([]);
 const visible = ref(false);
+const tablaSeleccionada = ref("");
 const next = ref({
   nivel: null,
   operador: null,
@@ -770,6 +819,8 @@ const next = ref({
 const pagination = ref({
   rowsPerPage: 10,
 });
+const imagen = ref("");
+const disable = ref(false);
 const oldProridad = ref(null);
 const mostrarModal = ref(false);
 const mostrarConfirm = ref(false);
@@ -785,6 +836,11 @@ const expanded = ref([]);
 const table = ref(false);
 const TablaDetalles = ref(false);
 const selectRule = [(value) => !!value || "Este campo es obligatorio"];
+
+const avatarold = ref("");
+const loadingImage = ref(false);
+const filaavatar = ref([]);
+
 const inputRules = [
   (val) => (val && val.length > 0) || "Por favor llenar el campo",
 ];
@@ -905,7 +961,7 @@ const columns = [
 const columnsDetalles = [
   {
     name: "id",
-    required: true,
+    required: false,
     label: "ID",
     align: "left",
     field: "id",
@@ -913,7 +969,7 @@ const columnsDetalles = [
   },
   {
     name: "tiquete",
-    required: true,
+    required: false,
     label: "Tiquete",
     align: "left",
     field: "tiquete",
@@ -967,9 +1023,17 @@ const columnsDetalles = [
   },
   {
     name: "created_at",
-    align: "left",
+    align: "center",
     label: "Fecha",
     field: "created_at",
+    sortable: true,
+  },
+  {
+    name: "verevidencias",
+    required: false,
+    label: "Ver evidencias",
+    align: "left",
+    field: "verevidencias",
     sortable: true,
   },
 ];
@@ -980,11 +1044,8 @@ const clickRow = (row) => {
   Fila.value = row;
   oldProridad.value = row.prioridad;
   next.value.prioridad = Fila.value.prioridad;
-  console.log(row);
 };
-const clickRowDetalle = (row) => {
-  console.log(row.operador);
-};
+const clickRowDetalle = (row) => {};
 
 const getDetalleTiquete = async () => {
   next.value.nivel = null;
@@ -992,23 +1053,22 @@ const getDetalleTiquete = async () => {
   await api
     .get(`detalletiquete?tiquete=eq.${Fila.value.id}&select=*`)
     .then((response) => {
-      console.log(response.data);
       tiquetesDetalles.value = response.data;
       TablaDetalles.value = true;
       mostrarModal.value = true;
     });
 };
-
 const GestionTiquete = async (accionValue) => {
   if (accion.value == "SolucionarTicket") {
     //JSON de tabla de detalles, Se modifican los estados de acuerdo a la base de datos, basandose en la descripcion
     //y no el el id -----PARA LA SOLUCION SOLO CAMBIA EL CAMPO ##SOLUCIONAR##
+
     FilaDetalle.value.campomodificador = "Estado";
     FilaDetalle.value.valoranterior = "Iniciado";
     FilaDetalle.value.valornuevo = "Solucionado";
     FilaDetalle.value.tiquete = Fila.value.id;
     FilaDetalle.value.operador = idusuario;
-
+    // FilaDetalle.value.evidencia = archivos2.value;
     //se actualiza el campo del tiquete que se esta modificando
     Fila.value.estado = Estados.value.filter(
       (p) => p.descripcion == FilaDetalle.value.valornuevo
@@ -1018,8 +1078,10 @@ const GestionTiquete = async (accionValue) => {
     FilaDetalle.value.comentarios = agregarSaltosDeLinea(
       FilaDetalle.value.comentarios
     );
+    FilaDetalle.value.evidencia = valorDatosExportado.value;
+    console.log(FilaDetalle.value);
 
-    //post a la tabla de detalles tiquetes
+    // post a la tabla de detalles tiquetes------------------
     await api
       .post(`detalletiquete`, FilaDetalle.value)
       .then((response) => {
@@ -1089,6 +1151,7 @@ const GestionTiquete = async (accionValue) => {
     FilaDetalle.value.comentarios = agregarSaltosDeLinea(
       FilaDetalle.value.comentarios
     );
+    FilaDetalle.value.evidencia = valorDatosExportado.value;
     mostrarAsignarTiquetes.value = false;
     await api
       .post(`detalletiquete`, FilaDetalle.value)
@@ -1096,7 +1159,6 @@ const GestionTiquete = async (accionValue) => {
         api
           .patch(`tiquete?id=eq.${Fila.value.id}`, Fila.value)
           .then((response) => {
-            // console.log(response);
             mostrarMensajes({
               tipomensaje: 1,
               mensaje: "El ticket se asigno correctamente al siguiete nivel",
@@ -1125,9 +1187,9 @@ const GestionTiquete = async (accionValue) => {
       Fila.value.estado = Estados.value.filter(
         (p) => p.descripcion == "Cerrado"
       )[0].id;
-      Fila.value.prioridad = Prioridades.value.filter(
-        (p) => p.descripcion == "Baja"
-      )[0].id;
+      // Fila.value.prioridad = Prioridades.value.filter(
+      //   (p) => p.descripcion == "Baja"
+      // )[0].id;
       Fila.value.asignado = idusuario;
       //agregar saltos de linea al campo Comentarios
       FilaDetalle.value.comentarios = agregarSaltosDeLinea(
@@ -1145,10 +1207,7 @@ const GestionTiquete = async (accionValue) => {
                 tipomensaje: 1,
                 mensaje: "El ticket se cerro correctamente",
               });
-              //--------------ENVIAR CORREO
-
               enviarCorreo();
-              //--------------
             });
         })
         .catch((error) => {
@@ -1164,17 +1223,36 @@ const GestionTiquete = async (accionValue) => {
 };
 
 const LoadData = async () => {
-  api.get("tiquete?select=*").then((response) => {
-    tiquetes.value = response.data;
-  });
+  if (users.value.filter((p) => p.id == idusuario)[0].nivel === 3) {
+    await api
+      .get(`tiquete?asignado=eq.${idusuario}&select=*`)
+      .then((response) => {
+        tiquetes.value = response.data;
+      });
+  } else {
+    api.get("tiquete?select=*").then((response) => {
+      tiquetes.value = response.data;
+    });
+  }
 };
 
 const AccionTiquete = (key) => {
   accion.value = key;
   FilaDetalle.value.comentarios = "";
   FilaDetalle.value.adjunto_url = "";
+  filaavatar.value = [];
+  FilaDetalle.value.evidencia = "";
   const ValidadorEstado = () => {
     if (
+      key == "CerrarTicket" &&
+      Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion !=
+        "Solucionado"
+    ) {
+      accion.value = "alerta";
+      mensaje.value = `No se puede realizar esta acción. El ticket debe estar solucionado `;
+      mostrarConfirm.value = true;
+      return true;
+    } else if (
       Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion ==
         "Solucionado" ||
       Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion ==
@@ -1202,7 +1280,6 @@ const AccionTiquete = (key) => {
     case "AsignarTicket":
       next.value.prioridad = Fila.value.prioridad;
       if (ValidadorEstado()) {
-        console.log("no estra AsignarTicket");
       } else if (
         Procesos.value.filter((p) => p.id > Fila.value.proceso).length == 0
       ) {
@@ -1218,14 +1295,12 @@ const AccionTiquete = (key) => {
       break;
     case "SolucionarTicket":
       if (ValidadorEstado()) {
-        console.log("no estra AsignarTicket");
       } else {
         mostrarSolucionarTiquetes.value = true;
       }
       break;
     case "CerrarTicket":
       if (ValidadorEstado()) {
-        console.log("no estra AsignarTicket");
       } else {
         mensaje.value = "¿Está seguro de cerrar el tickete?";
         mostrarSolucionarTiquetes.value = true;
@@ -1260,9 +1335,6 @@ const DatosGenerales = async () => {
 
   await api.get("prioridad?select=*").then((response) => {
     Prioridades.value = response.data;
-    // Prioridades.value.sort(function (b, a) {
-    //   return b.orden - a.orden;
-    // });
   });
 
   await api.get("estado?select=*").then((response) => {
@@ -1283,10 +1355,6 @@ const DatosGenerales = async () => {
 
   Fila.value.asignado = "4ca6c4d3-c2f9-4c1f-9411-de9271b9519f";
   Fila.value.privado = null;
-  // const array = [5, 2, 9, 1, 3];
-  // array.sort(function (a, b) {
-  //   return b - a;
-  // });
   visible.value = false;
   table.value = true;
 };
@@ -1306,9 +1374,7 @@ const enviarCorreo = () => {
   const url = "http://localhost:3000/enviar-correo";
   axios
     .post(url, data)
-    .then((response) => {
-      // console.log(response.data); // Maneja la respuesta de la petición aquí
-    })
+    .then((response) => {})
     .catch((error) => {
       console.error(error);
     });
@@ -1331,13 +1397,14 @@ const agregarSaltosDeLinea = (text) => {
   return result.join(" ");
 };
 
-const VerEvidencias = () => {
+const VerEvidencias = (row) => {
+  imagen.value = row.evidencia;
   mostrarImagen.value = true;
 };
+
 onMounted(async () => {
   await DatosGenerales();
   LoadData();
-  // tableRef.value.scrollTo(10);
 });
 
 defineComponent({
@@ -1351,7 +1418,6 @@ supabase
     "postgres_changes",
     { event: "UPDATE", schema: "public", table: "tiquete" },
     (payload) => {
-      // console.log("Change received1!", payload);
       accion.value = "alerta";
       // mensaje.value = `Se han realizado cambios en algun tiquete `;
       // mostrarConfirm.value = true;
@@ -1366,7 +1432,6 @@ supabase
     "postgres_changes",
     { event: "INSERT", schema: "public", table: "tiquete" },
     (payload) => {
-      // console.log("Change received1!", payload);
       accion.value = "alerta";
       mensaje.value = `Se genero un nuevo tiquete `;
       mostrarConfirm.value = true;
@@ -1374,6 +1439,7 @@ supabase
     }
   )
   .subscribe();
+
 //------------------------------------------
 </script>
 
@@ -1428,5 +1494,9 @@ supabase
 
 .centered-button {
   /* Agrega estilos adicionales si lo deseas */
+}
+
+.FileSelected .q-field__native {
+  display: none;
 }
 </style>

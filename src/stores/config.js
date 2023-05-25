@@ -3,8 +3,8 @@ import { defineStore } from 'pinia'
 export const useConfigStore = defineStore('config', {
   state: () => ({
     config: {
-      nivel: 'Operation',
-      // nivel: "BackOffice",
+      // nivel: 'Operation',
+      nivel: "BackOffice",
       UrlApp: 'http://localhost:8080/#'
     }
   }),
