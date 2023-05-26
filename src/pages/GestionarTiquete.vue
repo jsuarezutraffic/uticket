@@ -1,4 +1,3 @@
-/* eslint-disable */
 <template>
   <div class="q-pa-md flex">
     <TransitionGroup>
@@ -116,6 +115,51 @@
         </template>
       </q-table>
     </TransitionGroup>
+
+    <div class="containerDashboard">
+      <q-card class="q-my-md q-mr-md row justify-evenly" v-if="table">
+        <apex-donut
+          :Series="countArrayEstado"
+          :cliente="cliente"
+          :prioridades="Prioridades"
+          title="Estados"
+          width="320"
+        />
+
+        <apex-donut
+          :Series="countArrayPrioridad"
+          :cliente="cliente"
+          :prioridades="Prioridades"
+          title="Prioridades"
+          width="320"
+        />
+
+        <apex-donut
+          :Series="countArraySolicitud"
+          :cliente="cliente"
+          :prioridades="Prioridades"
+          title="Solicitudes"
+          width="320"
+        />
+
+        <apex-donut
+          :Series="countArrayAsignado"
+          :cliente="cliente"
+          :prioridades="Prioridades"
+          title="Asignado"
+          width="320"
+        />
+
+        <apex-donut
+          :Series="countArrayTipo"
+          :cliente="cliente"
+          :prioridades="Prioridades"
+          title="Tipos"
+          width="320"
+        />
+      </q-card>
+    </div>
+    <!-- </div> -->
 
     <q-inner-loading
       :showing="visible"
@@ -766,7 +810,7 @@
 
 <script setup>
 /*eslint-disable */
-import { defineComponent, ref, onMounted, watch } from "vue";
+import { defineComponent, ref, onMounted, watch, watchEffect } from "vue";
 import { LocalStorage } from "quasar";
 import { api } from "boot/axios";
 import {
@@ -778,6 +822,7 @@ import { supabase } from "src/supabase";
 import { useMainStore } from "src/stores/main";
 import { useConfigStore } from "src/stores/config";
 import { createClient } from "@supabase/supabase-js";
+import ApexDonut from "src/components/Charts/ApexDonut.vue";
 import FileInput from "src/components/FileImage.vue";
 import VerImagenArray from "src/components/VerImagenArray.vue";
 //supabase
@@ -1356,6 +1401,163 @@ const DatosGenerales = async () => {
   table.value = true;
 };
 
+const countArrayEstado = ref([]);
+const countArrayPrioridad = ref([]);
+const countArrayTipo = ref([]);
+const countArraySolicitud = ref([]);
+const countArrayAsignado = ref([]);
+
+watchEffect(() => {
+  {
+    const countByEstado = {};
+    const countByPrioridad = {};
+    const countByTipo = {};
+    const countBySolicitud = {};
+    const countByAsignado = {};
+
+    // Contar la cantidad de objetos por estado
+    tiquetes.value.forEach((obj) => {
+      const estado = obj.estado;
+      const prioridad = obj.prioridad;
+      const tipo = obj.tipo;
+      const solicitud = obj.solicitud;
+      const asignado = obj.asignado;
+
+      let label;
+      let labelPrioridad;
+      let labelTipo;
+      let labelSolicitud;
+      let labelAsigando;
+
+      switch (users.value.filter((p) => p.id == asignado)[0].nombre) {
+        case "Alfonso Bossa":
+          labelAsigando = "Bossa";
+          break;
+        case "Josue Suarez":
+          labelAsigando = "Suarez";
+          break;
+        default:
+          labelAsigando = "Estado desconocido";
+          break;
+      }
+
+      switch (estado) {
+        case 1:
+          label = "Iniciado";
+          break;
+        case 5:
+          label = "Cerrado";
+          break;
+        case 6:
+          label = "Finalizado";
+          break;
+        case 2:
+          label = "Asignado";
+          break;
+        case 3:
+          label = "Escalado";
+          break;
+        case 4:
+          label = "Solucionado";
+          break;
+      }
+
+      switch (prioridad) {
+        case 1:
+          labelPrioridad = "Alta";
+          break;
+        case 2:
+          labelPrioridad = "Media";
+          break;
+        case 3:
+          labelPrioridad = "Baja";
+          break;
+      }
+
+      switch (tipo) {
+        case 1:
+          labelTipo = "Dispositivos";
+          break;
+        case 2:
+          labelTipo = "Software";
+          break;
+        case 3:
+          labelTipo = "Red";
+          break;
+      }
+
+      switch (solicitud) {
+        case 1:
+          labelSolicitud = "Incidentes";
+          break;
+        case 2:
+          labelSolicitud = "Requerimiento";
+          break;
+        case 3:
+          labelSolicitud = "PQR";
+          break;
+      }
+
+      if (!countByEstado[label]) {
+        countByEstado[label] = {
+          label: label,
+          value: 1,
+        };
+      } else {
+        countByEstado[label].value++;
+      }
+
+      if (!countByPrioridad[labelPrioridad]) {
+        countByPrioridad[labelPrioridad] = {
+          label: labelPrioridad,
+          value: 1,
+        };
+      } else {
+        countByPrioridad[labelPrioridad].value++;
+      }
+
+      if (!countByTipo[labelTipo]) {
+        countByTipo[labelTipo] = {
+          label: labelTipo,
+          value: 1,
+        };
+      } else {
+        countByTipo[labelTipo].value++;
+      }
+
+      if (!countBySolicitud[labelSolicitud]) {
+        countBySolicitud[labelSolicitud] = {
+          label: labelSolicitud,
+          value: 1,
+        };
+      } else {
+        countBySolicitud[labelSolicitud].value++;
+      }
+
+      if (!countByAsignado[labelAsigando]) {
+        countByAsignado[labelAsigando] = {
+          label: labelAsigando,
+          value: 1,
+        };
+      } else {
+        countByAsignado[labelAsigando].value++;
+      }
+    });
+
+    // const filteredArray = computed(() => {
+    //   return tiquetes.value.filter((item1) =>
+    //     Prioridades.value.some((item2) => item2.id === item1.prioridad)
+    //   );
+    // });
+    countArrayEstado.value = Object.values(countByEstado);
+    countArrayPrioridad.value = Object.values(countByPrioridad);
+    countArrayTipo.value = Object.values(countByTipo);
+    countArraySolicitud.value = Object.values(countBySolicitud);
+    countArrayAsignado.value = Object.values(countByAsignado);
+    console.log("countByAsignado: ", countByAsignado);
+  }
+});
+
 // -------------------------------------------------------
 // Funciones generales
 const enviarCorreo = () => {
@@ -1487,5 +1689,21 @@ supabase
   align-items: center;
   height: 100vh;
   /* Ajusta la altura según tus necesidades */
+}
+
+.centered-button {
+  /* Agrega estilos adicionales si lo deseas */
+}
+
+.FileSelected .q-field__native {
+  display: none;
+}
+
+.containerDashboard {
+  width: 100%; /* Ancho completo de la pantalla */
+  display: flex;
+  justify-content: center; /* Centrar horizontalmente */
+  align-items: center; /* Centrar verticalmente */
+  // height: 100vh; /* Altura completa de la pantalla (viewport) */
 }
 </style>
