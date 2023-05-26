@@ -1,10 +1,11 @@
 // app global css in SCSS form
+// app global css in SCSS form
 * {
   font-family: "Roboto", sans-serif;
 }
 
 body {
-  background-color: #f4f4f4;
+  background-color: #f5f6fa;
 }
 
 .card-header {
@@ -66,7 +67,27 @@ body {
   border-radius: 10px;
 }
 
+.card-containerRegister {
+  position: relative;
+  // top: 15vh;
+  margin: auto;
+  width: 60%;
+  height: 80%;
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: center;
+  align-content: center;
+  border-radius: 10px;
+  padding: 20px;
+}
+
 .u-traffic {
+  margin: 15px auto;
+  width: 140px;
+}
+
+.u-trafficRegister {
   margin: 15px auto;
   width: 140px;
 }
@@ -111,21 +132,13 @@ body {
 //Table Styles
 .table-container {
   margin: 0 auto;
-  // <<<<<<< HEAD // margin-top: 00px;
+  // margin-top: 00px;
   // margin-bottom: 20px;
   width: 100%;
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
   // max-width: 800px;
   // min-width: 550px;
-  // =======margin-top: 20px;
-  // margin-bottom: 20px;
-  // width: fit-content;
-  // border-radius: 10px;
-  // box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-  // max-width: fit-content;
-  // min-width: 550px;
-  // >>>>>>>c224dfac5a391b99770a2edb7e2499f9a2d65098
 }
 
 //Media Queries
