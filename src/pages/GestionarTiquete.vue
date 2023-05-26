@@ -154,8 +154,8 @@
 
       <q-separator />
 
-      <q-card-section style="max-height: 75%" class="scroll">
-        <div class="row">
+      <q-card-section style="max-height: 75%" class="scroll q-pa-md">
+        <div class="row justify-center">
           <div class="col-auto">
             <q-card flat>
               <div class="q-pa-md">
@@ -345,7 +345,7 @@
           </div>
         </div>
 
-        <div class="row">
+        <div class="row justify-center">
           <div class="col-auto">
             <q-card flat>
               <div class="q-pa-md" v-if="TablaDetalles">
@@ -370,7 +370,7 @@
                     'valornuevo',
                     'observaciones',
                     'created_at',
-                    'adjunto_url',
+                    // 'adjunto_url',
                     'verevidencias',
                   ]"
                 >
@@ -547,6 +547,7 @@
                 <!-- {{ users.filter((p) => p.id == Fila.asignado) }} -->
                 <div class="col-md-4 col-sm-4 col-xs-12">
                   <q-input
+                    readonly
                     outlined
                     v-model="
                       users.filter((p) => p.id == Fila.asignado)[0].nombre
@@ -591,14 +592,6 @@
                   />
                 </div>
                 <div class="col-md-12 col-sm-12 col-xs-12">
-                  <q-input
-                    outlined
-                    v-model="FilaDetalle.adjunto_url"
-                    dense
-                    type="text"
-                    label="Adjuntar Url"
-                    class="q-pa-md"
-                  />
                   <FileInput
                     @datos-exportado-cambiado="actualizarValorDatosExportado"
                   ></FileInput>
@@ -658,20 +651,64 @@
           <div class="row">
             <div class="col-12">
               <div class="row" style="background: #ffffff">
-                <div class="col-md-12 col-sm-12 col-xs-12">
-                  <q-input
+                <div class="col-md-5 col-sm-5 col-xs-12">
+                  <q-select
+                    :rules="selectRule"
+                    label="Metodo de Consulta"
+                    transition-show="scale"
+                    transition-hide="scale"
                     outlined
-                    v-model="FilaDetalle.adjunto_url"
+                    v-model="FilaDetalle.metodoconsulta"
                     dense
-                    type="text"
-                    label="Adjuntar Url"
+                    :options="metodoconsulta"
+                    option-label="descripcion"
+                    option-value="id"
                     class="q-pa-md"
+                    emit-value
+                    map-options
                   />
+                </div>
+                <div class="col-md-5 col-sm-5 col-xs-12">
+                  <q-select
+                    :rules="selectRule"
+                    label="Persona Consultada"
+                    transition-show="scale"
+                    transition-hide="scale"
+                    use-input
+                    outlined
+                    v-model="FilaDetalle.consultado"
+                    dense
+                    :options="contactos"
+                    option-label="nombres"
+                    option-value="id"
+                    class="q-pa-md"
+                    input-debounce="0"
+                    @filter="filterFn"
+                    style="width: 250px"
+                  >
+                    <template v-slot:no-option>
+                      <q-item>
+                        <q-item-section class="text-grey">
+                          No results
+                        </q-item-section>
+                      </q-item>
+                    </template>
+                  </q-select>
+                </div>
+                <div class="col-md-2 col-sm-2 col-xs-12 container2">
+                  <q-btn
+                    flat
+                    round
+                    color="primary"
+                    icon="person_add"
+                    @click="mostrarAddPersonaContacto = true"
+                  />
+                </div>
 
+                <div class="col-md-12 col-sm-12 col-xs-12">
                   <FileInput
                     @datos-exportado-cambiado="actualizarValorDatosExportado"
                   ></FileInput>
-
                   <q-input
                     outlined
                     v-model="FilaDetalle.comentarios"
@@ -722,6 +759,94 @@
     </q-card>
   </q-dialog>
 
+  <!-- Modal de Add Persona de contacto -->
+  <q-dialog
+    v-model="mostrarAddPersonaContacto"
+    transition-show="scale"
+    transition-hide="scale"
+  >
+    <q-card style="max-width: 100%; width: 40%">
+      <q-form autofocus @submit.prevent="addPersonConsulta()">
+        <q-card-section>
+          <div style="font-size: 18px; font-weight: bold; align-self: center">
+            Añadir a lista de contactos
+          </div>
+        </q-card-section>
+        <q-card-section>
+          <div class="row">
+            <div class="col-12">
+              <div class="row" style="background: #ffffff">
+                <div class="col-md-12 col-sm-12 col-xs-12">
+                  <q-input
+                    :rules="inputRules"
+                    outlined
+                    v-model="FilaContacto.nombres"
+                    dense
+                    type="text"
+                    label="Nombres"
+                    class="q-pa-md"
+                  />
+                </div>
+                <div class="col-md-12 col-sm-12 col-xs-12">
+                  <q-input
+                    outlined
+                    v-model="FilaContacto.telefono"
+                    dense
+                    type="number"
+                    label="Telefono"
+                    class="q-pa-md"
+                    :rules="[
+                      (val) =>
+                        val.length <= 10 || 'Please use maximum 3 characters',
+                    ]"
+                  />
+                </div>
+                <div class="col-md-12 col-sm-12 col-xs-12">
+                  <q-input
+                    outlined
+                    v-model="FilaContacto.correo"
+                    dense
+                    type="email"
+                    label="Correo"
+                    class="q-pa-md"
+                  />
+                </div>
+                <div class="col-md-12 col-sm-12 col-xs-12">
+                  <q-input
+                    outlined
+                    v-model="FilaContacto.area"
+                    dense
+                    type="text"
+                    label="Area"
+                    class="q-pa-md"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </q-card-section>
+
+        <q-card-actions align="right" class="bg-white text-teal q-pr-md">
+          <q-btn
+            flat
+            color="primary"
+            :label="'Aceptar'"
+            type="submit"
+            text-color="dark"
+            no-caps
+          />
+          <q-btn
+            flat
+            :label="'Cerrar'"
+            v-close-popup
+            text-color="dark"
+            no-caps
+          />
+        </q-card-actions>
+      </q-form>
+    </q-card>
+  </q-dialog>
+
   <!-- Modal de confirmacion -->
   <q-dialog v-model="mostrarConfirm">
     <q-card style="width: 35em">
@@ -764,8 +889,8 @@
 </template>
 
 <script setup>
-import { defineComponent, ref, onMounted, watch } from "vue";
-import { LocalStorage } from "quasar";
+import { defineComponent, ref, onMounted, watch, computed } from "vue";
+import { LocalStorage, useQuasar } from "quasar";
 import { api } from "boot/axios";
 import {
   mostrarMensajes,
@@ -784,8 +909,7 @@ const valorDatosExportado = ref("");
 function actualizarValorDatosExportado(nuevoValor) {
   valorDatosExportado.value = nuevoValor;
 }
-
-const files = ref(null);
+let $q = useQuasar();
 const idusuario = LocalStorage.getItem("IdUsuario");
 const selected = ref([]);
 const selectedDetalle = ref([]);
@@ -803,8 +927,9 @@ const Prioridades = ref([]);
 const Estados = ref([]);
 const Procesos = ref([]);
 const solicitudes = ref([]);
+const contactos = ref([]);
+const metodoconsulta = ref([]);
 const visible = ref(false);
-const tablaSeleccionada = ref("");
 const next = ref({
   nivel: null,
   operador: null,
@@ -820,20 +945,18 @@ const mostrarModal = ref(false);
 const mostrarConfirm = ref(false);
 const mostrarAsignarTiquetes = ref(false);
 const mostrarSolucionarTiquetes = ref(false);
+const mostrarAddPersonaContacto = ref(false);
 const mostrarImagen = ref(false);
 const accion = ref("");
 const mensaje = ref("");
 const Fila = ref({});
 const FilaDetalle = ref({});
+const FilaContacto = ref({});
 const tableRef = ref(null);
 const expanded = ref([]);
 const table = ref(false);
 const TablaDetalles = ref(false);
 const selectRule = [(value) => !!value || "Este campo es obligatorio"];
-
-const avatarold = ref("");
-const loadingImage = ref(false);
-const filaavatar = ref([]);
 
 const inputRules = [
   (val) => (val && val.length > 0) || "Por favor llenar el campo",
@@ -1008,13 +1131,13 @@ const columnsDetalles = [
     sortable: true,
   },
 
-  {
-    name: "adjunto_url",
-    align: "left",
-    label: "Url Adjunto",
-    field: "adjunto_url",
-    sortable: true,
-  },
+  // {
+  //   name: "adjunto_url",
+  //   align: "left",
+  //   label: "Url Adjunto",
+  //   field: "adjunto_url",
+  //   sortable: true,
+  // },
   {
     name: "created_at",
     align: "center",
@@ -1146,6 +1269,7 @@ const GestionTiquete = async (accionValue) => {
       FilaDetalle.value.comentarios
     );
     FilaDetalle.value.evidencia = valorDatosExportado.value;
+    console.log(FilaDetalle.value);
     mostrarAsignarTiquetes.value = false;
     await api
       .post(`detalletiquete`, FilaDetalle.value)
@@ -1232,10 +1356,7 @@ const LoadData = async () => {
 
 const AccionTiquete = (key) => {
   accion.value = key;
-  FilaDetalle.value.comentarios = "";
-  FilaDetalle.value.adjunto_url = "";
-  filaavatar.value = [];
-  FilaDetalle.value.evidencia = "";
+  FilaDetalle.value = {};
   const ValidadorEstado = () => {
     if (
       key == "CerrarTicket" &&
@@ -1347,6 +1468,11 @@ const DatosGenerales = async () => {
     solicitudes.value = response.data;
   });
 
+  await api.get("metodoconsulta?select=*").then((response) => {
+    metodoconsulta.value = response.data;
+  });
+
+  await CargarContactos();
   Fila.value.asignado = "4ca6c4d3-c2f9-4c1f-9411-de9271b9519f";
   Fila.value.privado = null;
   visible.value = false;
@@ -1355,6 +1481,23 @@ const DatosGenerales = async () => {
 
 //-------------------------------------------------------
 //Funciones generales
+const addPersonConsulta = async () => {
+  if (FilaContacto.telefono != null) {
+    FilaContacto.telefono = parseInt(FilaContacto.telefono);
+  }
+  await api.post("contactos", FilaContacto.value).then((response) => {
+    console.log("contactos añadido");
+    mostrarAddPersonaContacto.value = false;
+  });
+  await CargarContactos();
+};
+const CargarContactos = async () => {
+  FilaContacto.value = {};
+  FilaContacto.telefono = null;
+  await api.get("contactos?select=*").then((response) => {
+    contactos.value = response.data;
+  });
+};
 const enviarCorreo = () => {
   var data = {};
   data.email = cliente.value.filter(
@@ -1405,16 +1548,19 @@ defineComponent({
   name: "MainTable",
 });
 
-//------------------------------------------
+//----------------Subscripcion a la tabla tiquetes--------------------------
 supabase
   .channel("custom-update-channel")
   .on(
     "postgres_changes",
     { event: "UPDATE", schema: "public", table: "tiquete" },
     (payload) => {
-      accion.value = "alerta";
-      // mensaje.value = `Se han realizado cambios en algun tiquete `;
-      // mostrarConfirm.value = true;
+      console.log(payload);
+      $q.notify({
+        type: "warning",
+        message: `Se ha actualizado el ticket N° ${payload.old.id}`,
+        timeout: 4000,
+      });
       LoadData();
     }
   )
@@ -1426,9 +1572,12 @@ supabase
     "postgres_changes",
     { event: "INSERT", schema: "public", table: "tiquete" },
     (payload) => {
-      accion.value = "alerta";
-      mensaje.value = `Se genero un nuevo tiquete `;
-      mostrarConfirm.value = true;
+      $q.notify({
+        type: "positive",
+        message: "Se ha agregado un nuevo ticket",
+        timeout: 4000,
+      });
+
       LoadData();
     }
   )
@@ -1482,6 +1631,13 @@ supabase
   display: flex;
   justify-content: center;
   align-items: center;
+  height: 100vh;
+  /* Ajusta la altura según tus necesidades */
+}
+.container2 {
+  display: flex;
+  justify-content: left;
+  align-items: left;
   height: 100vh;
   /* Ajusta la altura según tus necesidades */
 }
