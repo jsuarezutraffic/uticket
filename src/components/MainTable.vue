@@ -761,12 +761,12 @@ const formatDate = (value) => {
 }
 
 const addPersonConsulta = async () => {
+  mostrarAddPersonaContacto.value = false
   if (FilaContacto.value.telefono != null) {
     FilaContacto.value.telefono = parseInt(FilaContacto.value.telefono)
   }
   await api.post('contactos', FilaContacto.value).then((response) => {
     console.log('contactos añadido')
-    mostrarAddPersonaContacto.value = false
   })
   await CargarContactos()
 }
