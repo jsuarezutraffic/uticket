@@ -864,7 +864,6 @@
             v-close-popup
             color="negative"
           />
-          <span style="padding-right: 40px"></span>
           <q-btn
             v-if="accion == 'CerrarTicket'"
             label="Si"
@@ -1352,6 +1351,7 @@ const LoadData = async () => {
       tiquetes.value = response.data;
     });
   }
+  visible.value = false;
 };
 
 const AccionTiquete = (key) => {
@@ -1365,6 +1365,11 @@ const AccionTiquete = (key) => {
     ) {
       accion.value = "alerta";
       mensaje.value = `No se puede realizar esta acción. El ticket debe estar solucionado `;
+      mostrarConfirm.value = true;
+      return true;
+    } else if (key == "SolucionarTicket" && Fila.value.asignado != idusuario) {
+      accion.value = "alerta";
+      mensaje.value = `El ticket no se encuentra asignado a usted`;
       mostrarConfirm.value = true;
       return true;
     } else if (
@@ -1473,9 +1478,8 @@ const DatosGenerales = async () => {
   });
 
   await CargarContactos();
-  Fila.value.asignado = "4ca6c4d3-c2f9-4c1f-9411-de9271b9519f";
-  Fila.value.privado = null;
-  visible.value = false;
+  // Fila.value.asignado = "4ca6c4d3-c2f9-4c1f-9411-de9271b9519f";
+  // Fila.value.privado = null;
   table.value = true;
 };
 
@@ -1498,6 +1502,15 @@ const CargarContactos = async () => {
     contactos.value = response.data;
   });
 };
+// const filterFn = (val, update, abort) => {
+//   update(() => {
+//     const needle = val.toLowerCase();
+//     contactos.value = stringOptions.filter(
+//       (v) => v.toLowerCase().indexOf(needle) > -1
+//     );
+//   });
+// };
+
 const enviarCorreo = () => {
   var data = {};
   data.email = cliente.value.filter(

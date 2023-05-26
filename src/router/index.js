@@ -41,20 +41,30 @@ export default route(function (/* { store, ssrContext } */) {
     const storeConfig = useConfigStore();
     const store = useMainStore();
     let nivelUrl = to.fullPath.includes(storeConfig.config.nivel);
-    if (nivelUrl || to.fullPath.includes("login") || to.fullPath == "/") {
-      if (
-        to.matched.some((record) => record.meta.requireLogin) &&
-        !store.isAuthenticated == true
-      ) {
-        console.log("aqui mal");
-        next({
-          name: "Login",
-          query: { to: to.path },
-        });
-      } else next();
-    } else {
-      alert("no tienes permitido entrar");
-    }
+    if (
+      to.matched.some((record) => record.meta.requireLogin) &&
+      !store.isAuthenticated == true
+    ) {
+      console.log("aqui mal");
+      next({
+        name: "Login",
+        query: { to: to.path },
+      });
+    } else next();
+    // if (nivelUrl || to.fullPath.includes("login") || to.fullPath == "/") {
+    //   if (
+    //     to.matched.some((record) => record.meta.requireLogin) &&
+    //     !store.isAuthenticated == true
+    //   ) {
+    //     console.log("aqui mal");
+    //     next({
+    //       name: "Login",
+    //       query: { to: to.path },
+    //     });
+    //   } else next();
+    // } else {
+    //   alert("no tienes permitido entrar");
+    // }
   });
 
   return Router;

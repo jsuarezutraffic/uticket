@@ -42,56 +42,57 @@
 </template>
 
 <script setup>
-import { defineComponent, ref } from 'vue'
-import { createClient } from '@supabase/supabase-js'
-import { useMainStore } from 'src/stores/main'
-import { useConfigStore } from 'src/stores/config'
-import { api } from 'boot/axios'
-import { useRouter, useRoute } from 'vue-router'
-import { mostrarMensajes, getSelectedString } from 'boot/global'
+import { defineComponent, ref } from "vue";
+import { createClient } from "@supabase/supabase-js";
+import { useMainStore } from "src/stores/main";
+import { useConfigStore } from "src/stores/config";
+import { api } from "boot/axios";
+import { useRouter, useRoute } from "vue-router";
+import { mostrarMensajes, getSelectedString } from "boot/global";
 // import { supabase } from "../supabase";
 // stores
-const store = useMainStore()
-const config = useConfigStore().config
+const store = useMainStore();
+const config = useConfigStore().config;
 
 // supabase
 // const supabaseKey = store.supabase_Key;
 // const supabaseUrl = store.supabase_Url;
 // const supabase = createClient(supabaseUrl, supabaseKey);
 
-const datos = ref(null)
-const router = useRouter()
+const datos = ref(null);
+const router = useRouter();
 defineComponent({
   // eslint-disable-next-line vue/multi-word-component-names
-  name: 'LoginPage'
-})
-const username = ref('')
-const password = ref('')
-api.defaults.headers.common.apikey = store.supabase_Key
+  name: "LoginPage",
+});
+const username = ref("");
+const password = ref("");
+api.defaults.headers.common.apikey = store.supabase_Key;
 const IniciarSesion = async () => {
   const credenciales = {
     email: username.value,
-    password: password.value
-  }
+    password: password.value,
+  };
   await api
     .post(
-      'https://xzovknjkdfykvximpgxh.supabase.co/auth/v1/token?grant_type=password',
+      "https://xzovknjkdfykvximpgxh.supabase.co/auth/v1/token?grant_type=password",
       credenciales
     )
     .then((response) => {
-      store.inicio(response.data)
-      const toPath = `/${config.nivel}/index`
-      router.push(toPath)
-      console.log(response.data)
+      store.inicio(response.data);
+      const toPath = `/`;
+      // const toPath = `/${config.nivel}/index`
+      router.push(toPath);
+      console.log(response.data);
     })
     .catch((error) => {
       mostrarMensajes({
         tipomensaje: 4,
         mensaje:
-          'Credensiales invalidas, por favor verificar correo y contraseña'
-      })
-    })
-}
+          "Credensiales invalidas, por favor verificar correo y contraseña",
+      });
+    });
+};
 </script>
 
 <style scoped>
