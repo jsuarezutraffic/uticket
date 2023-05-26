@@ -214,19 +214,17 @@
 
                     <div v-else-if="col.name == 'verevidencia'">
                       <q-btn label="Ver" icon="image" color="primary" @click="VerEvidencias(props.row)" />
-
-                      <q-dialog v-model="dialog3" persistent>
+                      <!-- <q-dialog v-model="dialog3" persistent>
                         <q-card style="min-width: 700px; height: 600px;">
                           <q-card-section class="row items-center">
                             <q-img :src="Fila.evidencia" spinner-color="white" class="q-pa-md" style="min-width: 600px; height: 500px;"/>
-                          </q-card-section>
-
+                          </q-card-section> -->
                           <!-- Notice v-close-popup -->
-                          <q-card-actions align="right">
+                          <!-- <q-card-actions align="right">
                             <q-btn flat label="Salir" color="primary" v-close-popup />
                           </q-card-actions>
                         </q-card>
-                      </q-dialog>
+                      </q-dialog> -->
                     </div>
 
                     <div v-else>{{ col.value }}</div>
@@ -253,10 +251,32 @@
                   <div v-if="ticketState !== null">
                     <div v-if="ticketState.descripcion === 'Escalado'">
                     <p class="text-subtitle2">Consulta realizada a:</p>
-                    <q-input filled v-model="FilaDetalle.consultado" label="Nombre" class="q-mb-md"/>
+                    <div style="display: flex;">
+                      <q-select
+                      square
+                      filled
+                      v-model="model"
+                      use-input
+                      hide-selected
+                      fill-input
+                      input-debounce="0"
+                      :options="options"
+                      @filter="filterFn"
+                      style="width: 250px; padding-bottom: 32px"
+                    />
+                      <div style="display: flex; align-items: center; justify-items: center;">
+                        <q-btn
+                        class="q-ml-sm"
+                        round
+                        color="primary"
+                        :size="md"
+                        icon="add"
+                      />
+                      </div>
+                    </div>
 
                     <p class="text-subtitle2">Método de consulta</p>
-                    <q-select square filled v-model="methodState" :options="methodOptions" option-value="id" option-label="descripcion" label="Método" class="q-mb-md" />
+                    <q-select square filled v-model="FilaDetalle.metodoconsulta" :options="metodoconsulta" option-value="id" option-label="descripcion" label="Método" class="q-mb-md" />
                     </div>
                   </div>
                   <div class="text-subtitle2 q-mb-md">Observaciones: </div>
@@ -265,28 +285,11 @@
                       filled
                       type="textarea"
                     />
-
-                    <div class="text-subtitle2 q-mb-md q-mt-md">Url:</div>
-                      <q-input
-                        v-model="FilaDetalle.adjunto_url"
-                        filled
-                        type="text"
-                      />
+                    <p class="text-subtitle2 q-mt-md">Adjuntar Evidencia:</p>
                 </div>
-
-                <div class="q-gutter-md row items-start q-ml-xs">
-                  <q-file
-                  v-model="filaAdjunto"
-                  label="Pick files"
-                  filled
-                  use-chips
-                  style="max-width: 300px"
-                  >
-                    <template v-slot:prepend>
-                      <q-icon name="attach_file" />
-                    </template>
-                  </q-file>
-                </div>
+                <FileInput
+                    @datos-exportado-cambiado="actualizarValorDatosExportado"
+                  ></FileInput>
               </q-card-section>
 
               <q-card-section class="second-card buttons no-padding">
@@ -323,16 +326,7 @@
   </div>
     <!-- Modal de imagen -->
   <q-dialog v-model="mostrarImagen">
-    <q-card style="width: 100%;">
-      <q-img
-        :src="imagen"
-        alt=""
-        spinner-color="red"
-        style="height: 100%"
-        fit="fill"
-      >
-      </q-img>
-    </q-card>
+    <VerImagenArray :datoProp="imagen"></VerImagenArray>
   </q-dialog>
 </div>
 </template>
@@ -340,20 +334,16 @@
 <script setup>
 import { defineComponent, ref, onMounted } from 'vue'
 import { api } from 'boot/axios'
-import { LocalStorage } from 'quasar'
-import {
-  // mostrarMensajes,
-  // getSelectedString,
-  createBase64Image
-} from 'boot/global'
+import { LocalStorage, useQuasar } from 'quasar'
+import FileInput from 'src/components/FileImage.vue'
+import VerImagenArray from 'src/components/VerImagenArray.vue'
 import BackOffice from '../pages/GestionarTiquete.vue'
+import { supabase } from 'src/supabase'
 
-const filaAdjunto = ref(null)
+const $q = useQuasar()
 const imagen = ref('')
-const dialog3 = ref(false)
 const metodoconsulta = ref([])
 const methodState = ref(null)
-const methodOptions = ref([])
 const dialog2 = ref(false)
 const dialog = ref(false)
 const selected = ref([])
@@ -518,6 +508,10 @@ const historial = [
   }
 ]
 
+const valorDatosExportado = ref('')
+function actualizarValorDatosExportado (nuevoValor) {
+  valorDatosExportado.value = nuevoValor
+}
 async function getData () {
   visible.value = true
   await api
@@ -579,8 +573,6 @@ async function clickRow (row) {
   Fila.value = row
 
   optionState.value = estado.value.filter((p) => p.descripcion === 'Escalado' || p.descripcion === 'Solucionado')
-
-  methodOptions.value = metodoconsulta.value.filter((p) => p.descripcion === 'Correo' || p.descripcion === 'Telefono' || p.descripcion === 'Presencial' || p.descripcion === 'Chat')
 
   await api
     .get(`detalletiquete?tiquete=eq.${Fila.value.id}&select=*`)
@@ -644,15 +636,10 @@ async function gestionarTicket () {
   FilaDetalle.value.campomodificador = 'Estado'
   FilaDetalle.value.valoranterior = 'Asignado'
   FilaDetalle.value.valornuevo = ticketState.value.descripcion
-  console.log(filaAdjunto.value)
   FilaDetalle.value.metodoconsulta = methodState.value
   FilaDetalle.value.operador = idusuario
   FilaDetalle.value.comentarios = agregarSaltosDeLinea(FilaDetalle.value.comentarios)
-  if (filaAdjunto.value === null) {
-    FilaDetalle.value.evidencia = ''
-  } else {
-    FilaDetalle.value.evidencia = await createBase64Image(filaAdjunto.value)
-  }
+  FilaDetalle.value.evidencia = valorDatosExportado.value
   api
     .post('detalletiquete', FilaDetalle.value)
     .then((response) => {
@@ -671,6 +658,35 @@ const formatDate = (value) => {
   // return date.toLocaleDateString();  // solo la fecha DD/MM/YY
   return date.toLocaleString() // DD/MM/YY, 00:00:00
 }
+
+// ----------------Subscripcion a la tabla tiquetes--------------------------
+supabase
+  .channel('custom-update-channel')
+  .on(
+    'postgres_changes',
+    { event: 'UPDATE', schema: 'public', table: 'tiquete' },
+    (payload) => {
+      console.log(payload)
+      if (payload.new.asignado === idusuario) {
+        if (payload.new.estado === 2) {
+          $q.notify({
+            type: 'positive',
+            message: `Se ha agregado el ticket N° ${payload.old.id}`,
+            timeout: 4000
+          })
+        } else {
+          $q.notify({
+            type: 'warning',
+            message: `Se ha actualizado el ticket N° ${payload.old.id}`,
+            timeout: 4000
+          })
+        }
+        getData()
+      }
+    }
+  )
+  .subscribe()
+// ------------------------------------------
 
 onMounted(() => {
   getData()
