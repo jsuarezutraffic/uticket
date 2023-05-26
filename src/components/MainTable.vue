@@ -247,43 +247,46 @@
                 <div class="q-pa-md" style="max-width: 500px">
 
                   <p class="text-subtitle2">Asignar estado:</p>
-                  <q-select square filled v-model="ticketState" :options="optionState" option-value="id" option-label="descripcion" label="Estado" class="q-mb-md" />
-                  <div v-if="ticketState !== null">
-                    <div v-if="ticketState.descripcion === 'Escalado'">
+                  <q-select square filled v-model="ticketState" :options="optionState" option-value="id" option-label="descripcion" label="Estado" class="q-mb-xs" :rules="selectRule"/>
+                  <div>
                     <p class="text-subtitle2">Consulta realizada a:</p>
                     <div style="display: flex;">
                       <q-select
-                      square
+                      label="Persona Consultada"
+                      transition-show="scale"
+                      transition-hide="scale"
                       filled
-                      v-model="model"
-                      use-input
-                      hide-selected
-                      fill-input
+                      v-model="FilaDetalle.consultado"
+                      square
+                      :options="contactos"
+                      option-label="nombres"
+                      option-value="id"
                       input-debounce="0"
-                      :options="options"
-                      @filter="filterFn"
-                      style="width: 250px; padding-bottom: 32px"
+                      class="q-mb-md"
+                      style="width: 250px;"
                     />
-                      <div style="display: flex; align-items: center; justify-items: center;">
+                      <div style="display: flex; align-items: center; justify-items: center; height: fit-content;"
+                        class="q-pl-sm q-pt-sm">
                         <q-btn
-                        class="q-ml-sm"
-                        round
-                        color="primary"
-                        :size="md"
-                        icon="add"
-                      />
+                          flat
+                          round
+                          color="primary"
+                          icon="person_add"
+                          @click="mostrarAddPersonaContacto = true"
+                        />
                       </div>
                     </div>
 
                     <p class="text-subtitle2">Método de consulta</p>
                     <q-select square filled v-model="FilaDetalle.metodoconsulta" :options="metodoconsulta" option-value="id" option-label="descripcion" label="Método" class="q-mb-md" />
-                    </div>
+
                   </div>
                   <div class="text-subtitle2 q-mb-md">Observaciones: </div>
                     <q-input
                       v-model="FilaDetalle.comentarios"
                       filled
                       type="textarea"
+                      :rules="inputRules"
                     />
                     <p class="text-subtitle2 q-mt-md">Adjuntar Evidencia:</p>
                 </div>
@@ -294,7 +297,7 @@
 
               <q-card-section class="second-card buttons no-padding">
                 <q-btn v-close-popup label="Volver" color="primary" class="q-mr-md close-buttons" text-color="white"/>
-                <q-btn v-popup label="Enviar" color="primary" class="q-mr-md " text-color="white" @click="dialog2 = true"/>
+                <q-btn v-popup label="Enviar" color="primary" class="q-mr-md " text-color="white" @click="dialog2 = true" :disable="ticketState === null || FilaDetalle.comentarios === ''"/>
 
                 <q-dialog v-model="dialog2">
                   <q-card>
@@ -327,6 +330,93 @@
     <!-- Modal de imagen -->
   <q-dialog v-model="mostrarImagen">
     <VerImagenArray :datoProp="imagen"></VerImagenArray>
+  </q-dialog>
+<!-- Modal añadir persona a lista-->
+  <q-dialog
+    v-model="mostrarAddPersonaContacto"
+    transition-show="scale"
+    transition-hide="scale"
+  >
+    <q-card style="max-width: 100%; width: 40%">
+      <q-form autofocus @submit.prevent="addPersonConsulta()">
+        <q-card-section>
+          <div style="font-size: 18px; font-weight: bold; align-self: center">
+            Añadir a lista de contactos
+          </div>
+        </q-card-section>
+        <q-card-section>
+          <div class="row">
+            <div class="col-12">
+              <div class="row" style="background: #ffffff">
+                <div class="col-md-12 col-sm-12 col-xs-12">
+                  <q-input
+                    :rules="inputRules"
+                    outlined
+                    v-model="FilaContacto.nombres"
+                    dense
+                    type="text"
+                    label="Nombres"
+                    class="q-pa-md"
+                  />
+                </div>
+                <div class="col-md-12 col-sm-12 col-xs-12">
+                  <q-input
+                    outlined
+                    v-model="FilaContacto.telefono"
+                    dense
+                    type="number"
+                    label="Telefono"
+                    class="q-pa-md"
+                    :rules="[
+                      (val) =>
+                        val.length <= 10 || 'Please use maximum 3 characters',
+                    ]"
+                  />
+                </div>
+                <div class="col-md-12 col-sm-12 col-xs-12">
+                  <q-input
+                    outlined
+                    v-model="FilaContacto.correo"
+                    dense
+                    type="email"
+                    label="Correo"
+                    class="q-pa-md"
+                  />
+                </div>
+                <div class="col-md-12 col-sm-12 col-xs-12">
+                  <q-input
+                    outlined
+                    v-model="FilaContacto.area"
+                    dense
+                    type="text"
+                    label="Area"
+                    class="q-pa-md"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </q-card-section>
+
+        <q-card-actions align="right" class="bg-white text-teal q-pr-md">
+          <q-btn
+            flat
+            color="primary"
+            :label="'Aceptar'"
+            type="submit"
+            text-color="dark"
+            no-caps
+          />
+          <q-btn
+            flat
+            :label="'Cerrar'"
+            v-close-popup
+            text-color="dark"
+            no-caps
+          />
+        </q-card-actions>
+      </q-form>
+    </q-card>
   </q-dialog>
 </div>
 </template>
@@ -376,6 +466,9 @@ const ticketState = ref(null)
 const table = ref(false)
 const Fila = ref({})
 const FilaDetalle = ref({})
+const FilaContacto = ref({})
+const mostrarAddPersonaContacto = ref(false)
+const contactos = ref([])
 
 const columns = [
   {
@@ -508,6 +601,12 @@ const historial = [
   }
 ]
 
+const inputRules = [
+  (val) => (val && val.length > 0) || 'Por favor llenar el campo'
+]
+
+const selectRule = [(value) => !!value || 'Este campo es obligatorio']
+
 const valorDatosExportado = ref('')
 function actualizarValorDatosExportado (nuevoValor) {
   valorDatosExportado.value = nuevoValor
@@ -565,11 +664,13 @@ async function getData () {
     .then((response) => {
       usuarios.value = response.data
     })
+  await CargarContactos()
   table.value = true
   visible.value = false
 }
 
 async function clickRow (row) {
+  FilaDetalle.value.comentarios = ''
   Fila.value = row
 
   optionState.value = estado.value.filter((p) => p.descripcion === 'Escalado' || p.descripcion === 'Solucionado')
@@ -657,6 +758,24 @@ const formatDate = (value) => {
   const date = new Date(value)
   // return date.toLocaleDateString();  // solo la fecha DD/MM/YY
   return date.toLocaleString() // DD/MM/YY, 00:00:00
+}
+
+const addPersonConsulta = async () => {
+  if (FilaContacto.value.telefono != null) {
+    FilaContacto.value.telefono = parseInt(FilaContacto.value.telefono)
+  }
+  await api.post('contactos', FilaContacto.value).then((response) => {
+    console.log('contactos añadido')
+    mostrarAddPersonaContacto.value = false
+  })
+  await CargarContactos()
+}
+const CargarContactos = async () => {
+  FilaContacto.value = {}
+  FilaContacto.value.telefono = null
+  await api.get('contactos?select=*').then((response) => {
+    contactos.value = response.data
+  })
 }
 
 // ----------------Subscripcion a la tabla tiquetes--------------------------
