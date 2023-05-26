@@ -2,7 +2,10 @@
   <div class="q-pa-md flex">
     <TransitionGroup>
       <div class="container">
-        <q-card class="q-my-md q-mr-md row justify-evenly" v-if="table">
+        <q-card
+          class="q-my-md q-mr-md row justify-evenly"
+          v-if="table && countArrayEstado.length > 0"
+        >
           <apex-donut
             :Series="countArrayEstado"
             :cliente="cliente"
@@ -371,7 +374,7 @@
                             />
                           </div>
 
-                          <div class="col-md-4 col-sm-6 col-xs-12">
+                          <!-- <div class="col-md-4 col-sm-6 col-xs-12">
                             <q-btn
                               label="Cargar Evidencia"
                               style="color: white"
@@ -393,21 +396,10 @@
                               ></q-file>
                             </q-btn>
 
-                            <!-- <q-input
-                              @update:model-value="
-                                (val) => {
-                                  filaavatar = val;
-                                }
-                              "
-                              class="q-pa-md"
-                              outlined
-                              dense
-                              hint="Evidencia"
-                              type="file"
-                            /> -->
-                          </div>
 
-                          <div class="col-md-8 col-sm-12 col-xs-12">
+                          </div> -->
+
+                          <div class="col-md-12 col-sm-12 col-xs-12">
                             <q-input
                               outlined
                               v-model="Fila.observaciones"
@@ -420,7 +412,15 @@
                             />
                           </div>
 
-                          <div
+                          <div class="col-md-12 col-sm-12 col-xs-12">
+                            <FileInput
+                              @datos-exportado-cambiado="
+                                actualizarValorDatosExportado
+                              "
+                            ></FileInput>
+                          </div>
+
+                          <!-- <div
                             class="col-md-4 col-sm-12 col-xs-12 avatar-container"
                           >
                             <q-avatar
@@ -438,7 +438,7 @@
                               >
                               </q-img>
                             </q-avatar>
-                          </div>
+                          </div> -->
 
                           <div v-if="false" class="col-md-6 col-sm-6 col-xs-12">
                             <q-select
@@ -502,6 +502,23 @@
     </q-card>
   </q-dialog>
   <!-- <button @click="enviarCorreo">Enviar Correo</button> -->
+  <!-- <div class="q-ma-md">
+    <q-uploader
+      ref="uploader"
+      label="Seleccionar archivo de audio"
+      accept=".mp3"
+      @added="handleFileAdded"
+      :auto-upload="false"
+      :upload-factory="uploadFactory"
+    >
+      <template v-slot:meta="{ file }">
+        <div class="q-pa-sm">
+          {{ file.name }}
+        </div>
+      </template>
+    </q-uploader>
+    <q-btn label="Subir" @click="uploadAudio" />
+  </div> -->
 </template>
 
 <script setup>
@@ -521,6 +538,7 @@ import { api } from "boot/axios";
 import { useQuasar } from "quasar";
 import { createBase64Image } from "boot/global";
 import ApexDonut from "src/components/Charts/ApexDonut.vue";
+import FileInput from "src/components/FileImage.vue";
 // import nodemailer from "nodemailer";
 // import { sgMail } from "@sendgrid/mail";
 
@@ -536,6 +554,13 @@ import ApexDonut from "src/components/Charts/ApexDonut.vue";
 const idusuario = LocalStorage.getItem("IdUsuario");
 const email = LocalStorage.getItem("email");
 let $q = useQuasar();
+
+const valorDatosExportado = ref("");
+function actualizarValorDatosExportado(nuevoValor) {
+  valorDatosExportado.value = nuevoValor;
+  // FilaDetalle.value.evidencia = valorDatosExportado.value;
+}
+
 // const supabase = createClient(
 //   "https://xzovknjkdfykvximpgxh.supabase.co",
 //   JSON.parse(LocalStorage.getItem("sb-xzovknjkdfykvximpgxh-auth-token"))
@@ -814,6 +839,7 @@ const AgregarTicket = async () => {
   Fila.value.privado = null;
   Fila.value.proceso = 1;
   Fila.value.estado = 1;
+  Fila.value.evidencia = valorDatosExportado.value;
 
   if (Fila.value.solicitud == 1 || Fila.value.solicitud == 3) {
     Fila.value.prioridad = 1;
@@ -1000,7 +1026,7 @@ watchEffect(() => {
           break;
       }
 
-      switch (tipo) {
+      switch (solicitud) {
         case 1:
           labelSolicitud = "Incidentes";
           break;
@@ -1103,7 +1129,7 @@ onMounted(async () => {
 });
 setInterval(() => {
   loadData();
-}, 30000);
+}, 600000);
 
 // for (let i = 0; i < 2; i++) {
 //   rows = rows.concat(
@@ -1114,7 +1140,51 @@ setInterval(() => {
 // onMounted(() => {
 //   tableRef.value.scrollTo(10);
 // });
+async function establecerTiposMIME() {
+  const allowedMimeTypes = ["audio/mpeg", "audio/mp3", "video/mp4"]; // Agrega los tipos MIME que deseas permitir
 
+  try {
+    await supabase.storage.updateBucket("AudioTicket", {
+      allowed_mime_types: allowedMimeTypes,
+    });
+    console.log("Tipos MIME actualizados correctamente");
+  } catch (error) {
+    console.error("Error al actualizar los tipos MIME:", error.message);
+  }
+}
+
+// Llama a la función para establecer los tipos MIME permitidos
+// establecerTiposMIME();
+
+const uploaderRef = ref(null);
+const audioFile = ref(null);
+
+async function uploadFactory(file) {
+  const supabaseUrl = "https://your-supabase-url.supabase.co";
+  const supabaseKey = "your-supabase-key";
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  const { data, error } = await supabase.storage
+    .from("nombre_del_bucket")
+    .upload(file.name, file);
+
+  if (error) {
+    console.error("Error al cargar el archivo:", error.message);
+  } else {
+    console.log("Archivo cargado exitosamente:", data.Key);
+  }
+}
+
+function handleFileAdded(file) {
+  audioFile.value = file;
+}
+
+async function uploadAudio() {
+  const uploader = uploaderRef.value;
+  if (uploader && audioFile.value) {
+    await uploader.upload();
+  }
+}
 defineComponent({
   name: "MainTable",
 });
