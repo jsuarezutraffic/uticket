@@ -2,6 +2,7 @@
   <div class="q-pa-md">
     <TransitionGroup>
       <q-table
+        :loading="visible"
         v-if="table"
         virtual-scroll
         separator="horizontal"
@@ -43,7 +44,9 @@
             >Gestionar
           </q-btn>
         </template> -->
-
+        <template v-slot:loading>
+          <q-inner-loading showing color="primary" />
+        </template>
         <template v-slot:header="props">
           <q-tr :props="props" class="head-styles">
             <q-th
@@ -451,6 +454,7 @@
             <q-card flat>
               <div class="q-pa-md" v-if="TablaDetalles">
                 <q-table
+                  :loading="visible"
                   separator="horizontal"
                   flat
                   bordered
@@ -475,6 +479,9 @@
                     'verevidencias',
                   ]"
                 >
+                  <template v-slot:loading>
+                    <q-inner-loading showing color="primary" />
+                  </template>
                   <template v-slot:header="props">
                     <q-tr :props="props" class="head-styles">
                       <q-th
@@ -1466,6 +1473,7 @@ const GestionTiquete = async (accionValue) => {
 };
 
 const LoadData = async () => {
+  visible.value = true;
   if (users.value.filter((p) => p.id == idusuario)[0].nivel === 3) {
     await api
       .get(`tiquete?asignado=eq.${idusuario}&select=*`)
@@ -1607,6 +1615,7 @@ const DatosGenerales = async () => {
   await CargarContactos();
   // Fila.value.asignado = "4ca6c4d3-c2f9-4c1f-9411-de9271b9519f";
   // Fila.value.privado = null;
+  visible.value = false;
   table.value = true;
 };
 
