@@ -29,17 +29,22 @@
     </div>
 
     <q-file
-      class="col q-pa-md FileSelected"
+      class="col q-ma-md FileSelected"
       accept="image/*"
       multiple
       outlined
+      dense
       use-chips
       v-model="filaavatar"
+      ref="fileInput"
     >
       <template v-slot:prepend>
         <div class="q-space-between"></div>
         <q-icon name="image" />
-        <span class="q-mx-sm text-body2 non-selectable">
+        <span
+          class="q-mx-sm text-body2 non-selectable"
+          @click="activateInput()"
+        >
           {{
             filaavatar.length > 0
               ? "Imágenes cargadas: " + filaavatar.length
@@ -61,7 +66,11 @@ const loadingImage = ref(false);
 const filaavatar = ref([]);
 const archivos = ref([]);
 const archivos2 = ref("");
+const fileInput = ref(null);
 
+const activateInput = () => {
+  fileInput.value.pickFiles();
+};
 // se ejecuta cuando se carga la imagen
 watch(filaavatar, (currentValue, oldValue) => {
   console.log(filaavatar.value);

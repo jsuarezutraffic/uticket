@@ -54,7 +54,7 @@ import { mostrarMensajes, getSelectedString } from "boot/global";
 const store = useMainStore();
 const config = useConfigStore().config;
 
-//supabase
+// supabase
 // const supabaseKey = store.supabase_Key;
 // const supabaseUrl = store.supabase_Url;
 // const supabase = createClient(supabaseUrl, supabaseKey);
@@ -80,8 +80,10 @@ const IniciarSesion = async () => {
     )
     .then((response) => {
       store.inicio(response.data);
-      const toPath = `/${config.nivel}/index`;
+      const toPath = `/`;
+      // const toPath = `/${config.nivel}/index`
       router.push(toPath);
+      console.log(response.data);
     })
     .catch((error) => {
       mostrarMensajes({
