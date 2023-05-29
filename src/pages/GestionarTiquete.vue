@@ -19,6 +19,7 @@
         hide-pagination="true"
         v-model:pagination="pagination"
         :visible-columns="[
+          'id',
           'created_at',
           'cliente',
           'concesion',
@@ -32,7 +33,7 @@
           'asignado',
         ]"
       >
-        <template v-slot:top>
+        <!-- <template v-slot:top>
           <q-btn
             :disable="!selected.length > 0"
             class="q-ma-xs"
@@ -41,7 +42,7 @@
             @click="getDetalleTiquete()"
             >Gestionar
           </q-btn>
-        </template>
+        </template> -->
 
         <template v-slot:header="props">
           <q-tr :props="props" class="head-styles">
@@ -58,13 +59,11 @@
         </template>
 
         <template v-slot:body="props">
-          <q-tr
-            :props="props"
-            @click="
+          <!-- @click="
               props.selected = !props.selected;
               clickRow(props.row);
-            "
-          >
+            " -->
+          <q-tr :props="props">
             <q-td v-for="col in props.cols" :key="col.name" :props="props">
               <div v-if="col.name == 'cliente'">
                 {{ cliente.filter((p) => p.id == col.value)[0].nombres }}
@@ -106,7 +105,31 @@
               <div v-else-if="col.name == 'asignado'">
                 {{ users.filter((p) => p.id == col.value)[0].nombre }}
               </div>
-
+              <div v-else-if="col.name == 'id'">
+                <q-btn
+                  class="q-px-sm"
+                  color="primary"
+                  size="md"
+                  no-caps
+                  outline
+                  dense
+                  @click="
+                    props.selected = !props.selected;
+                    clickRow(props.row);
+                  "
+                  ><span style="color: black">{{ col.value }}</span>
+                </q-btn>
+                <!-- <q-btn
+                  class="q-px-sm"
+                  color="primary"
+                  size="md"
+                  no-caps
+                  outline
+                  dense
+                  @click="getDetalleTiquete(props.row)"
+                  ><span style="color: black">{{ col.value }}</span>
+                </q-btn> -->
+              </div>
               <div v-else>
                 {{ col.value }}
               </div>
@@ -651,7 +674,10 @@
           <div class="row">
             <div class="col-12">
               <div class="row" style="background: #ffffff">
-                <div class="col-md-5 col-sm-5 col-xs-12">
+                <div
+                  class="col-md-5 col-sm-5 col-xs-12"
+                  v-if="accion == 'AsignarTicket'"
+                >
                   <q-select
                     :rules="selectRule"
                     label="Metodo de Consulta"
@@ -668,7 +694,10 @@
                     map-options
                   />
                 </div>
-                <div class="col-md-5 col-sm-5 col-xs-12">
+                <div
+                  class="col-md-5 col-sm-5 col-xs-12"
+                  v-if="accion == 'AsignarTicket'"
+                >
                   <q-select
                     :rules="selectRule"
                     label="Persona Consultada"
@@ -695,7 +724,10 @@
                     </template>
                   </q-select>
                 </div>
-                <div class="col-md-2 col-sm-2 col-xs-12 container2">
+                <div
+                  class="col-md-2 col-sm-2 col-xs-12 container2"
+                  v-if="accion == 'AsignarTicket'"
+                >
                   <q-btn
                     flat
                     round
@@ -859,18 +891,21 @@
         </div>
         <div class="col-2" style="margin: auto; padding: 10px">
           <q-btn
+            class="q-mx-md"
             v-if="accion == 'CerrarTicket'"
             label="No"
             v-close-popup
             color="negative"
           />
           <q-btn
+            class="q-mx-md"
             v-if="accion == 'CerrarTicket'"
             label="Si"
             color="primary"
             @click="GestionTiquete('ConfimarCerrar')"
           />
           <q-btn
+            class="q-mx-md"
             v-show="accion == 'alerta'"
             label="Cerrar"
             color="grey"
@@ -963,9 +998,9 @@ const inputRules = [
 const columns = [
   {
     name: "id",
-    // required: true,
-    label: "ID",
-    align: "left",
+    required: true,
+    label: "Ticket",
+    align: "center",
     field: "id",
     sortable: true,
   },
@@ -1160,10 +1195,15 @@ const clickRow = (row) => {
   Fila.value = row;
   oldProridad.value = row.prioridad;
   next.value.prioridad = Fila.value.prioridad;
+  getDetalleTiquete();
 };
 const clickRowDetalle = (row) => {};
 
 const getDetalleTiquete = async () => {
+  visible.value = true;
+  // Fila.value = row;
+  // oldProridad.value = row.prioridad;
+  // next.value.prioridad = Fila.value.prioridad;
   next.value.nivel = null;
   next.value.operador = null;
   await api
@@ -1173,6 +1213,7 @@ const getDetalleTiquete = async () => {
       TablaDetalles.value = true;
       mostrarModal.value = true;
     });
+  visible.value = false;
 };
 const GestionTiquete = async (accionValue) => {
   if (accion.value == "SolucionarTicket") {
@@ -1575,6 +1616,7 @@ supabase
         timeout: 4000,
       });
       LoadData();
+      DatosGenerales();
     }
   )
   .subscribe();
@@ -1592,6 +1634,16 @@ supabase
       });
 
       LoadData();
+    }
+  )
+  .subscribe();
+supabase
+  .channel("custom-insert-channel")
+  .on(
+    "postgres_changes",
+    { event: "INSERT", schema: "public", table: "contactos" },
+    (payload) => {
+      DatosGenerales();
     }
   )
   .subscribe();
