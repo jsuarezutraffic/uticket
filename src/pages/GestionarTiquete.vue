@@ -1938,6 +1938,9 @@ watchEffect(() => {
         case 4:
           label = "Solucionado";
           break;
+        case 7:
+          label = "Devuelto";
+          break;
       }
 
       switch (prioridad) {
