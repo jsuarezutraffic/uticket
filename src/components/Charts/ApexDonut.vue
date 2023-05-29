@@ -35,7 +35,7 @@ import { computed, toRefs, ref, watchEffect } from "vue";
 const props = defineProps(["Series", "title", "width"]);
 let { Series, title, width } = toRefs(props);
 const visible = ref(true);
-console.log("seriesapex", Series.value);
+// console.log("seriesapex", Series.value);
 
 watchEffect(() => {
   if (Series.value[0]) {
@@ -52,13 +52,13 @@ const seriesCalc = computed(() => {
   Series.value.forEach((item) => {
     series.push(item.value);
   });
-  console.log("series", series);
+  // console.log("series", series);
 
   return series;
 });
 const titleDefault = computed(() => {
   if (title.value === null || title.value === undefined) {
-    return "Proporción créditos";
+    return "Ticket";
   }
   return title.value;
 });
@@ -148,7 +148,7 @@ const optionsCalc = computed(() => {
   });
   options.labels = labels;
 
-  console.log("labels: ", options.labels);
+  // console.log("labels: ", options.labels);
   return options;
 });
 </script>

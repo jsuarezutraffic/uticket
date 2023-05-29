@@ -116,50 +116,83 @@
       </q-table>
     </TransitionGroup>
 
-    <div class="containerDashboard">
-      <q-card class="q-my-md q-mr-md row justify-evenly" v-if="table">
-        <apex-donut
-          :Series="countArrayEstado"
-          :cliente="cliente"
-          :prioridades="Prioridades"
-          title="Estados"
-          width="320"
-        />
+    <div
+      class="row containerDashboard q-col-gutter-md"
+      v-if="table && countArrayEstado.length > 0"
+    >
+      <div
+        class="col-md-12 col-xs-12 q-mt-md"
+        style="margin-left: auto; margin-right: auto"
+      >
+        <!-- <q-card class="q-mt-md row justify-evenly"> -->
+        <!-- <div class="row">
+          <div class="col-md-6 col-xs-6"> -->
 
-        <apex-donut
-          :Series="countArrayPrioridad"
-          :cliente="cliente"
-          :prioridades="Prioridades"
-          title="Prioridades"
-          width="320"
-        />
-
-        <apex-donut
-          :Series="countArraySolicitud"
-          :cliente="cliente"
-          :prioridades="Prioridades"
-          title="Solicitudes"
-          width="320"
-        />
-
-        <apex-donut
+        <!-- <apex-donut
+            :Series="countArrayAsignado"
+            :cliente="cliente"
+            :prioridades="Prioridades"
+            title="Asignado"
+            width="320"
+          /> -->
+        <!-- <apex-column
+            :Series="countArrayAsignado"
+            :cliente="cliente"
+            :prioridades="Prioridades"
+            title="Asignado"
+            width="320"
+          /> -->
+        <apex-bar
           :Series="countArrayAsignado"
-          :cliente="cliente"
-          :prioridades="Prioridades"
+          :Detalles="arraydatallesUsuarioFiltrada"
           title="Asignado"
           width="320"
         />
+        <!-- </q-card> -->
+      </div>
 
-        <apex-donut
-          :Series="countArrayTipo"
-          :cliente="cliente"
-          :prioridades="Prioridades"
-          title="Tipos"
-          width="320"
-        />
-      </q-card>
+      <div class="col-md-12 col-xs-12">
+        <span style="font-size: 16px; font-weight: bold"> Generales</span>
+
+        <q-card class="col-md-6 col-xs-6 row justify-evenly">
+          <!-- <div class="row">
+          <div class="col-md-6 col-xs-6"> -->
+          <apex-donut
+            :Series="countArrayEstado"
+            :cliente="cliente"
+            :prioridades="Prioridades"
+            title="Estados"
+            width="300"
+          />
+
+          <apex-donut
+            :Series="countArrayPrioridad"
+            :cliente="cliente"
+            :prioridades="Prioridades"
+            title="Prioridades"
+            width="300"
+          />
+
+          <apex-donut
+            :Series="countArraySolicitud"
+            :cliente="cliente"
+            :prioridades="Prioridades"
+            title="Solicitudes"
+            width="300"
+          />
+
+          <apex-donut
+            :Series="countArrayTipo"
+            :cliente="cliente"
+            :prioridades="Prioridades"
+            title="Tipos"
+            width="300"
+          />
+          <!-- </div>
+        </div> -->
+        </q-card>
+      </div>
     </div>
-    <!-- </div> -->
 
     <q-inner-loading
       :showing="visible"
@@ -823,6 +856,8 @@ import { useMainStore } from "src/stores/main";
 import { useConfigStore } from "src/stores/config";
 import { createClient } from "@supabase/supabase-js";
 import ApexDonut from "src/components/Charts/ApexDonut.vue";
+import ApexColumn from "src/components/Charts/ApexColumn.vue";
+import ApexBar from "src/components/Charts/BarTurno.vue";
 import FileInput from "src/components/FileImage.vue";
 import VerImagenArray from "src/components/VerImagenArray.vue";
 //supabase
@@ -1120,7 +1155,7 @@ const GestionTiquete = async (accionValue) => {
       FilaDetalle.value.comentarios
     );
     FilaDetalle.value.evidencia = valorDatosExportado.value;
-    console.log(FilaDetalle.value);
+    // console.log(FilaDetalle.value);
 
     // post a la tabla de detalles tiquetes------------------
     await api
@@ -1407,6 +1442,131 @@ const countArrayTipo = ref([]);
 const countArraySolicitud = ref([]);
 const countArrayAsignado = ref([]);
 
+const datallesUsuario = ref([
+  {
+    usuario: "Josue Suarez",
+    quarters: [
+      {
+        x: "Incidentes",
+        y: 0,
+      },
+      {
+        x: "Requerimiento",
+        y: 0,
+      },
+      {
+        x: "PQR",
+        y: 0,
+      },
+    ],
+  },
+  {
+    usuario: "Jose Echeverry",
+    quarters: [
+      {
+        x: "Incidentes",
+        y: 0,
+      },
+      {
+        x: "Requerimiento",
+        y: 0,
+      },
+      {
+        x: "PQR",
+        y: 0,
+      },
+    ],
+  },
+  {
+    usuario: "Francisco Miranda",
+    quarters: [
+      {
+        x: "Incidentes",
+        y: 0,
+      },
+      {
+        x: "Requerimiento",
+        y: 0,
+      },
+      {
+        x: "PQR",
+        y: 0,
+      },
+    ],
+  },
+  {
+    usuario: "Jose Payares",
+    quarters: [
+      {
+        x: "Incidentes",
+        y: 0,
+      },
+      {
+        x: "Requerimiento",
+        y: 0,
+      },
+      {
+        x: "PQR",
+        y: 0,
+      },
+    ],
+  },
+  {
+    usuario: "Alvaro Herrada",
+    quarters: [
+      {
+        x: "Incidentes",
+        y: 0,
+      },
+      {
+        x: "Requerimiento",
+        y: 0,
+      },
+      {
+        x: "PQR",
+        y: 0,
+      },
+    ],
+  },
+  {
+    usuario: "Sitio",
+    quarters: [
+      {
+        x: "Incidentes",
+        y: 0,
+      },
+      {
+        x: "Requerimiento",
+        y: 0,
+      },
+      {
+        x: "PQR",
+        y: 0,
+      },
+    ],
+  },
+]);
+
+let jsondatallesUsuario = {
+  usuario: "",
+  quarters: [
+    {
+      x: "Incidentes",
+      y: 0,
+    },
+    {
+      x: "Requerimiento",
+      y: 0,
+    },
+    {
+      x: "PQR",
+      y: 0,
+    },
+  ],
+};
+
+const arraydatallesUsuario = ref([]);
+const arraydatallesUsuarioFiltrada = ref([]);
 watchEffect(() => {
   {
     const countByEstado = {};
@@ -1416,7 +1576,130 @@ watchEffect(() => {
     const countByAsignado = {};
 
     // Contar la cantidad de objetos por estado
+
+    // console.log("tiquetes.value: ", tiquetes.value);
     tiquetes.value.forEach((obj) => {
+      if (
+        users.value.filter((p) => p.id == obj.asignado)[0].nombre ==
+        "Josue Suarez"
+      ) {
+        if (
+          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
+          "Incidentes"
+        ) {
+          datallesUsuario.value[0].quarters[0].y++;
+        } else if (
+          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
+          "Requerimiento"
+        ) {
+          datallesUsuario.value[0].quarters[1].y++;
+        } else if (
+          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
+          "PQR"
+        ) {
+          datallesUsuario.value[0].quarters[2].y++;
+        }
+      } else if (
+        users.value.filter((p) => p.id == obj.asignado)[0].nombre ==
+        "Jose Echeverry"
+      ) {
+        if (
+          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
+          "Incidentes"
+        ) {
+          datallesUsuario.value[1].quarters[0].y++;
+        } else if (
+          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
+          "Requerimiento"
+        ) {
+          datallesUsuario.value[1].quarters[1].y++;
+        } else if (
+          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
+          "PQR"
+        ) {
+          datallesUsuario.value[1].quarters[2].y++;
+        }
+      } else if (
+        users.value.filter((p) => p.id == obj.asignado)[0].nombre ==
+        "Francisco Miranda"
+      ) {
+        if (
+          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
+          "Incidentes"
+        ) {
+          datallesUsuario.value[2].quarters[0].y++;
+        } else if (
+          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
+          "Requerimiento"
+        ) {
+          datallesUsuario[2].quarters[1].y++;
+        } else if (
+          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
+          "PQR"
+        ) {
+          datallesUsuario.value[2].quarters[2].y++;
+        }
+      } else if (
+        users.value.filter((p) => p.id == obj.asignado)[0].nombre ==
+        "Jose Payares"
+      ) {
+        if (
+          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
+          "Incidentes"
+        ) {
+          datallesUsuario.value[3].quarters[0].y++;
+        } else if (
+          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
+          "Requerimiento"
+        ) {
+          datallesUsuario.value[3].quarters[1].y++;
+        } else if (
+          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
+          "PQR"
+        ) {
+          datallesUsuario.value[3].quarters[2].y++;
+        }
+      } else if (
+        users.value.filter((p) => p.id == obj.asignado)[0].nombre ==
+        "Alvaro Herrada"
+      ) {
+        if (
+          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
+          "Incidentes"
+        ) {
+          datallesUsuario.value[4].quarters[0].y++;
+        } else if (
+          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
+          "Requerimiento"
+        ) {
+          datallesUsuario.value[4].quarters[1].y++;
+        } else if (
+          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
+          "PQR"
+        ) {
+          datallesUsuario.value[4].quarters[2].y++;
+        }
+      } else if (
+        users.value.filter((p) => p.id == obj.asignado)[0].nombre == "Sitio"
+      ) {
+        if (
+          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
+          "Incidentes"
+        ) {
+          datallesUsuario.value[5].quarters[0].y++;
+        } else if (
+          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
+          "Requerimiento"
+        ) {
+          datallesUsuario.value[5].quarters[1].y++;
+        } else if (
+          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
+          "PQR"
+        ) {
+          datallesUsuario.value[5].quarters[2].y++;
+        }
+      }
+
       const estado = obj.estado;
       const prioridad = obj.prioridad;
       const tipo = obj.tipo;
@@ -1430,14 +1713,26 @@ watchEffect(() => {
       let labelAsigando;
 
       switch (users.value.filter((p) => p.id == asignado)[0].nombre) {
-        case "Alfonso Bossa":
-          labelAsigando = "Bossa";
+        case "Francisco Miranda":
+          labelAsigando = users.value.filter((p) => p.id == asignado)[0].nombre;
           break;
         case "Josue Suarez":
-          labelAsigando = "Suarez";
+          labelAsigando = users.value.filter((p) => p.id == asignado)[0].nombre;
+          break;
+        case "Jose Echeverry":
+          labelAsigando = users.value.filter((p) => p.id == asignado)[0].nombre;
+          break;
+        case "Jose Payares":
+          labelAsigando = users.value.filter((p) => p.id == asignado)[0].nombre;
+          break;
+        case "Alvaro Herrada":
+          labelAsigando = users.value.filter((p) => p.id == asignado)[0].nombre;
+          break;
+        case "Sitio":
+          labelAsigando = users.value.filter((p) => p.id == asignado)[0].nombre;
           break;
         default:
-          labelAsigando = "Estado desconocido";
+          labelAsigando = "Operador desconocido";
           break;
       }
 
@@ -1489,6 +1784,7 @@ watchEffect(() => {
       switch (solicitud) {
         case 1:
           labelSolicitud = "Incidentes";
+
           break;
         case 2:
           labelSolicitud = "Requerimiento";
@@ -1543,18 +1839,75 @@ watchEffect(() => {
         countByAsignado[labelAsigando].value++;
       }
     });
-
-    // const filteredArray = computed(() => {
-    //   return tiquetes.value.filter((item1) =>
-    //     Prioridades.value.some((item2) => item2.id === item1.prioridad)
-    //   );
-    // });
+    // console.log("detalle", datallesUsuario.value);
     countArrayEstado.value = Object.values(countByEstado);
     countArrayPrioridad.value = Object.values(countByPrioridad);
     countArrayTipo.value = Object.values(countByTipo);
     countArraySolicitud.value = Object.values(countBySolicitud);
     countArrayAsignado.value = Object.values(countByAsignado);
-    console.log("countByAsignado: ", countByAsignado);
+    countArrayAsignado.value.sort((a, b) => a.label.localeCompare(b.label));
+    arraydatallesUsuario.value = datallesUsuario.value.slice();
+
+    arraydatallesUsuarioFiltrada.value = arraydatallesUsuario.value.filter(
+      (item) => item.quarters.some((q) => q.y !== 0)
+    );
+    arraydatallesUsuarioFiltrada.value.sort((a, b) =>
+      a.usuario.localeCompare(b.usuario)
+    );
+    console.log(
+      "arraydatallesUsuarioFiltrada.value: ",
+      arraydatallesUsuarioFiltrada.value
+    );
+
+    // for (let index = 0; index < arraydatallesUsuario.value.length; index++) {
+    //   let estat = 0;
+    //   console.log(
+    //     "arraydatallesUsuario.value[index]",
+    //     index,
+    //     arraydatallesUsuario.value[index]
+    //   );
+    //   arraydatallesUsuario.value[index].quarters.forEach((objeto) => {
+    //     if (objeto.y == 0) {
+    //       estat++;
+    //     }
+    //   });
+    //   // console.log("estat:", estat);
+    //   if (estat == 3) {
+    //     arraydatallesUsuario.value.splice(index, 1);
+    //   }
+    // }
+    // console.log("arraydatallesUsuario.value", arraydatallesUsuario.value);
+
+    // countArrayAsignado.value.forEach((obj) => {
+    //   console.log(obj);
+
+    //   switch (users.value.filter((p) => p.id == asignado)[0].nombre) {
+    //     case "Francisco Miranda":
+    //     tiquetes.value.forEach((obj2) => {
+
+    //     })
+    //     break
+    //     case "Josue Suarez":
+    //       labelAsigando = users.value.filter((p) => p.id == asignado)[0].nombre;
+    //       break;
+    //     case "Jose Echeverry":
+    //       labelAsigando = users.value.filter((p) => p.id == asignado)[0].nombre;
+    //       break;
+    //     case "Jose Payares":
+    //       labelAsigando = users.value.filter((p) => p.id == asignado)[0].nombre;
+    //       break;
+    //     case "Alvaro Herrada":
+    //       labelAsigando = users.value.filter((p) => p.id == asignado)[0].nombre;
+    //       break;
+    //     case "Sitio":
+    //       labelAsigando = users.value.filter((p) => p.id == asignado)[0].nombre;
+    //       break;
+    //     default:
+    //       labelAsigando = "Operador desconocido";
+    //       break;
+    //   }
+    // });
+    // // console.log("countByAsignado: ", countByAsignado);
   }
 });
 
