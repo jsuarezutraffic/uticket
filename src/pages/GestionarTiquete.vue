@@ -1,9 +1,9 @@
 <template>
-  <div class="q-pa-md flex">
+  <div class="q-pa-md">
     <TransitionGroup>
       <q-table
         v-if="table"
-        class="table-container"
+        virtual-scroll
         separator="horizontal"
         flat
         bordered
@@ -1009,14 +1009,11 @@ import {
   watch,
   watchEffect,
   computed,
+  onBeforeUnmount,
 } from "vue";
 import { LocalStorage, useQuasar } from "quasar";
 import { api } from "boot/axios";
-import {
-  mostrarMensajes,
-  getSelectedString,
-  createBase64Image,
-} from "boot/global";
+import { mostrarMensajes } from "boot/global";
 import { supabase } from "src/supabase";
 import { useMainStore } from "src/stores/main";
 import { useConfigStore } from "src/stores/config";
@@ -1027,7 +1024,6 @@ import ApexBar from "src/components/Charts/BarTurno.vue";
 import FileInput from "src/components/FileImage.vue";
 import VerImagenArray from "src/components/VerImagenArray.vue";
 //supabase
-
 const valorDatosExportado = ref("");
 function actualizarValorDatosExportado(nuevoValor) {
   valorDatosExportado.value = nuevoValor;
@@ -1059,7 +1055,7 @@ const next = ref({
   prioridad: null,
 });
 const pagination = ref({
-  rowsPerPage: 10,
+  rowsPerPage: 8,
 });
 const imagen = ref("");
 const disable = ref(false);
