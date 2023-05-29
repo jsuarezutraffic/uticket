@@ -56,6 +56,7 @@
         fixed-header
         v-model:expanded="expanded"
         :visible-columns="[
+          'id',
           'created_at',
           'cliente',
           'concesion',
@@ -67,6 +68,7 @@
           'tipo',
           'subtipo',
           'finalizar',
+          'devuelto',
         ]"
       >
         >
@@ -156,11 +158,41 @@
                   size="sm"
                   no-caps
                   dense
-                  @click="(FilaFinalizar = props.row), (mostrarConfirm = true)"
+                  @click="
+                    (FilaFinalizar = props.row),
+                      (mensaje = '¿Esta seguro de Finalizar el Ticket?'),
+                      (mostrarConfirm = true)
+                  "
                   >Finalizar
                   <!-- <q-tooltip class="bg-primary" :offset="[10, 10]">
             {{ $t("Atras") }}
           </q-tooltip> -->
+                </q-btn>
+              </div>
+              <div v-else-if="col.name == 'devuelto'">
+                <q-btn
+                  class="q-px-sm"
+                  color="light-green-5"
+                  size="sm"
+                  no-caps
+                  dense
+                  @click="
+                    (FilaFinalizar = props.row),
+                      (mensaje = '¿Esta seguro de Devolver el Ticket?'),
+                      (mostrarConfirm = true)
+                  "
+                  >Devolver
+                </q-btn>
+              </div>
+              <div v-else-if="col.name == 'id'">
+                <q-btn
+                  class="q-px-sm"
+                  color="primary"
+                  size="md"
+                  no-caps
+                  outline
+                  dense
+                  ><span style="color: black">{{ col.value }}</span>
                 </q-btn>
               </div>
 
@@ -489,9 +521,7 @@
           <q-icon name="error_outline" size="6em" />
         </div>
         <div class="col-4" style="margin: auto; padding: 10px">
-          <span style="font-size: 18px">
-            ¿Esta seguro de Finalizar el Ticket?</span
-          >
+          <span style="font-size: 18px"> {{ mensaje }}</span>
         </div>
         <div class="col-2" style="margin: auto; padding: 10px">
           <q-btn label="No" v-close-popup color="negative" />
@@ -585,6 +615,7 @@ const Estados = ref([]);
 const Procesos = ref([]);
 const Solicitudes = ref([]);
 const Usuarios = ref([]);
+const mensaje = ref("");
 
 const mostrarModal = ref(false);
 const mostrarConfirm = ref(false);
@@ -604,7 +635,7 @@ const columns = [
   {
     name: "id",
     // required: true,
-    label: "ID",
+    label: "Ticket",
     align: "left",
     field: "id",
     sortable: true,
@@ -629,7 +660,7 @@ const columns = [
     align: "left",
     label: "Cliente",
     field: "cliente",
-    sortable: true,
+    sortable: false,
   },
 
   {
@@ -637,7 +668,7 @@ const columns = [
     align: "left",
     label: "Concesión",
     field: "concesion",
-    sortable: true,
+    sortable: false,
   },
 
   {
@@ -718,7 +749,14 @@ const columns = [
     align: "left",
     label: "",
     field: "finalizar",
-    sortable: true,
+    sortable: false,
+  },
+  {
+    name: "devuelto",
+    align: "left",
+    label: "",
+    field: "devuelto",
+    sortable: false,
   },
 ];
 
@@ -888,33 +926,75 @@ const AgregarTicket = async () => {
 
 const Finalizar = () => {
   mostrarConfirm.value = false;
-  console.log("FINALIZAR: ", FilaFinalizar.value);
 
-  if (FilaFinalizar.value.estado == 6) {
+  // console.log(
+  //   "FINALIZAR: ",
+  //   Estados.value.filter((p) => p.descripcion == "Finalizado")[0].id
+  // );
+  // if (
+  //   Estados.value.filter((p) => p.id == FilaFinalizar.value.estado)[0]
+  //     .descripcion == "Devuelto"
+  // ) {
+  //   $q.notify({
+  //     type: "warning",
+  //     message: "Ticket ya fue Devuelto",
+  //     timeout: 4000,
+  //   });
+  //   return;
+  // } else {
+  if (mensaje.value == "¿Esta seguro de Devolver el Ticket?") {
+    FilaFinalizar.value.estado = Estados.value.filter(
+      (p) => p.descripcion == "Devuelto"
+    )[0].id;
+  }
+  // }
+
+  if (
+    Estados.value.filter((p) => p.id == FilaFinalizar.value.estado)[0]
+      .descripcion == "Finalizado"
+  ) {
     $q.notify({
       type: "warning",
       message: "Ticket ya fue Finalizado",
       timeout: 4000,
     });
     return;
+  } else {
+    if (mensaje.value == "¿Esta seguro de Finalizar el Ticket?") {
+      FilaFinalizar.value.estado = Estados.value.filter(
+        (p) => p.descripcion == "Finalizado"
+      )[0].id;
+    }
   }
-  FilaFinalizar.value.estado = 6;
+
   api
     .put("tiquete?id=eq." + FilaFinalizar.value.id, FilaFinalizar.value)
     .then((response) => {
-      console.log("Solicitud exitosa:", response);
       loadData();
       mostrarModal.value = false;
-      Fila.value.estado = "Finalizado";
-      Fila.value.mensaje1 =
-        "La solicitud fue revisada y finalizada por el equipo de soporte de";
-      Fila.value.mensaje2 = "";
+      if (mensaje.value == "¿Esta seguro de Devolver el Ticket?") {
+        Fila.value.estado = "Devuelto";
+        Fila.value.mensaje1 =
+          "La solicitud sera revisada nuevamente por el equipo de soporte de";
+        Fila.value.mensaje2 =
+          "Sera informado por este medio y el aplicativo cuando se solucione la problematica.";
+      } else {
+        Fila.value.estado = "Finalizado";
+        Fila.value.mensaje1 =
+          "La solicitud fue revisada y finalizada por el equipo de soporte de";
+        Fila.value.mensaje2 = "";
+      }
+
       enviarCorreo(Fila.value);
 
-      if (response.status == 201 || response.status == 200) {
+      if (
+        response.status == 201 ||
+        response.status == 200 ||
+        response.status == 204
+      ) {
         $q.notify({
           type: "positive",
-          message: "Ticket Finalizado exitosamente",
+          message: "Cambio realizado exitosamente, revise su correo",
           timeout: 4000,
         });
       }
@@ -997,6 +1077,9 @@ watchEffect(() => {
         case 6:
           label = "Finalizado";
           break;
+        case 7:
+          label = "Devuelto";
+          break;
         default:
           label = "Estado interno";
           break;
@@ -1060,7 +1143,7 @@ watchEffect(() => {
       //   });
       // }
 
-      if (estado === 1 || estado === 5 || estado === 6) {
+      if (estado === 1 || estado === 5 || estado === 6 || estado == 7) {
         if (!countByEstado[label]) {
           countByEstado[label] = {
             label: label,
@@ -1129,7 +1212,7 @@ onMounted(async () => {
 });
 setInterval(() => {
   loadData();
-}, 600000);
+}, 60000);
 
 // for (let i = 0; i < 2; i++) {
 //   rows = rows.concat(

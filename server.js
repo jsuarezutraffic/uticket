@@ -14,7 +14,7 @@ app.use(cors());
 app.post("/enviar-correo", (req, res) => {
   const msg = {
     to: req.body.email,
-    from: "ldiaz@utraffic.co",
+    from: "soporte@utraffic.co",
     templateId: "d-6bc31a8f2e6847129f044a25b6bc15f0",
     dynamicTemplateData: {
       // Puedes proporcionar los datos dinámicos utilizados en la plantilla aquí
