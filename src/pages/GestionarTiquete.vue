@@ -674,7 +674,7 @@
                     outlined
                     v-model="next.nivel"
                     dense
-                    :options="Procesos.filter((p) => p.id > Fila.proceso)"
+                    :options="Procesos"
                     option-label="descripcion"
                     option-value="id"
                     class="q-pa-md"
@@ -1815,7 +1815,7 @@ watchEffect(() => {
           solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
           "Requerimiento"
         ) {
-          datallesUsuario[2].quarters[1].y++;
+          datallesUsuario.value[2].quarters[1].y++;
         } else if (
           solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
           "PQR"
