@@ -71,7 +71,6 @@
           'devuelto',
         ]"
       >
-        >
         <template v-slot:top>
           <!-- <q-btn color="secondary" size="md" @click="Atras()"
             >Mis Tickets
@@ -83,7 +82,10 @@
             class="q-ma-xs"
             color="secondary"
             size="md"
-            @click="mostrarModal = true"
+            @click="
+              Fila = {};
+              mostrarModal = true;
+            "
             >Nuevo Ticket
             <!-- <q-tooltip class="bg-primary" :offset="[10, 10]">
             {{ $t("Atras") }}
@@ -192,6 +194,10 @@
                   no-caps
                   outline
                   dense
+                  @click="
+                    props.selected = !props.selected;
+                    clickRow(props.row);
+                  "
                   ><span style="color: black">{{ col.value }}</span>
                 </q-btn>
               </div>
@@ -268,24 +274,23 @@
           >
             <q-card flat>
               <div class="q-pa-md">
-                <q-card>
-                  <q-form @submit.prevent="AgregarTicket()" id="form">
-                    <div class="row">
-                      <div class="col-12">
-                        <div class="row" style="background: #ffffff">
-                          <div class="col-md-12 col-sm-12 col-xs-12">
-                            <q-input
-                              outlined
-                              v-model="concesion[0].nombre"
-                              dense
-                              label="Concesion"
-                              class="q-pa-md"
-                              readonly
-                            />
-                          </div>
+                <q-form @submit.prevent="AgregarTicket()" id="form">
+                  <div class="row">
+                    <div class="col-12">
+                      <div class="row" style="background: #ffffff">
+                        <div class="col-md-12 col-sm-12 col-xs-12">
+                          <q-input
+                            outlined
+                            v-model="concesion[0].nombre"
+                            dense
+                            label="Concesion"
+                            class="q-pa-md"
+                            readonly
+                          />
+                        </div>
 
-                          <div class="col-md-4 col-sm-6 col-xs-12">
-                            <!-- <q-input
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                          <!-- <q-input
                               outlined
                               v-model="Fila.adoperadorcodigo"
                               dense
@@ -293,146 +298,125 @@
                               class="q-pa-md"
                             /> -->
 
-                            <q-select
-                              outlined
-                              v-model="Fila.peaje"
-                              :options="peajes"
-                              option-label="nombre"
-                              option-value="id"
-                              label="Peaje"
-                              dense
-                              class="q-pa-md"
-                              emit-value
-                              :rules="rules"
-                              lazy-rules
-                              map-options
-                            ></q-select>
-                          </div>
+                          <q-select
+                            outlined
+                            v-model="Fila.peaje"
+                            :options="peajes"
+                            option-label="nombre"
+                            option-value="id"
+                            label="Peaje"
+                            dense
+                            class="q-pa-md"
+                            emit-value
+                            :rules="rules"
+                            lazy-rules
+                            map-options
+                          ></q-select>
+                        </div>
 
-                          <div class="col-md-4 col-sm-6 col-xs-12">
-                            <q-select
-                              label="Solicitud"
-                              transition-show="scale"
-                              transition-hide="scale"
-                              outlined
-                              v-model="Fila.solicitud"
-                              dense
-                              :options="Solicitudes"
-                              option-label="nombre"
-                              option-value="id"
-                              class="q-pa-md"
-                              emit-value
-                              map-options
-                              :rules="rules"
-                              lazy-rules
-                            />
-                          </div>
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                          <q-select
+                            label="Solicitud"
+                            transition-show="scale"
+                            transition-hide="scale"
+                            outlined
+                            v-model="Fila.solicitud"
+                            dense
+                            :options="Solicitudes"
+                            option-label="nombre"
+                            option-value="id"
+                            class="q-pa-md"
+                            emit-value
+                            map-options
+                            :rules="rules"
+                            lazy-rules
+                          />
+                        </div>
 
-                          <div class="col-md-4 col-sm-6 col-xs-12">
-                            <q-select
-                              label="Tipo"
-                              transition-show="scale"
-                              transition-hide="scale"
-                              outlined
-                              v-model="Fila.tipo"
-                              dense
-                              :options="Tipos"
-                              option-label="descripcion"
-                              option-value="id"
-                              emit-value
-                              map-options
-                              class="q-pa-md"
-                              @update:model-value="TipoSeleccion"
-                              :rules="rules"
-                              lazy-rules
-                            />
-                          </div>
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                          <q-select
+                            label="Tipo"
+                            transition-show="scale"
+                            transition-hide="scale"
+                            outlined
+                            v-model="Fila.tipo"
+                            dense
+                            :options="Tipos"
+                            option-label="descripcion"
+                            option-value="id"
+                            emit-value
+                            map-options
+                            class="q-pa-md"
+                            @update:model-value="TipoSeleccion"
+                            :rules="rules"
+                            lazy-rules
+                          />
+                        </div>
 
-                          <div class="col-md-4 col-sm-6 col-xs-12">
-                            <q-select
-                              label="SubTipo"
-                              transition-show="scale"
-                              transition-hide="scale"
-                              outlined
-                              v-model="Fila.subtipo"
-                              dense
-                              :options="SubtipoOptions"
-                              option-label="descripcion"
-                              option-value="id"
-                              class="q-pa-md"
-                              emit-value
-                              map-options
-                              hint="Debe seleccionar un Tipo"
-                              :rules="rules"
-                              lazy-rules
-                            />
-                          </div>
+                        <div class="col-md-4 col-sm-6 col-xs-12">
+                          <q-select
+                            label="SubTipo"
+                            transition-show="scale"
+                            transition-hide="scale"
+                            outlined
+                            v-model="Fila.subtipo"
+                            dense
+                            :options="SubtipoOptions"
+                            option-label="descripcion"
+                            option-value="id"
+                            class="q-pa-md"
+                            emit-value
+                            map-options
+                            hint="Debe seleccionar un Tipo"
+                            :rules="rules"
+                            lazy-rules
+                          />
+                        </div>
 
-                          <div v-if="false" class="col-md-4 col-sm-6 col-xs-12">
-                            <q-select
-                              label="Prioridad"
-                              transition-show="scale"
-                              transition-hide="scale"
-                              outlined
-                              v-model="Fila.prioridad"
-                              dense
-                              :options="Prioridades"
-                              option-label="descripcion"
-                              option-value="id"
-                              class="q-pa-md"
-                              emit-value
-                              map-options
-                              :rules="rules"
-                              lazy-rules
-                            />
-                          </div>
+                        <div v-if="false" class="col-md-4 col-sm-6 col-xs-12">
+                          <q-select
+                            label="Prioridad"
+                            transition-show="scale"
+                            transition-hide="scale"
+                            outlined
+                            v-model="Fila.prioridad"
+                            dense
+                            :options="Prioridades"
+                            option-label="descripcion"
+                            option-value="id"
+                            class="q-pa-md"
+                            emit-value
+                            map-options
+                            :rules="rules"
+                            lazy-rules
+                          />
+                        </div>
 
-                          <div v-if="false" class="col-md-4 col-sm-6 col-xs-12">
-                            <q-select
-                              label="Estado"
-                              transition-show="scale"
-                              transition-hide="scale"
-                              outlined
-                              v-model="Fila.estado"
-                              dense
-                              :options="Estados"
-                              option-label="descripcion"
-                              option-value="id"
-                              class="q-pa-md"
-                              emit-value
-                              map-options
-                              :rules="rules"
-                              lazy-rules
-                            />
-                          </div>
+                        <div v-if="false" class="col-md-4 col-sm-6 col-xs-12">
+                          <q-select
+                            label="Estado"
+                            transition-show="scale"
+                            transition-hide="scale"
+                            outlined
+                            v-model="Fila.estado"
+                            dense
+                            :options="Estados"
+                            option-label="descripcion"
+                            option-value="id"
+                            class="q-pa-md"
+                            emit-value
+                            map-options
+                            :rules="rules"
+                            lazy-rules
+                          />
+                        </div>
 
-                          <!-- <div class="col-md-4 col-sm-6 col-xs-12">
-                            <q-btn
-                              label="Cargar Evidencia"
-                              style="color: white"
-                              class="q-ma-md bg-primary"
-                              no-caps
-                              @click="openFile()"
-                            >
-                              <q-file
-                                class="q-ma-"
-                                no-caps
-                                label="Cargar Evidencia"
-                                borderless
-                                dense
-                                v-model="filaavatar"
-                                label-color="white"
-                                style="background-color: white; width: 100%"
-                                v-show="false"
-                                ref="file"
-                              ></q-file>
-                            </q-btn>
-
-
-                          </div> -->
-
-                          <div class="col-md-12 col-sm-12 col-xs-12">
-                            <q-input
+                        <div class="col-md-12 col-sm-12 col-xs-12">
+                          <InputTextJump
+                            class="q-pa-md"
+                            @text-con-salto-linea="actualizarTextExport"
+                          ></InputTextJump>
+                          <!-- <q-input
                               outlined
                               v-model="Fila.observaciones"
                               dense
@@ -441,71 +425,50 @@
                               class="q-pa-md"
                               :rules="rules"
                               lazy-rules
-                            />
-                          </div>
+                            /> -->
+                        </div>
 
-                          <div class="col-md-12 col-sm-12 col-xs-12">
-                            <FileInput
-                              @datos-exportado-cambiado="
-                                actualizarValorDatosExportado
-                              "
-                            ></FileInput>
-                          </div>
+                        <div class="col-md-12 col-sm-12 col-xs-12">
+                          <FileInput
+                            @datos-exportado-cambiado="
+                              actualizarValorDatosExportado
+                            "
+                          ></FileInput>
+                        </div>
 
-                          <!-- <div
-                            class="col-md-4 col-sm-12 col-xs-12 avatar-container"
-                          >
-                            <q-avatar
-                              square
-                              font-size="82px"
-                              color="white"
-                              class="avatar"
-                            >
-                              <q-img
-                                :src="Fila.evidencia"
-                                alt=""
-                                spinner-color="red"
-                                fit="scale-down"
-                                class="avatar"
-                              >
-                              </q-img>
-                            </q-avatar>
-                          </div> -->
-
-                          <div v-if="false" class="col-md-6 col-sm-6 col-xs-12">
-                            <q-select
-                              label="Proceso"
-                              transition-show="scale"
-                              transition-hide="scale"
-                              outlined
-                              v-model="Fila.proceso"
-                              dense
-                              :options="Procesos"
-                              option-label="descripcion"
-                              option-value="id"
-                              class="q-pa-md"
-                              emit-value
-                              map-options
-                            />
-                          </div>
+                        <div v-if="false" class="col-md-6 col-sm-6 col-xs-12">
+                          <q-select
+                            label="Proceso"
+                            transition-show="scale"
+                            transition-hide="scale"
+                            outlined
+                            v-model="Fila.proceso"
+                            dense
+                            :options="Procesos"
+                            option-label="descripcion"
+                            option-value="id"
+                            class="q-pa-md"
+                            emit-value
+                            map-options
+                          />
                         </div>
                       </div>
                     </div>
+                  </div>
 
-                    <div class="row">
-                      <div class="col-12" style="display: flex">
-                        <q-btn
-                          label="Agregar Ticket"
-                          style="margin-left: auto; margin-right: auto"
-                          color="primary"
-                          class="q-ma-md"
-                          no-caps
-                          type="submit"
-                        />
-                      </div>
+                  <div class="row">
+                    <div class="col-12" style="display: flex">
+                      <q-btn
+                        label="Agregar Ticket"
+                        style="margin-left: auto; margin-right: auto"
+                        color="primary"
+                        class="q-ma-md"
+                        no-caps
+                        type="submit"
+                      />
                     </div>
-                  </q-form>
-                </q-card>
+                  </div>
+                </q-form>
               </div>
             </q-card>
           </q-scroll-area>
@@ -531,24 +494,351 @@
       </div>
     </q-card>
   </q-dialog>
-  <!-- <button @click="enviarCorreo">Enviar Correo</button> -->
-  <!-- <div class="q-ma-md">
-    <q-uploader
-      ref="uploader"
-      label="Seleccionar archivo de audio"
-      accept=".mp3"
-      @added="handleFileAdded"
-      :auto-upload="false"
-      :upload-factory="uploadFactory"
-    >
-      <template v-slot:meta="{ file }">
-        <div class="q-pa-sm">
-          {{ file.name }}
+
+  <!-- Modal Principal de accion de tiquete -->
+  <q-dialog
+    v-model="mostrarModalDetalles"
+    persistent
+    transition-show="scale"
+    transition-hide="scale"
+  >
+    <q-card style="width: 90%; max-width: 100%; height: 90vh">
+      <q-card-section>
+        <div class="row">
+          <div class="col-11 self-center">
+            <span
+              style="font-size: 18px; font-weight: bold; margin: 10px 0 0 15px"
+              >Gestionar Ticket N° {{ Fila.id }}</span
+            >
+          </div>
+
+          <div class="col-1">
+            <q-btn
+              flat
+              icon="close"
+              v-close-popup
+              style="display: flex; margin-left: auto"
+            />
+          </div>
         </div>
-      </template>
-    </q-uploader>
-    <q-btn label="Subir" @click="uploadAudio" />
-  </div> -->
+      </q-card-section>
+
+      <q-separator />
+
+      <q-card-section style="max-height: 75%" class="scroll q-pa-md">
+        <div class="row justify-center">
+          <div class="col-auto">
+            <q-card flat>
+              <div class="q-pa-md">
+                <q-card>
+                  <div class="row">
+                    <div class="col-12">
+                      <div class="row" style="background: #ffffff">
+                        <div class="col-md-4 col-sm-4 col-xs-12">
+                          <q-select
+                            readonly
+                            label="Cliente"
+                            transition-show="scale"
+                            transition-hide="scale"
+                            outlined
+                            v-model="Fila.cliente"
+                            dense
+                            :options="cliente"
+                            option-label="nombres"
+                            option-value="id"
+                            class="q-pa-md"
+                            emit-value
+                            map-options
+                          />
+                        </div>
+                        <div class="col-md-4 col-sm-4 col-xs-12">
+                          <q-select
+                            readonly
+                            outlined
+                            v-model="Fila.concesion"
+                            :options="concesion"
+                            option-label="nombre"
+                            option-value="id"
+                            label="Concesion"
+                            dense
+                            class="q-pa-md"
+                            emit-value
+                            map-options
+                          ></q-select>
+                        </div>
+
+                        <div class="col-md-4 col-sm-4 col-xs-12">
+                          <q-select
+                            readonly
+                            outlined
+                            v-model="Fila.peaje"
+                            :options="peajes"
+                            option-label="nombre"
+                            option-value="id"
+                            label="Peaje"
+                            dense
+                            class="q-pa-md"
+                            emit-value
+                            map-options
+                          ></q-select>
+                        </div>
+                        <div class="col-md-4 col-sm-4 col-xs-12">
+                          <q-select
+                            readonly
+                            label="Tipo"
+                            transition-show="scale"
+                            transition-hide="scale"
+                            outlined
+                            v-model="Fila.tipo"
+                            dense
+                            :options="Tipos"
+                            option-label="descripcion"
+                            option-value="id"
+                            emit-value
+                            map-options
+                            class="q-pa-md"
+                          />
+                        </div>
+                        <div class="col-md-4 col-sm-4 col-xs-12">
+                          <q-select
+                            readonly
+                            label="Subtipo"
+                            transition-show="scale"
+                            transition-hide="scale"
+                            outlined
+                            v-model="Fila.subtipo"
+                            dense
+                            :options="Subtipos"
+                            option-label="descripcion"
+                            option-value="id"
+                            emit-value
+                            map-options
+                            class="q-pa-md"
+                          />
+                        </div>
+
+                        <div class="col-md-4 col-sm-4 col-xs-12">
+                          <q-select
+                            readonly
+                            label="Prioridad"
+                            transition-show="scale"
+                            transition-hide="scale"
+                            outlined
+                            v-model="Fila.prioridad"
+                            dense
+                            :options="Prioridades"
+                            option-label="descripcion"
+                            option-value="id"
+                            class="q-pa-md"
+                            emit-value
+                            map-options
+                          />
+                        </div>
+
+                        <!-- <div class="col-md-3 col-sm-3 col-xs-12">
+                          <q-select
+                            readonly
+                            label="Tipo de Solicitud"
+                            transition-show="scale"
+                            transition-hide="scale"
+                            outlined
+                            v-model="Fila.solicitud"
+                            dense
+                            :options="solicitudes"
+                            option-label="nombre"
+                            option-value="id"
+                            class="q-pa-md"
+                            emit-value
+                            map-options
+                          />
+                        </div> -->
+
+                        <!-- <div class="col-md-3 col-sm-3 col-xs-12">
+                          <q-select
+                            readonly
+                            label="Asignado"
+                            transition-show="scale"
+                            transition-hide="scale"
+                            outlined
+                            v-model="Fila.asignado"
+                            dense
+                            :options="users"
+                            option-label="nombre"
+                            option-value="id"
+                            class="q-pa-md"
+                            emit-value
+                            map-options
+                          />
+                        </div> -->
+
+                        <!-- <div class="col-md-3 col-sm-3 col-xs-12">
+                          <q-select
+                            readonly
+                            label="Proceso"
+                            transition-show="scale"
+                            transition-hide="scale"
+                            outlined
+                            v-model="Fila.proceso"
+                            dense
+                            :options="Procesos"
+                            option-label="descripcion"
+                            option-value="id"
+                            class="q-pa-md"
+                            emit-value
+                            map-options
+                          />
+                        </div> -->
+                        <div class="col-md-3 col-sm-3 col-xs-12 container">
+                          <q-btn
+                            label="Ver evidencias"
+                            color="grey"
+                            @click="VerEvidencias(Fila)"
+                          />
+                        </div>
+
+                        <div class="col-md-12 col-sm-12 col-xs-12">
+                          <q-editor
+                            label="Observaciones"
+                            class="q-pa-md"
+                            v-model="Fila.observaciones"
+                            :toolbar="false"
+                            readonly
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </q-card>
+              </div>
+            </q-card>
+          </div>
+        </div>
+
+        <div class="row justify-center">
+          <div class="col-auto">
+            <q-card flat>
+              <div class="q-pa-md" v-if="TablaDetalles">
+                <q-table
+                  :loading="visible"
+                  separator="horizontal"
+                  flat
+                  bordered
+                  ref="tableRef"
+                  :rows="tiquetesDetalles"
+                  :columns="columnsDetalles"
+                  :table-colspan="6"
+                  row-key="id"
+                  selection="single"
+                  v-model:selected="selectedDetalle"
+                  fixed-header
+                  v-model:expanded="expanded"
+                  :visible-columns="[
+                    'operador',
+                    'comentarios',
+                    'campomodificador',
+                    'valoranterior',
+                    'valornuevo',
+                    'observaciones',
+                    'created_at',
+                    // 'adjunto_url',
+                    'verevidencias',
+                  ]"
+                >
+                  <template v-slot:loading>
+                    <q-inner-loading showing color="primary" />
+                  </template>
+                  <template v-slot:header="props">
+                    <q-tr :props="props" class="head-styles">
+                      <q-th
+                        class="th-text head-styles"
+                        auto-width
+                        v-for="col in props.cols"
+                        :key="col.name"
+                        :props="props"
+                      >
+                        {{ col.label }}
+                      </q-th>
+                    </q-tr>
+                  </template>
+
+                  <template v-slot:body="props">
+                    <q-tr
+                      :props="props"
+                      @click="props.selected = !props.selected"
+                    >
+                      <q-td
+                        v-for="col in props.cols"
+                        :key="col.name"
+                        :props="props"
+                      >
+                        <div v-if="col.name == 'operador'">
+                          <div
+                            v-if="
+                              Usuarios.filter((p) => p.id == col.value)
+                                .length == 0
+                            "
+                          >
+                            {{ col.value }}
+                          </div>
+                          <div v-else>
+                            {{
+                              Usuarios.filter((p) => p.id == col.value)[0]
+                                .nombre
+                            }}
+                          </div>
+                        </div>
+                        <div
+                          v-else-if="
+                            col.name == 'campomodificador' ||
+                            col.name == 'valoranterior' ||
+                            col.name == 'valornuevo' ||
+                            col.name == 'comentarios'
+                          "
+                        >
+                          <div v-if="col.value == null">
+                            {{ col.value }}
+                          </div>
+                          <div v-else>
+                            <div
+                              v-html="
+                                col.value.replace(/(?:\r\n|\r|\n)/g, '<br />')
+                              "
+                            ></div>
+                          </div>
+                        </div>
+                        <div v-else-if="col.name == 'created_at'">
+                          {{ formatDate(col.value) }}
+                        </div>
+                        <div v-else-if="col.name == 'verevidencias'">
+                          <q-btn
+                            class="q-px-sm"
+                            color="primary"
+                            size="sm"
+                            no-caps
+                            dense
+                            @click="VerEvidencias(props.row)"
+                            >Ver Evidencias
+                          </q-btn>
+                        </div>
+                        <div v-else>
+                          {{ col.value }}
+                        </div>
+                      </q-td>
+                    </q-tr>
+                  </template>
+                </q-table>
+              </div>
+            </q-card>
+          </div>
+        </div>
+      </q-card-section>
+    </q-card>
+  </q-dialog>
+
+  <!-- Modal de imagen -->
+  <q-dialog v-model="mostrarImagen">
+    <VerImagenArray :datoProp="imagen"></VerImagenArray>
+  </q-dialog>
 </template>
 
 <script setup>
@@ -562,24 +852,14 @@ import {
 } from "vue";
 import { supabase } from "../supabase";
 import { LocalStorage, date } from "quasar";
-// import { columns, seed } from 'src/assets/js/tableModule'
 import { createClient } from "@supabase/supabase-js";
 import { api } from "boot/axios";
 import { useQuasar } from "quasar";
 import { createBase64Image } from "boot/global";
 import ApexDonut from "src/components/Charts/ApexDonut.vue";
 import FileInput from "src/components/FileImage.vue";
-// import nodemailer from "nodemailer";
-// import { sgMail } from "@sendgrid/mail";
-
-// sgMail.setApiKey(
-//   "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"
-// );
-
-// console.log(
-//   JSON.parse(LocalStorage.getItem("sb-xzovknjkdfykvximpgxh-auth-token"))
-//     .access_token
-// );
+import InputTextJump from "src/components/InputTextSaltoLinea.vue";
+import VerImagenArray from "src/components/VerImagenArray.vue";
 
 const idusuario = LocalStorage.getItem("IdUsuario");
 const email = LocalStorage.getItem("email");
@@ -588,16 +868,15 @@ let $q = useQuasar();
 const valorDatosExportado = ref("");
 function actualizarValorDatosExportado(nuevoValor) {
   valorDatosExportado.value = nuevoValor;
-  // FilaDetalle.value.evidencia = valorDatosExportado.value;
 }
 
-// const supabase = createClient(
-//   "https://xzovknjkdfykvximpgxh.supabase.co",
-//   JSON.parse(LocalStorage.getItem("sb-xzovknjkdfykvximpgxh-auth-token"))
-//     .access_token
-// );
+const textSaltoLinea = ref("");
+function actualizarTextExport(nuevoValor) {
+  textSaltoLinea.value = nuevoValor;
+}
 
 const selected = ref([]);
+const selectedDetalle = ref([]);
 // const seedSize = seed.length;
 const pagination = ref({
   rowsPerPage: 10,
@@ -618,19 +897,25 @@ const Usuarios = ref([]);
 const mensaje = ref("");
 
 const mostrarModal = ref(false);
+const mostrarModalDetalles = ref(false);
 const mostrarConfirm = ref(false);
 const Fila = ref({});
+const tiquetesDetalles = ref([]);
 const FilaFinalizar = ref({});
 const tableRef = ref(null);
 const expanded = ref([]);
 const rules = [(val) => !!val || "* Campo Obligatorio"];
 const table = ref(false);
 const visible = ref(false);
+const TablaDetalles = ref(false);
 const countArrayEstado = ref([]);
 const countArrayPrioridad = ref([]);
 const countArrayTipo = ref([]);
 const countArraySolicitud = ref([]);
-
+const configJson = require("/public/config.json");
+const mostrarImagen = ref(false);
+const imagen = ref("");
+var dataMessage = {};
 const columns = [
   {
     name: "id",
@@ -759,7 +1044,103 @@ const columns = [
     sortable: false,
   },
 ];
+const columnsDetalles = [
+  {
+    name: "id",
+    required: false,
+    label: "ID",
+    align: "left",
+    field: "id",
+    sortable: true,
+  },
+  {
+    name: "tiquete",
+    required: false,
+    label: "Tiquete",
+    align: "left",
+    field: "tiquete",
+    sortable: true,
+  },
+  {
+    name: "operador",
+    align: "left",
+    label: "Operador",
+    field: "operador",
+    sortable: true,
+  },
+  {
+    name: "comentarios",
+    align: "left",
+    label: "Comentarios",
+    field: "comentarios",
+    sortable: true,
+  },
+  {
+    name: "campomodificador",
+    required: true,
+    align: "left",
+    label: "Campo Modificador",
+    field: "campomodificador",
+    sortable: false,
+  },
 
+  {
+    name: "valoranterior",
+    align: "left",
+    label: "Valor Anterior",
+    field: "valoranterior",
+    sortable: true,
+  },
+
+  {
+    name: "valornuevo",
+    align: "left",
+    label: "Valor Nuevo",
+    field: "valornuevo",
+    sortable: true,
+  },
+
+  // {
+  //   name: "adjunto_url",
+  //   align: "left",
+  //   label: "Url Adjunto",
+  //   field: "adjunto_url",
+  //   sortable: true,
+  // },
+  {
+    name: "created_at",
+    align: "center",
+    label: "Fecha",
+    field: "created_at",
+    sortable: true,
+  },
+  {
+    name: "verevidencias",
+    required: false,
+    label: "Ver evidencias",
+    align: "left",
+    field: "verevidencias",
+    sortable: true,
+  },
+];
+const clickRow = (row) => {
+  console.log(row);
+  Fila.value = row;
+  mostrarModalDetalles.value = true;
+  getDetalleTiquete();
+};
+
+const getDetalleTiquete = async () => {
+  visible.value = true;
+  await api
+    .get(`detalletiquete?tiquete=eq.${Fila.value.id}&estado=eq.true&select=*`)
+    .then((response) => {
+      console.log(response.data);
+      tiquetesDetalles.value = response.data;
+      TablaDetalles.value = true;
+    });
+  visible.value = false;
+};
 const loadData = async () => {
   api
     .get("tiquete?cliente=eq." + cliente.value[0].id + "&select=*")
@@ -782,7 +1163,6 @@ const loadData = async () => {
   //     // });
   //     // loadingListado.value = false;
   //   });
-  // console.log(concesion, error);
 };
 
 const DatosGenerales = async () => {
@@ -790,38 +1170,30 @@ const DatosGenerales = async () => {
   await api
     .get(`cliente?usuario=eq.` + idusuario + `&select=*`)
     .then((response) => {
-      // console.log("cliente: ", response.data);
       cliente.value = response.data;
-
-      // console.log(cliente_idconcesion.value);
     });
 
   await api
     .get("concesion?id=eq." + cliente.value[0].concesion + "&select=*")
     .then((response) => {
-      // console.log("consecion: ", response.data);
       concesion.value = response.data;
     });
 
   await api
     .get("peaje?concesion=eq." + concesion.value[0].id + "&select=*")
     .then((response) => {
-      // console.log("peajes: ", response.data);
       peajes.value = response.data;
     });
 
   await api.get("tipo?select=*").then((response) => {
-    // console.log("tipos: ", response.data);
     Tipos.value = response.data;
   });
 
   await api.get("subtipo?select=*").then((response) => {
-    // console.log("Subtipos: ", response.data);
     Subtipos.value = response.data;
   });
 
   await api.get("prioridad?select=*").then((response) => {
-    // console.log("Prioridades: ", response.data);
     Prioridades.value = response.data;
     Prioridades.value.sort(function (b, a) {
       return b.orden - a.orden;
@@ -829,24 +1201,20 @@ const DatosGenerales = async () => {
   });
 
   await api.get("estado?select=*").then((response) => {
-    // console.log("Estados: ", response.data);
     Estados.value = response.data;
   });
 
   await api.get("solicitud?select=*").then((response) => {
-    // console.log("Solicitudes: ", response.data);
     Solicitudes.value = response.data;
   });
 
   await api.get("proceso?select=*").then((response) => {
-    // console.log("Procesos: ", response.data);
     Procesos.value = response.data;
     table.value = true;
     visible.value = false;
   });
 
   await api.get("usuarios?select=*").then((response) => {
-    // console.log("usuarios: ", response.data);
     Usuarios.value = response.data;
   });
 
@@ -867,8 +1235,6 @@ const TipoSeleccion = (value) => {
 };
 
 const AgregarTicket = async () => {
-  // console.log(Fila.value);
-  // enviarCorreo(Fila.value);
   Fila.value.cliente = cliente.value[0].id;
   Fila.value.concesion = concesion.value[0].id;
   Fila.value.asignado = Usuarios.value.filter(
@@ -878,7 +1244,7 @@ const AgregarTicket = async () => {
   Fila.value.proceso = 1;
   Fila.value.estado = 1;
   Fila.value.evidencia = valorDatosExportado.value;
-
+  Fila.value.observaciones = textSaltoLinea.value;
   if (Fila.value.solicitud == 1 || Fila.value.solicitud == 3) {
     Fila.value.prioridad = 1;
   } else if (Fila.value.solicitud == 2) {
@@ -886,26 +1252,24 @@ const AgregarTicket = async () => {
   } else {
     Fila.value.prioridad = 3;
   }
-  // enviarCorreo(Fila.value);
-  api
+  await api
     .post("tiquete", Fila.value)
     .then((response) => {
       // console.log("Solicitud exitosa:", response);
-      loadData();
       mostrarModal.value = false;
-
       if (response.status == 201 || response.status == 200) {
         $q.notify({
           type: "positive",
           message: "Ticket Creado exitosamente",
           timeout: 4000,
         });
-        Fila.value.estado = "Creado";
-        Fila.value.mensaje1 =
+        dataMessage = {};
+        dataMessage.estado = "Creado";
+        dataMessage.mensaje1 =
           "La solicitud sera atendida por el equipo de soporte de";
-        Fila.value.mensaje2 =
+        dataMessage.mensaje2 =
           "Sera informado por este medio y el aplicativo cuando se solucione la problematica.";
-        enviarCorreo(Fila.value);
+        enviarCorreo(dataMessage);
       }
     })
     .catch((error) => {
@@ -922,26 +1286,11 @@ const AgregarTicket = async () => {
         console.error("Error:", error.message);
       }
     });
+  loadData();
 };
 
-const Finalizar = () => {
+const Finalizar = async () => {
   mostrarConfirm.value = false;
-
-  // console.log(
-  //   "FINALIZAR: ",
-  //   Estados.value.filter((p) => p.descripcion == "Finalizado")[0].id
-  // );
-  // if (
-  //   Estados.value.filter((p) => p.id == FilaFinalizar.value.estado)[0]
-  //     .descripcion == "Devuelto"
-  // ) {
-  //   $q.notify({
-  //     type: "warning",
-  //     message: "Ticket ya fue Devuelto",
-  //     timeout: 4000,
-  //   });
-  //   return;
-  // } else {
   if (mensaje.value == "¿Esta seguro de Devolver el Ticket?") {
     FilaFinalizar.value.estado = Estados.value.filter(
       (p) => p.descripcion == "Devuelto"
@@ -967,25 +1316,25 @@ const Finalizar = () => {
     }
   }
 
-  api
+  await api
     .put("tiquete?id=eq." + FilaFinalizar.value.id, FilaFinalizar.value)
     .then((response) => {
       loadData();
       mostrarModal.value = false;
+      dataMessage = {};
       if (mensaje.value == "¿Esta seguro de Devolver el Ticket?") {
-        Fila.value.estado = "Devuelto";
-        Fila.value.mensaje1 =
+        dataMessage.estado = "Devuelto";
+        dataMessage.mensaje1 =
           "La solicitud sera revisada nuevamente por el equipo de soporte de";
-        Fila.value.mensaje2 =
+        dataMessage.mensaje2 =
           "Sera informado por este medio y el aplicativo cuando se solucione la problematica.";
       } else {
-        Fila.value.estado = "Finalizado";
-        Fila.value.mensaje1 =
+        dataMessage.estado = "Finalizado";
+        dataMessage.mensaje1 =
           "La solicitud fue revisada y finalizada por el equipo de soporte de";
-        Fila.value.mensaje2 = "";
+        dataMessage.mensaje2 = "";
       }
-
-      enviarCorreo(Fila.value);
+      enviarCorreo(dataMessage);
 
       if (
         response.status == 201 ||
@@ -1000,41 +1349,14 @@ const Finalizar = () => {
       }
     });
 };
-
-const openFile = () => {
-  file.value.pickFiles();
-};
-
-function clearImage(value) {
-  filaavatar.value = "";
-  Fila.value.avatar = avatarold.value;
-}
-
-const filaavatar = ref("");
-const avatarold = ref("");
-const loadingImage = ref(false);
 const file = ref(null);
 
-async function convertirBase64() {
-  // loadingImage.value = true;
-  avatarold.value = Fila.value.evidencia;
-  if (filaavatar.value != null) {
-    Fila.value.evidencia = await createBase64Image(filaavatar.value);
-  }
-  // loadingImage.value = false;
-}
-
-const enviarCorreo = (data) => {
+const enviarCorreo = async (data) => {
   data.email = email;
   Fila.value = {};
-
-  // var data = { correo: "jsuarez@utraffic.co", nombre: "hola" };
-
   const axios = require("axios");
-
-  const url = "http://localhost:3000/enviar-correo";
-
-  axios
+  const url = `http://${configJson.host}:${configJson.portMail}/enviar-correo`;
+  await axios
     .post(url, data)
     .then((response) => {
       console.log(response.data); // Maneja la respuesta de la petición aquí
@@ -1043,11 +1365,15 @@ const enviarCorreo = (data) => {
       console.error(error);
     });
 };
-
-watch(filaavatar, (currentValue, oldValue) => {
-  convertirBase64();
-});
-
+const formatDate = (value) => {
+  const date = new Date(value);
+  // return date.toLocaleDateString();  // solo la fecha DD/MM/YY
+  return date.toLocaleString(); // DD/MM/YY, 00:00:00
+};
+const VerEvidencias = (row) => {
+  imagen.value = row.evidencia;
+  mostrarImagen.value = true;
+};
 watchEffect(() => {
   {
     const countByEstado = {};
@@ -1200,29 +1526,17 @@ watchEffect(() => {
     countArrayPrioridad.value = Object.values(countByPrioridad);
     countArrayTipo.value = Object.values(countByTipo);
     countArraySolicitud.value = Object.values(countBySolicitud);
-    console.log("countArraySolicitud: ", countArraySolicitud.value);
   }
 });
 
 onMounted(async () => {
   await DatosGenerales();
   loadData();
-
-  // tableRef.value.scrollTo(10);
 });
 setInterval(() => {
   loadData();
 }, 60000);
 
-// for (let i = 0; i < 2; i++) {
-//   rows = rows.concat(
-//     seed.map((r, j) => ({ ...r, index: i * seedSize + j + 1 }))
-//   );
-// }
-
-// onMounted(() => {
-//   tableRef.value.scrollTo(10);
-// });
 async function establecerTiposMIME() {
   const allowedMimeTypes = ["audio/mpeg", "audio/mp3", "video/mp4"]; // Agrega los tipos MIME que deseas permitir
 

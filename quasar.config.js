@@ -71,6 +71,12 @@ module.exports = configure(function (ctx) {
           .plugin("eslint-webpack-plugin")
           .use(ESLintPlugin, [{ extensions: ["js", "vue"] }]);
       },
+      // extendWebpack(config) {
+      //   if (process.env.NODE_ENV === "development") {
+      //     const { spawn } = require("child_process");
+      //     spawn("node", ["./server.js"], { stdio: "inherit" });
+      //   }
+      // },
     },
 
     // Full list of options: https://v2.quasar.dev/quasar-cli-webpack/quasar-config-js#Property%3A-devServer

@@ -211,7 +211,19 @@ const loadData = async () => {
 };
 
 const CreateAccount = async () => {
-  if (object.value.password == object.value.confirmPassword) {
+  if (object.value.password != object.value.confirmPassword) {
+    $q.notify({
+      type: "negative",
+      message: "Las contraseñas no coinciden, intente de nuevo.",
+      timeout: 3000,
+    });
+  } else if (object.value.email != object.value.confirmEmail) {
+    $q.notify({
+      type: "negative",
+      message: "La direccion de email no coinciden, intente de nuevo.",
+      timeout: 3000,
+    });
+  } else {
     console.log(object.value);
     const { data, error } = await supabase.auth.signUp({
       email: object.value.email,
@@ -244,20 +256,14 @@ const CreateAccount = async () => {
           telefono: object.value.phoneNumber,
         },
       ]);
-  } else {
+    const toPath = "/";
+    router.push(toPath);
     $q.notify({
-      type: "negative",
-      message: "Las contraseñas no coinciden, intente de nuevo.",
-      timeout: 3000,
+      type: "info",
+      message: "Por favor Verifique su correo Electrónico",
+      timeout: 5000,
     });
   }
-  const toPath = "/";
-  router.push(toPath);
-  $q.notify({
-    type: "info",
-    message: "Por favor Verifique su correo Electrónico",
-    timeout: 5000,
-  });
 };
 
 onMounted(() => {
