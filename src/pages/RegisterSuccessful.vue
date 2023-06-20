@@ -123,11 +123,9 @@ const rules = ref([(val) => !!val || "Field is required"]);
 const isPwd = ref(true);
 const Concesiones = ref([]);
 // const cliente = SessionStorage.getItem("ClienteCrear");
-// console.log(cliente);
 
 // const loadData = async () => {
 //   let { data: concesion, error } = await supabase.from("concesion").select("*");
-//   console.log(concesion);
 //   Concesiones.value = concesion;
 // };
 
@@ -136,7 +134,6 @@ const Concesiones = ref([]);
 //   api
 //     .post("cliente", object, { headers })
 //     .then((response) => {
-//       console.log(response.data);
 //     })
 //     .catch((error) => {
 //       console.error(error);

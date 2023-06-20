@@ -8,15 +8,18 @@
     >
       <!-- Header Left-side -->
       <q-toolbar>
-        <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
+        <!-- boton de menú -->
+        <!-- <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" /> -->
 
         <q-space />
 
         <!-- Logo Header -->
+
         <q-toolbar-title class="text-center flex flex-center q-mt-xs q-mb-xs">
           <img
             src="../assets/U-Traffic-versión-horizontal-removebg-preview-removebg-preview.png"
-            class="header-logo"
+            class="header-logo cursor-pointer"
+            @click="inicio()"
           />
         </q-toolbar-title>
         <q-space />
@@ -52,10 +55,8 @@
                         />
                       </q-avatar>
                     </a>
-
-                    <!-- <div class="text-subtitle1 q-mt-md q-mb-xs">
-                      {{ nameUser }}
-                    </div> -->
+                    <div class="text-weight-bold">{{ user.nombres }}</div>
+                    <div>{{ user.correo }}</div>
 
                     <q-btn
                       class="q-ma-xs"
@@ -91,21 +92,29 @@
 </template>
 
 <script setup>
-import { defineComponent, ref } from "vue";
+import { defineComponent, ref, onMounted } from "vue";
 import MenuBar from "src/components/MenuBar.vue";
 import { useMainStore } from "stores/main";
 import { useRouter, useRoute } from "vue-router";
+import { LocalStorage } from "quasar";
+import { api } from "boot/axios";
 
 const store = useMainStore();
 const router = useRouter();
 const leftDrawerOpen = ref(false);
+const idusuario = LocalStorage.getItem("IdUsuario");
+const user = ref([]);
 defineComponent({
   name: "MainLayout",
   components: {
     MenuBar,
   },
 });
-
+const getUsers = async () => {
+  await api.get(`cliente?usuario=eq.${idusuario}&select=*`).then((response) => {
+    user.value = response.data[0];
+  });
+};
 function toggleLeftDrawer() {
   leftDrawerOpen.value = !leftDrawerOpen.value;
 }
@@ -114,6 +123,18 @@ function logout() {
   const toPath = "/Login";
   router.push(toPath);
 }
+function inicio() {
+  // if (configstore.config.nivel == 2) {
+  const toPath = "/";
+  router.push(toPath);
+  // } else if (configstore.config.nivel == 2) {
+  //   const toPath = "/";
+  //   router.push(toPath);
+  // }
+}
+onMounted(async () => {
+  await getUsers();
+});
 </script>
 
 <style lang="scss" scoped>

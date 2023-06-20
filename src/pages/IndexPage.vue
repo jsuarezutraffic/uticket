@@ -35,8 +35,6 @@ import MainTable from "src/components/MainTable.vue";
 
 // const { data, error } = await supabase.from("concesion").select();
 
-// console.log(data);
-
 defineComponent({
   name: "DashboardPage",
   components: {

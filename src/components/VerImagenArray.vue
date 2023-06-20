@@ -44,7 +44,6 @@ if (imagenes.value[0] == "") {
 } else if (imagenes.value.length > 1) {
   imagenes.value.pop();
 } else {
-  console.log("nada");
 }
 </script>
 <style>

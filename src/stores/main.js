@@ -20,7 +20,6 @@ export const useMainStore = defineStore("main", {
   actions: {
     inicio(data) {
       // this.TOKEN = TOKEN;
-      console.log(data);
       this.token = data.access_token;
       LocalStorage.set("Token", this.token);
       this.isAuthenticated = true;

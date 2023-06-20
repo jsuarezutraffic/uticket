@@ -224,13 +224,10 @@ const CreateAccount = async () => {
       timeout: 3000,
     });
   } else {
-    console.log(object.value);
     const { data, error } = await supabase.auth.signUp({
       email: object.value.email,
       password: object.value.password,
     });
-    console.log(data);
-    console.log(error);
 
     object.value.estado = true;
     object.value.usuario = data.user.id;

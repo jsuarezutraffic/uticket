@@ -81,9 +81,6 @@ const login = async () => {
   //   password: password.value,
   // });
 
-  // console.log(data.error_description);
-  // // console.log(JSON.parse(error));
-
   // if (error.length !== 0) {
   //   $q.notify({
   //     type: "negative",
@@ -99,7 +96,6 @@ const login = async () => {
       { headers }
     )
     .then((response) => {
-      console.log(response.data);
       const toPath = "/";
       router.push(toPath);
       api.defaults.headers.common.Authorization =
