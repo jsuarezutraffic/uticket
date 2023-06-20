@@ -4,18 +4,32 @@
       <q-item
         clickable
         v-ripple
-        to="/dashboard"
+        to="/operadores"
         active-class="my-menu-link"
         exact
       >
         <q-item-section avatar>
-          <q-icon name="inbox" />
+          <q-icon name="manage_accounts" />
         </q-item-section>
 
-        <q-item-section>My Tickets</q-item-section>
+        <q-item-section>Operadores</q-item-section>
       </q-item>
 
       <q-item
+        clickable
+        v-ripple
+        active-class="my-menu-link"
+        to="/clientes"
+        exact
+      >
+        <q-item-section avatar>
+          <q-icon name="person_outline" />
+        </q-item-section>
+
+        <q-item-section>Clientes</q-item-section>
+      </q-item>
+
+      <!-- <q-item
         clickable
         v-ripple
         active-class="my-menu-link"
@@ -25,15 +39,10 @@
           <q-icon name="fa-solid fa-comment-dots" />
         </q-item-section>
 
-        <q-item-section>Seguimiento</q-item-section>
-      </q-item>
+        <q-item-section>Clientes</q-item-section>
+      </q-item> -->
 
-      <q-item
-        clickable
-        v-ripple
-        exact
-        active-class="my-menu-link"
-      >
+      <!-- <q-item clickable v-ripple exact active-class="my-menu-link">
         <q-item-section avatar>
           <q-icon name="fa-solid fa-headset" />
         </q-item-section>
@@ -41,12 +50,7 @@
         <q-item-section>Soporte</q-item-section>
       </q-item>
 
-      <q-item
-        clickable
-        v-ripple
-        exact
-        active-class="my-menu-link"
-      >
+      <q-item clickable v-ripple exact active-class="my-menu-link">
         <q-item-section avatar>
           <q-icon name="fa-solid fa-arrow-up" />
         </q-item-section>
@@ -54,12 +58,7 @@
         <q-item-section>Asignar</q-item-section>
       </q-item>
 
-      <q-item
-        clickable
-        v-ripple
-        exact
-        active-class="my-menu-link"
-      >
+      <q-item clickable v-ripple exact active-class="my-menu-link">
         <q-item-section avatar>
           <q-icon name="fa-solid fa-book" />
         </q-item-section>
@@ -67,27 +66,17 @@
         <q-item-section>Gestionar</q-item-section>
       </q-item>
 
-      <q-item
-        clickable
-        v-ripple
-        exact
-        active-class="my-menu-link"
-      >
+      <q-item clickable v-ripple exact active-class="my-menu-link">
         <q-item-section avatar>
           <q-icon name="delete" />
         </q-item-section>
 
         <q-item-section>Trash</q-item-section>
-      </q-item>
+      </q-item> -->
 
       <q-separator spaced />
 
-      <q-item
-        clickable
-        v-ripple
-        exact
-        active-class="my-menu-link"
-      >
+      <q-item clickable v-ripple exact active-class="my-menu-link">
         <q-item-section avatar>
           <q-icon name="settings" />
         </q-item-section>
@@ -95,12 +84,7 @@
         <q-item-section>Settings</q-item-section>
       </q-item>
 
-      <q-item
-        clickable
-        v-ripple
-        exact
-        active-class="my-menu-link"
-      >
+      <q-item clickable v-ripple exact active-class="my-menu-link">
         <q-item-section avatar>
           <q-icon name="help" />
         </q-item-section>
@@ -112,11 +96,11 @@
 </template>
 
 <script setup>
-import { defineComponent } from 'vue'
+import { defineComponent } from "vue";
 
 defineComponent({
-  name: 'MenuBar'
-})
+  name: "MenuBar",
+});
 </script>
 
 <style lang="scss">

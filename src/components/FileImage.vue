@@ -27,7 +27,6 @@
         </div>
       </div>
     </div>
-
     <q-file
       class="col q-ma-md FileSelected"
       accept="image/*"
@@ -37,6 +36,8 @@
       use-chips
       v-model="filaavatar"
       ref="fileInput"
+      :max-file-size="tamanoMaximoImagen"
+      @rejected="onRejected"
     >
       <template v-slot:prepend>
         <div class="q-space-between"></div>
@@ -60,14 +61,15 @@
 /*eslint-disable */
 import { ref, watch } from "vue";
 import { createBase64Image } from "boot/global";
-
+import { useQuasar } from "quasar";
 const DatosExportado = ref("");
 const loadingImage = ref(false);
 const filaavatar = ref([]);
 const archivos = ref([]);
 const archivos2 = ref("");
 const fileInput = ref(null);
-
+const tamanoMaximoImagen = ref("400000");
+let $q = useQuasar();
 const activateInput = () => {
   fileInput.value.pickFiles();
 };
@@ -114,6 +116,16 @@ const emit = defineEmits(["datos-exportado-cambiado"]);
 watch(DatosExportado, (currentValue) => {
   emit("datos-exportado-cambiado", currentValue);
 });
+
+const onRejected = (rejectedEntries) => {
+  console.log(rejectedEntries);
+  for (const iterator of rejectedEntries) {
+    $q.notify({
+      type: "negative",
+      message: `La imagen "${iterator.file.name}" supera el tamaño maximo de 400KB`,
+    });
+  }
+};
 </script>
 <style>
 .FileSelected .q-field__native {

@@ -13,10 +13,13 @@
         <q-space />
 
         <!-- Logo Header -->
-        <q-toolbar-title class="text-center flex flex-center q-mt-xs q-mb-xs q-ml-lg">
+        <q-toolbar-title
+          class="text-center flex flex-center q-mt-xs q-mb-xs q-ml-lg"
+        >
           <img
             src="../assets/U-Traffic-versión-horizontal-removebg-preview-removebg-preview.png"
-            class="header-logo"
+            class="header-logo cursor-pointer"
+            @click="inicio()"
           />
         </q-toolbar-title>
         <q-space />
@@ -34,10 +37,10 @@
             <q-tooltip>Messages</q-tooltip>
           </q-btn>
 
-          <q-btn round dense flat color="grey-8" icon="notifications">
+          <!-- <q-btn round dense flat color="grey-8" icon="notifications">
             <q-badge color="red" text-color="white" floating> 2 </q-badge>
             <q-tooltip>Notifications</q-tooltip>
-          </q-btn>
+          </q-btn> -->
           <q-btn round flat>
             <q-avatar size="26px">
               <img src="https://cdn.quasar.dev/img/boy-avatar.png" />
@@ -51,6 +54,8 @@
                         />
                       </q-avatar>
                     </a>
+                    <div class="text-weight-bold">{{ user.nombre }}</div>
+                    <div>{{ user.correo }}</div>
 
                     <!-- <div class="text-subtitle1 q-mt-md q-mb-xs">
                       {{ nameUser }}
@@ -90,30 +95,46 @@
 </template>
 
 <script setup>
-import { defineComponent, ref } from 'vue'
-import MenuBar from 'src/components/MenuBar.vue'
-import { useMainStore } from 'stores/main'
-import { useRouter, useRoute } from 'vue-router'
+import { defineComponent, ref, onMounted } from "vue";
+import MenuBar from "src/components/MenuBar.vue";
+import { useMainStore } from "stores/main";
+import { useRouter, useRoute } from "vue-router";
+import { LocalStorage, useQuasar } from "quasar";
+import { api } from "boot/axios";
+const idusuario = LocalStorage.getItem("IdUsuario");
+const router = useRouter();
+const user = ref([]);
 
-const router = useRouter()
-
-const store = useMainStore()
-const leftDrawerOpen = ref(false)
+const store = useMainStore();
+const leftDrawerOpen = ref(false);
 defineComponent({
-  name: 'MainLayout',
+  name: "MainLayout",
   components: {
-    MenuBar
-  }
-})
-
-function toggleLeftDrawer () {
-  leftDrawerOpen.value = !leftDrawerOpen.value
+    MenuBar,
+  },
+});
+function inicio() {
+  const toPath = "/";
+  router.push(toPath);
+}
+function toggleLeftDrawer() {
+  leftDrawerOpen.value = !leftDrawerOpen.value;
 }
 
+const getUsers = async () => {
+  await api.get(`usuarios?id=eq.${idusuario}&select=*`).then((response) => {
+    console.log(response.data);
+    user.value = response.data[0];
+  });
+};
 const cerrarSesion = () => {
-  store.borrar()
-  router.push('/login')
-}
+  store.borrar();
+  router.push("/login");
+};
+
+onMounted(async () => {
+  await getUsers();
+});
 </script>
 
 <style lang="scss" scoped>

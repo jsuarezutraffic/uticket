@@ -1303,6 +1303,7 @@ const DatosGenerales = async () => {
 
 //-------------------------------------------------------
 //Funciones generales
+const configJson = require("/public/config.json");
 const enviarCorreo = () => {
   var data = {};
   data.email = cliente.value.filter(
@@ -1312,8 +1313,9 @@ const enviarCorreo = () => {
   data.mensaje1 =
     "La solicitud fue revisada y cerrada por el equipo de soporte de";
   data.mensaje2 = "Por favor verificar y dar por finalizado el ticket";
+
   const axios = require("axios");
-  const url = "http://localhost:3000/enviar-correo";
+  const url = `http://${configJson.host}:${configJson.portMail}/enviar-correo`;
   axios
     .post(url, data)
     .then((response) => {

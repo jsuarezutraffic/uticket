@@ -10,7 +10,7 @@
           Welcome back to
         </div>
         <div class="title-class text-h5 text-weight-bold text-uppercase">
-          U-Ticket
+          U-Ticket - {{ config.nivel }}
         </div>
       </div>
       <q-input
