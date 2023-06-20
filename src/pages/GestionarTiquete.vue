@@ -1769,6 +1769,40 @@ const datallesUsuario = ref([
       },
     ],
   },
+  {
+    usuario: "Luis Diaz",
+    quarters: [
+      {
+        x: "Incidentes",
+        y: 0,
+      },
+      {
+        x: "Requerimiento",
+        y: 0,
+      },
+      {
+        x: "PQR",
+        y: 0,
+      },
+    ],
+  },
+  {
+    usuario: "Juan Pereira",
+    quarters: [
+      {
+        x: "Incidentes",
+        y: 0,
+      },
+      {
+        x: "Requerimiento",
+        y: 0,
+      },
+      {
+        x: "PQR",
+        y: 0,
+      },
+    ],
+  },
 ]);
 
 let jsondatallesUsuario = {
@@ -1920,8 +1954,48 @@ watchEffect(() => {
         ) {
           datallesUsuario.value[5].quarters[2].y++;
         }
+      } else if (
+        users.value.filter((p) => p.id == obj.asignado)[0].nombre == "Luis Diaz"
+      ) {
+        if (
+          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
+          "Incidentes"
+        ) {
+          datallesUsuario.value[5].quarters[0].y++;
+        } else if (
+          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
+          "Requerimiento"
+        ) {
+          datallesUsuario.value[5].quarters[1].y++;
+        } else if (
+          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
+          "PQR"
+        ) {
+          datallesUsuario.value[5].quarters[2].y++;
+        }
+      } else if (
+        users.value.filter((p) => p.id == obj.asignado)[0].nombre ==
+        "Juan Pereira"
+      ) {
+        if (
+          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
+          "Incidentes"
+        ) {
+          datallesUsuario.value[6].quarters[0].y++;
+        } else if (
+          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
+          "Requerimiento"
+        ) {
+          datallesUsuario.value[6].quarters[1].y++;
+        } else if (
+          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
+          "PQR"
+        ) {
+          datallesUsuario.value[6].quarters[2].y++;
+        }
       }
 
+      arraydatallesUsuarioFiltrada.value = [];
       const estado = obj.estado;
       const prioridad = obj.prioridad;
       const tipo = obj.tipo;
@@ -1951,6 +2025,12 @@ watchEffect(() => {
           labelAsigando = users.value.filter((p) => p.id == asignado)[0].nombre;
           break;
         case "Sitio":
+          labelAsigando = users.value.filter((p) => p.id == asignado)[0].nombre;
+          break;
+        case "Luis Diaz":
+          labelAsigando = users.value.filter((p) => p.id == asignado)[0].nombre;
+          break;
+        case "Juan Pereira":
           labelAsigando = users.value.filter((p) => p.id == asignado)[0].nombre;
           break;
         default:
