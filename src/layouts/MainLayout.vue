@@ -123,7 +123,6 @@ function toggleLeftDrawer() {
 
 const getUsers = async () => {
   await api.get(`usuarios?id=eq.${idusuario}&select=*`).then((response) => {
-    console.log(response.data);
     user.value = response.data[0];
   });
 };

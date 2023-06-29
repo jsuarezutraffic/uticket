@@ -680,7 +680,6 @@ const DatosGenerales = async () => {
   await api
     .get(`cliente?usuario=eq.` + idusuario + `&select=*`)
     .then((response) => {
-      console.log("cliente: ", response.data);
       cliente.value = response.data;
 
       // console.log(cliente_idconcesion.value);
@@ -689,29 +688,24 @@ const DatosGenerales = async () => {
   await api
     .get("concesion?id=eq." + cliente.value[0].concesion + "&select=*")
     .then((response) => {
-      console.log("consecion: ", response.data);
       concesion.value = response.data;
     });
 
   await api
     .get("peaje?concesion=eq." + concesion.value[0].id + "&select=*")
     .then((response) => {
-      console.log("peajes: ", response.data);
       peajes.value = response.data;
     });
 
   await api.get("tipo?select=*").then((response) => {
-    console.log("tipos: ", response.data);
     Tipos.value = response.data;
   });
 
   await api.get("subtipo?select=*").then((response) => {
-    console.log("Subtipos: ", response.data);
     Subtipos.value = response.data;
   });
 
   await api.get("prioridad?select=*").then((response) => {
-    console.log("Prioridades: ", response.data);
     Prioridades.value = response.data;
     Prioridades.value.sort(function (b, a) {
       return b.orden - a.orden;
@@ -719,35 +713,22 @@ const DatosGenerales = async () => {
   });
 
   await api.get("estado?select=*").then((response) => {
-    console.log("Estados: ", response.data);
     Estados.value = response.data;
   });
 
   await api.get("solicitud?select=*").then((response) => {
-    console.log("Solicitudes: ", response.data);
     Solicitudes.value = response.data;
   });
 
   await api.get("proceso?select=*").then((response) => {
-    console.log("Procesos: ", response.data);
     Procesos.value = response.data;
     table.value = true;
     visible.value = false;
   });
 
   await api.get("usuarios?select=*").then((response) => {
-    console.log("usuarios: ", response.data);
     Usuarios.value = response.data;
   });
-
-  // Fila.value.asignado = "4ca6c4d3-c2f9-4c1f-9411-de9271b9519f";
-
-  // const array = [5, 2, 9, 1, 3];
-  // array.sort(function (a, b) {
-  //   return b - a;
-  // });
-
-  // console.log(array);
 };
 
 const TipoSeleccion = (value) => {
@@ -757,7 +738,6 @@ const TipoSeleccion = (value) => {
 };
 
 const AgregarTicket = async () => {
-  console.log(Fila.value);
   // enviarCorreo(Fila.value);
   Fila.value.cliente = cliente.value[0].id;
   Fila.value.concesion = concesion.value[0].id;
@@ -779,7 +759,6 @@ const AgregarTicket = async () => {
   api
     .post("tiquete", Fila.value)
     .then((response) => {
-      console.log("Solicitud exitosa:", response);
       loadData();
       mostrarModal.value = false;
 
@@ -815,12 +794,10 @@ const AgregarTicket = async () => {
 
 const Finalizar = () => {
   mostrarConfirm.value = false;
-  console.log(FilaFinalizar.value);
   FilaFinalizar.value.estado = 6;
   api
     .put("tiquete?id=eq." + FilaFinalizar.value.id, FilaFinalizar.value)
     .then((response) => {
-      console.log("Solicitud exitosa:", response);
       loadData();
       mostrarModal.value = false;
       Fila.value.estado = "Finalizado";
@@ -874,7 +851,6 @@ const enviarCorreo = (data) => {
   axios
     .post(url, data)
     .then((response) => {
-      console.log(response.data); // Maneja la respuesta de la petición aquí
       Fila.value = {};
     })
     .catch((error) => {

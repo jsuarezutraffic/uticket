@@ -182,7 +182,6 @@ const verPerfil = ref(true);
 
 const getUsers = async () => {
   await api.get(`usuarios?id=eq.${idusuario}&select=*`).then((response) => {
-    console.log(response.data);
     users.value = response.data[0];
   });
   await api.get("proceso?select=*").then((response) => {

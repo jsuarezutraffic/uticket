@@ -147,7 +147,6 @@ const optionsCalc = computed(() => {
   });
   options.labels = labels;
 
-  console.log("labels: ", options.labels);
   return options;
 });
 
@@ -342,8 +341,6 @@ const loadDataTiqRecaudador = () => {
 
 //Funciones
 const loadData = () => {
-  console.log("Series.value: ", Series.value);
-
   var dataSet = shuffleArray();
   optionsYear.series[0].data = [];
   // api

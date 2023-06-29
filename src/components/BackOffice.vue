@@ -831,7 +831,7 @@ const columns = [
   {
     name: "concesion",
     align: "left",
-    label: "Conceción",
+    label: "Concesión",
     field: "concesion",
     sortable: true,
   },
@@ -989,11 +989,8 @@ const clickRow = (row) => {
   Fila.value = row;
   oldProridad.value = row.prioridad;
   next.value.prioridad = Fila.value.prioridad;
-  console.log(row);
 };
-const clickRowDetalle = (row) => {
-  console.log(row.operador);
-};
+const clickRowDetalle = (row) => {};
 
 const getDetalleTiquete = async () => {
   next.value.nivel = null;
@@ -1001,7 +998,6 @@ const getDetalleTiquete = async () => {
   await api
     .get(`detalletiquete?tiquete=eq.${Fila.value.id}&select=*`)
     .then((response) => {
-      console.log(response.data);
       tiquetesDetalles.value = response.data;
       TablaDetalles.value = true;
       mostrarModal.value = true;
@@ -1105,7 +1101,6 @@ const GestionTiquete = async (accionValue) => {
         api
           .patch(`tiquete?id=eq.${Fila.value.id}`, Fila.value)
           .then((response) => {
-            // console.log(response);
             mostrarMensajes({
               tipomensaje: 1,
               mensaje: "El ticket se asigno correctamente al siguiete nivel",
@@ -1212,7 +1207,6 @@ const AccionTiquete = (key) => {
     case "AsignarTicket":
       next.value.prioridad = Fila.value.prioridad;
       if (ValidadorEstado()) {
-        console.log("no estra AsignarTicket");
       } else if (
         Procesos.value.filter((p) => p.id > Fila.value.proceso).length == 0
       ) {
@@ -1228,14 +1222,12 @@ const AccionTiquete = (key) => {
       break;
     case "SolucionarTicket":
       if (ValidadorEstado()) {
-        console.log("no estra AsignarTicket");
       } else {
         mostrarSolucionarTiquetes.value = true;
       }
       break;
     case "CerrarTicket":
       if (ValidadorEstado()) {
-        console.log("no estra AsignarTicket");
       } else {
         mensaje.value = "¿Está seguro de cerrar el tickete?";
         mostrarSolucionarTiquetes.value = true;

@@ -83,7 +83,6 @@ const IniciarSesion = async () => {
       const toPath = `/`;
       // const toPath = `/${config.nivel}/index`
       router.push(toPath);
-      console.log(response.data);
     })
     .catch((error) => {
       mostrarMensajes({

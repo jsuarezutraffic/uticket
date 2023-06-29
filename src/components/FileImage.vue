@@ -75,7 +75,6 @@ const activateInput = () => {
 };
 // se ejecuta cuando se carga la imagen
 watch(filaavatar, (currentValue, oldValue) => {
-  console.log(filaavatar.value);
   archivos2.value = "";
   convertirBase64();
 });
@@ -118,7 +117,6 @@ watch(DatosExportado, (currentValue) => {
 });
 
 const onRejected = (rejectedEntries) => {
-  console.log(rejectedEntries);
   for (const iterator of rejectedEntries) {
     $q.notify({
       type: "negative",

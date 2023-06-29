@@ -82,10 +82,28 @@
                 </q-badge>
               </div>
               <div v-else-if="col.name == 'tipo'">
-                {{ Tipos.filter((p) => p.id == col.value)[0].descripcion }}
+                <div v-if="col.value != null">
+                  {{ Tipos.filter((p) => p.id == col.value)[0].descripcion }}
+                </div>
+                <div v-else>
+                  {{ col.value }}
+                </div>
               </div>
               <div v-else-if="col.name == 'subtipo'">
-                {{ Subtipos.filter((p) => p.id == col.value)[0].descripcion }}
+                <div v-if="col.value != null">
+                  {{ Subtipos.filter((p) => p.id == col.value)[0].descripcion }}
+                </div>
+                <div v-else>
+                  {{ col.value }}
+                </div>
+              </div>
+              <div v-else-if="col.name == 'equipo'">
+                <div v-if="col.value != null">
+                  {{ Subtipos.filter((p) => p.id == col.value)[0].descripcion }}
+                </div>
+                <div v-else>
+                  {{ col.value }}
+                </div>
               </div>
               <div v-else-if="col.name == 'solicitud'">
                 {{ solicitudes.filter((p) => p.id == col.value)[0].nombre }}
@@ -321,9 +339,8 @@
                             map-options
                           ></q-select>
                         </div>
-                        <div class="col-md-4 col-sm-4 col-xs-12">
+                        <div class="col-md-3 col-sm-4 col-xs-12">
                           <q-select
-                            readonly
                             label="Tipo"
                             transition-show="scale"
                             transition-hide="scale"
@@ -334,20 +351,37 @@
                             option-label="descripcion"
                             option-value="id"
                             emit-value
+                            @update:model-value="TipoSeleccion"
                             map-options
                             class="q-pa-md"
                           />
                         </div>
-                        <div class="col-md-4 col-sm-4 col-xs-12">
+                        <div class="col-md-3 col-sm-4 col-xs-12">
                           <q-select
-                            readonly
                             label="Subtipo"
                             transition-show="scale"
                             transition-hide="scale"
                             outlined
                             v-model="Fila.subtipo"
                             dense
-                            :options="Subtipos"
+                            :options="SubtipoOptions"
+                            option-label="descripcion"
+                            option-value="id"
+                            emit-value
+                            @update:model-value="SubTipoSeleccion"
+                            map-options
+                            class="q-pa-md"
+                          />
+                        </div>
+                        <div class="col-md-3 col-sm-3 col-xs-12">
+                          <q-select
+                            label="Equipo"
+                            transition-show="scale"
+                            transition-hide="scale"
+                            outlined
+                            v-model="Fila.equipo"
+                            dense
+                            :options="EquiposOptions"
                             option-label="descripcion"
                             option-value="id"
                             emit-value
@@ -355,8 +389,7 @@
                             class="q-pa-md"
                           />
                         </div>
-
-                        <div class="col-md-4 col-sm-4 col-xs-12">
+                        <div class="col-md-3 col-sm-4 col-xs-12">
                           <q-select
                             readonly
                             label="Prioridad"
@@ -427,7 +460,7 @@
                             map-options
                           />
                         </div>
-                        <div class="col-md-3 col-sm-3 col-xs-12 container">
+                        <div class="col-md-2 col-sm-3 col-xs-12 container">
                           <q-btn
                             label="Ver evidencias"
                             color="grey"
@@ -629,7 +662,10 @@
               @click="AccionTiquete('SolucionarTicket')"
             />
             <q-btn
-              :disable="disable"
+              :disable="
+                Estados.filter((p) => p.id == Fila.estado)[0].descripcion ==
+                'Cerrado'
+              "
               label="Cerrar Ticket"
               style="margin-left: auto; margin-right: auto"
               color="primary"
@@ -1073,6 +1109,9 @@ const concesion = ref({});
 const peajes = ref([]);
 const cliente = ref([]);
 const users = ref([]);
+const Equipos = ref([]);
+const EquiposOptions = ref([]);
+const SubtipoOptions = ref([]);
 const Tipos = ref([]);
 const Subtipos = ref([]);
 const Prioridades = ref([]);
@@ -1102,6 +1141,7 @@ const mostrarImagen = ref(false);
 const accion = ref("");
 const mensaje = ref("");
 const Fila = ref({});
+const FilaTemporal = ref({});
 const FilaDetalle = ref({});
 const FilaContacto = ref({});
 const tableRef = ref(null);
@@ -1147,7 +1187,7 @@ const columns = [
   {
     name: "concesion",
     align: "left",
-    label: "Conceción",
+    label: "Concesión",
     field: "concesion",
     sortable: true,
   },
@@ -1310,10 +1350,33 @@ const columnsDetalles = [
 // Metodos
 const clickRow = (row) => {
   Fila.value = row;
+  // Fila.value.equipo = null;
+  FilaTemporal.value.tipo = row.tipo;
+  FilaTemporal.value.subtipo = row.subtipo;
+  FilaTemporal.value.equipo = row.equipo;
   oldProridad.value = row.prioridad;
   next.value.prioridad = Fila.value.prioridad;
+
+  EquiposOptions.value = Equipos.value.filter(
+    (equipo) => equipo.subtipo == row.subtipo
+  );
+  SubtipoOptions.value = Subtipos.value.filter((tipo) => tipo.tipo == row.tipo);
+
   getDetalleTiquete();
 };
+
+const TipoSeleccion = (value) => {
+  SubtipoOptions.value = Subtipos.value.filter((tipo) => tipo.tipo == value);
+  Fila.value.subtipo = null;
+};
+
+const SubTipoSeleccion = (value) => {
+  EquiposOptions.value = Equipos.value.filter(
+    (equipo) => equipo.subtipo == value
+  );
+  Fila.value.equipo = null;
+};
+
 const clickRowDetalle = (row) => {};
 
 const getDetalleTiquete = async () => {
@@ -1333,24 +1396,99 @@ const getDetalleTiquete = async () => {
     });
 };
 const GestionTiquete = async (accionValue) => {
-  //
-
   if (accion.value == "SolucionarTicket") {
     mostrarSolucionarTiquetes.value = false;
     // JSON de tabla de detalles, Se modifican los estados de acuerdo a la base de datos, basandose en la descripcion
     // y no el el id -----PARA LA SOLUCION SOLO CAMBIA EL CAMPO ##SOLUCIONAR##
+    if (FilaTemporal.value.tipo != Fila.value.tipo) {
+      FilaDetalle.value.campomodificador =
+        "- Estado \n- Tipo \n- Subtipo \n- Equipo";
 
-    FilaDetalle.value.campomodificador = "Estado";
-    FilaDetalle.value.valoranterior = Estados.value.filter(
-      (p) => p.id == Fila.value.estado
-    )[0].descripcion;
-    FilaDetalle.value.valornuevo = "Solucionado";
+      FilaDetalle.value.valoranterior = `- ${
+        Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
+      }\n- ${
+        Tipos.value.filter((p) => p.id == FilaTemporal.value.tipo)[0]
+          .descripcion
+      }\n- ${
+        Subtipos.value.filter((p) => p.id == FilaTemporal.value.subtipo)[0]
+          .descripcion
+      }\n- ${
+        FilaTemporal.value.equipo != null
+          ? Equipos.value.filter((p) => p.id == FilaTemporal.value.equipo)[0]
+              .descripcion
+          : null
+      }
+        `;
+
+      FilaDetalle.value.valornuevo = `- Solucionado\n- ${
+        Tipos.value.filter((p) => p.id == Fila.value.tipo)[0].descripcion
+      }\n- ${
+        Subtipos.value.filter((p) => p.id == Fila.value.subtipo)[0].descripcion
+      }\n- ${
+        Fila.value.equipo != null
+          ? Equipos.value.filter((p) => p.id == Fila.value.equipo)[0]
+              .descripcion
+          : null
+      }`;
+    } else if (FilaTemporal.value.subtipo != Fila.value.subtipo) {
+      FilaDetalle.value.campomodificador = "- Estado \n- Subtipo \n- Equipo";
+
+      FilaDetalle.value.valoranterior = `- ${
+        Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
+      }\n- ${
+        Subtipos.value.filter((p) => p.id == FilaTemporal.value.subtipo)[0]
+          .descripcion
+      }\n- ${
+        FilaTemporal.value.equipo != null
+          ? Equipos.value.filter((p) => p.id == FilaTemporal.value.equipo)[0]
+              .descripcion
+          : null
+      }
+        `;
+
+      FilaDetalle.value.valornuevo = `- Solucionado\n- ${
+        Subtipos.value.filter((p) => p.id == Fila.value.subtipo)[0].descripcion
+      }\n- ${
+        Fila.value.equipo != null
+          ? Equipos.value.filter((p) => p.id == Fila.value.equipo)[0]
+              .descripcion
+          : null
+      }`;
+    } else if (FilaTemporal.value.equipo != Fila.value.equipo) {
+      FilaDetalle.value.campomodificador = "- Estado  \n- Equipo";
+
+      FilaDetalle.value.valoranterior = `- ${
+        Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
+      }\n- ${
+        FilaTemporal.value.equipo != null
+          ? Equipos.value.filter((p) => p.id == FilaTemporal.value.equipo)[0]
+              .descripcion
+          : null
+      }
+        `;
+
+      FilaDetalle.value.valornuevo = `- Solucionado\n- ${
+        Fila.value.equipo != null
+          ? Equipos.value.filter((p) => p.id == Fila.value.equipo)[0]
+              .descripcion
+          : null
+      }`;
+    } else {
+      FilaDetalle.value.campomodificador = "- Estado ";
+      FilaDetalle.value.valoranterior = `- ${
+        Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
+      }`;
+
+      FilaDetalle.value.valornuevo = `- Solucionado`;
+    }
+
     FilaDetalle.value.tiquete = Fila.value.id;
     FilaDetalle.value.operador = idusuario;
 
     // se actualiza el campo del tiquete que se esta modificando
+
     Fila.value.estado = Estados.value.filter(
-      (p) => p.descripcion == FilaDetalle.value.valornuevo
+      (p) => p.descripcion == "Solucionado"
     )[0].id;
     FilaDetalle.value.estado = Estados.value.filter(
       (p) => p.id == Fila.value.estado
@@ -1359,7 +1497,6 @@ const GestionTiquete = async (accionValue) => {
     FilaDetalle.value.comentarios = textSaltoLinea.value;
     FilaDetalle.value.evidencia = valorDatosExportado.value;
     // post a la tabla de detalles tiquetes------------------
-    console.log(FilaDetalle.value);
     await api
       .post("detalletiquete", FilaDetalle.value)
       .then((response) => {
@@ -1382,36 +1519,241 @@ const GestionTiquete = async (accionValue) => {
     await getDetalleTiquete();
   } else if (accion.value == "AsignarTicket") {
     mostrarAsignarTiquetes.value = false;
+
     if (oldProridad.value != next.value.prioridad) {
-      FilaDetalle.value.campomodificador = "- Estado \n- Nivel \n- Prioridad";
+      if (FilaTemporal.value.tipo != Fila.value.tipo) {
+        FilaDetalle.value.campomodificador =
+          "- Estado \n- Nivel \n- Prioridad \n- Tipo \n- Subtipo \n- Equipo";
 
-      FilaDetalle.value.valoranterior = `- ${
-        Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
-      }\n- ${
-        Procesos.value.filter((p) => p.id == Fila.value.proceso)[0].descripcion
-      }\n- ${
-        Prioridades.value.filter((p) => p.id == oldProridad.value)[0]
-          .descripcion
-      }`;
+        FilaDetalle.value.valoranterior = `- ${
+          Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
+        }\n- ${
+          Procesos.value.filter((p) => p.id == Fila.value.proceso)[0]
+            .descripcion
+        }\n- ${
+          Prioridades.value.filter((p) => p.id == oldProridad.value)[0]
+            .descripcion
+        }\n- ${
+          Tipos.value.filter((p) => p.id == FilaTemporal.value.tipo)[0]
+            .descripcion
+        }\n- ${
+          Subtipos.value.filter((p) => p.id == FilaTemporal.value.subtipo)[0]
+            .descripcion
+        }\n- ${
+          FilaTemporal.value.equipo != null
+            ? Equipos.value.filter((p) => p.id == FilaTemporal.value.equipo)[0]
+                .descripcion
+            : null
+        }
+        `;
 
-      FilaDetalle.value.valornuevo = `- Asignado\n- ${
-        Procesos.value.filter((p) => p.id == next.value.nivel)[0].descripcion
-      }\n- ${
-        Prioridades.value.filter((p) => p.id == next.value.prioridad)[0]
-          .descripcion
-      }`;
+        FilaDetalle.value.valornuevo = `- Asignado\n- ${
+          Procesos.value.filter((p) => p.id == next.value.nivel)[0].descripcion
+        }\n- ${
+          Prioridades.value.filter((p) => p.id == next.value.prioridad)[0]
+            .descripcion
+        }\n- ${
+          Tipos.value.filter((p) => p.id == Fila.value.tipo)[0].descripcion
+        }\n- ${
+          Subtipos.value.filter((p) => p.id == Fila.value.subtipo)[0]
+            .descripcion
+        }\n- ${
+          Fila.value.equipo != null
+            ? Equipos.value.filter((p) => p.id == Fila.value.equipo)[0]
+                .descripcion
+            : null
+        }`;
+      } else if (FilaTemporal.value.subtipo != Fila.value.subtipo) {
+        FilaDetalle.value.campomodificador =
+          "- Estado \n- Nivel \n- Prioridad \n- Subtipo \n- Equipo";
+
+        FilaDetalle.value.valoranterior = `- ${
+          Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
+        }\n- ${
+          Procesos.value.filter((p) => p.id == Fila.value.proceso)[0]
+            .descripcion
+        }\n- ${
+          Prioridades.value.filter((p) => p.id == oldProridad.value)[0]
+            .descripcion
+        }\n- ${
+          Subtipos.value.filter((p) => p.id == FilaTemporal.value.subtipo)[0]
+            .descripcion
+        }\n- ${
+          FilaTemporal.value.equipo != null
+            ? Equipos.value.filter((p) => p.id == FilaTemporal.value.equipo)[0]
+                .descripcion
+            : null
+        }
+        `;
+
+        FilaDetalle.value.valornuevo = `- Asignado\n- ${
+          Procesos.value.filter((p) => p.id == next.value.nivel)[0].descripcion
+        }\n- ${
+          Prioridades.value.filter((p) => p.id == next.value.prioridad)[0]
+            .descripcion
+        }\n- ${
+          Subtipos.value.filter((p) => p.id == Fila.value.subtipo)[0]
+            .descripcion
+        }\n- ${
+          Fila.value.equipo != null
+            ? Equipos.value.filter((p) => p.id == Fila.value.equipo)[0]
+                .descripcion
+            : null
+        }`;
+      } else if (FilaTemporal.value.equipo != Fila.value.equipo) {
+        FilaDetalle.value.campomodificador =
+          "- Estado \n- Nivel \n- Prioridad \n- Equipo";
+
+        FilaDetalle.value.valoranterior = `- ${
+          Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
+        }\n- ${
+          Procesos.value.filter((p) => p.id == Fila.value.proceso)[0]
+            .descripcion
+        }\n- ${
+          Prioridades.value.filter((p) => p.id == oldProridad.value)[0]
+            .descripcion
+        }\n- ${
+          FilaTemporal.value.equipo != null
+            ? Equipos.value.filter((p) => p.id == FilaTemporal.value.equipo)[0]
+                .descripcion
+            : null
+        }
+        `;
+
+        FilaDetalle.value.valornuevo = `- Asignado\n- ${
+          Procesos.value.filter((p) => p.id == next.value.nivel)[0].descripcion
+        }\n- ${
+          Prioridades.value.filter((p) => p.id == next.value.prioridad)[0]
+            .descripcion
+        }\n- ${
+          Fila.value.equipo != null
+            ? Equipos.value.filter((p) => p.id == Fila.value.equipo)[0]
+                .descripcion
+            : null
+        }`;
+      } else {
+        FilaDetalle.value.campomodificador = "- Estado \n- Nivel \n- Prioridad";
+        FilaDetalle.value.valoranterior = `- ${
+          Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
+        }\n- ${
+          Procesos.value.filter((p) => p.id == Fila.value.proceso)[0]
+            .descripcion
+        }\n- ${
+          Prioridades.value.filter((p) => p.id == oldProridad.value)[0]
+            .descripcion
+        }`;
+
+        FilaDetalle.value.valornuevo = `- Asignado\n- ${
+          Procesos.value.filter((p) => p.id == next.value.nivel)[0].descripcion
+        }\n- ${
+          Prioridades.value.filter((p) => p.id == next.value.prioridad)[0]
+            .descripcion
+        }`;
+      }
     } else {
-      FilaDetalle.value.campomodificador = "- Estado \n- Nivel";
+      if (FilaTemporal.value.tipo != Fila.value.tipo) {
+        FilaDetalle.value.campomodificador =
+          "- Estado \n- Nivel \n- Tipo \n- Subtipo \n- Equipo";
+        FilaDetalle.value.valoranterior = `- ${
+          Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
+        }\n- ${
+          Procesos.value.filter((p) => p.id == Fila.value.proceso)[0]
+            .descripcion
+        }\n- ${
+          Tipos.value.filter((p) => p.id == FilaTemporal.value.tipo)[0]
+            .descripcion
+        }\n- ${
+          Subtipos.value.filter((p) => p.id == FilaTemporal.value.subtipo)[0]
+            .descripcion
+        }\n- ${
+          FilaTemporal.value.equipo != null
+            ? Equipos.value.filter((p) => p.id == FilaTemporal.value.equipo)[0]
+                .descripcion
+            : null
+        }
+        `;
 
-      FilaDetalle.value.valoranterior = `- ${
-        Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
-      }\n- ${
-        Procesos.value.filter((p) => p.id == Fila.value.proceso)[0].descripcion
-      }`;
+        FilaDetalle.value.valornuevo = `- Asignado\n- ${
+          Procesos.value.filter((p) => p.id == next.value.nivel)[0].descripcion
+        }\n- ${
+          Tipos.value.filter((p) => p.id == Fila.value.tipo)[0].descripcion
+        }\n- ${
+          Subtipos.value.filter((p) => p.id == Fila.value.subtipo)[0]
+            .descripcion
+        }\n- ${
+          Fila.value.equipo != null
+            ? Equipos.value.filter((p) => p.id == Fila.value.equipo)[0]
+                .descripcion
+            : null
+        }`;
+      } else if (FilaTemporal.value.subtipo != Fila.value.subtipo) {
+        FilaDetalle.value.campomodificador =
+          "- Estado \n- Nivel \n- Subtipo \n- Equipo";
 
-      FilaDetalle.value.valornuevo = `- Asignado\n- ${
-        Procesos.value.filter((p) => p.id == next.value.nivel)[0].descripcion
-      }`;
+        FilaDetalle.value.valoranterior = `- ${
+          Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
+        }\n- ${
+          Procesos.value.filter((p) => p.id == Fila.value.proceso)[0]
+            .descripcion
+        }\n- ${
+          Subtipos.value.filter((p) => p.id == FilaTemporal.value.subtipo)[0]
+            .descripcion
+        }\n- ${
+          FilaTemporal.value.equipo != null
+            ? Equipos.value.filter((p) => p.id == FilaTemporal.value.equipo)[0]
+                .descripcion
+            : null
+        }
+        `;
+
+        FilaDetalle.value.valornuevo = `- Asignado\n- ${
+          Procesos.value.filter((p) => p.id == next.value.nivel)[0].descripcion
+        }\n- ${
+          Subtipos.value.filter((p) => p.id == Fila.value.subtipo)[0]
+            .descripcion
+        }\n- ${
+          Fila.value.equipo != null
+            ? Equipos.value.filter((p) => p.id == Fila.value.equipo)[0]
+                .descripcion
+            : null
+        }`;
+      } else if (FilaTemporal.value.equipo != Fila.value.equipo) {
+        FilaDetalle.value.campomodificador = "- Estado \n- Nivel \n- Equipo";
+
+        FilaDetalle.value.valoranterior = `- ${
+          Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
+        }\n- ${
+          Procesos.value.filter((p) => p.id == Fila.value.proceso)[0]
+            .descripcion
+        }\n- ${
+          FilaTemporal.value.equipo != null
+            ? Equipos.value.filter((p) => p.id == FilaTemporal.value.equipo)[0]
+                .descripcion
+            : null
+        }
+        `;
+
+        FilaDetalle.value.valornuevo = `- Asignado\n- ${
+          Procesos.value.filter((p) => p.id == next.value.nivel)[0].descripcion
+        }\n- ${
+          Fila.value.equipo != null
+            ? Equipos.value.filter((p) => p.id == Fila.value.equipo)[0]
+                .descripcion
+            : null
+        }`;
+      } else {
+        FilaDetalle.value.campomodificador = "- Estado \n- Nivel ";
+        FilaDetalle.value.valoranterior = `- ${
+          Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
+        }\n- ${
+          Procesos.value.filter((p) => p.id == Fila.value.proceso)[0]
+            .descripcion
+        }`;
+
+        FilaDetalle.value.valornuevo = `- Asignado\n- ${
+          Procesos.value.filter((p) => p.id == next.value.nivel)[0].descripcion
+        }`;
+      }
     }
 
     FilaDetalle.value.tiquete = Fila.value.id;
@@ -1464,8 +1806,6 @@ const GestionTiquete = async (accionValue) => {
       FilaDetalle.value.tiquete = Fila.value.id;
       FilaDetalle.value.operador = idusuario;
       FilaDetalle.value.evidencia = valorDatosExportado.value;
-      console.log(FilaDetalle.value.evidencia);
-      console.log(valorDatosExportado.value);
       // se actualiza el campo del tiquete que se esta modificando
       Fila.value.estado = Estados.value.filter(
         (p) => p.descripcion == "Cerrado"
@@ -1651,6 +1991,10 @@ const DatosGenerales = async () => {
 
   await api.get("metodoconsulta?select=*").then((response) => {
     metodoconsulta.value = response.data;
+  });
+
+  await api.get("equipo?select=*").then((response) => {
+    Equipos.value = response.data;
   });
 
   await CargarContactos();

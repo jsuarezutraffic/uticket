@@ -1147,7 +1147,7 @@ const columns = [
   {
     name: "concesion",
     align: "left",
-    label: "Conceción",
+    label: "Concesión",
     field: "concesion",
     sortable: true,
   },
@@ -1359,7 +1359,6 @@ const GestionTiquete = async (accionValue) => {
     FilaDetalle.value.comentarios = textSaltoLinea.value;
     FilaDetalle.value.evidencia = valorDatosExportado.value;
     // post a la tabla de detalles tiquetes------------------
-    console.log(FilaDetalle.value);
     await api
       .post("detalletiquete", FilaDetalle.value)
       .then((response) => {
@@ -1464,8 +1463,6 @@ const GestionTiquete = async (accionValue) => {
       FilaDetalle.value.tiquete = Fila.value.id;
       FilaDetalle.value.operador = idusuario;
       FilaDetalle.value.evidencia = valorDatosExportado.value;
-      console.log(FilaDetalle.value.evidencia);
-      console.log(valorDatosExportado.value);
       // se actualiza el campo del tiquete que se esta modificando
       Fila.value.estado = Estados.value.filter(
         (p) => p.descripcion == "Cerrado"

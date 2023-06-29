@@ -819,7 +819,6 @@ async function getData() {
 async function clickRow(row) {
   FilaDetalle.value.comentarios = "";
   Fila.value = row;
-  console.log(Fila.value);
 
   optionState.value = estado.value.filter(
     (p) => p.descripcion === "Escalado" || p.descripcion === "Solucionado"

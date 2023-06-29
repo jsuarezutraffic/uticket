@@ -37,8 +37,6 @@ const props = defineProps(["Series", "title", "width"]);
 let { Series, title, width } = toRefs(props);
 const visible = ref(true);
 
-console.log("seriesapex", Series.value);
-
 watchEffect(() => {
   if (Series.value[0]) {
     visible.value = false;
@@ -129,7 +127,6 @@ const optionsCalc = computed(() => {
   });
   options.labels = labels;
 
-  console.log("labels: ", options.labels);
   return options;
 });
 // const store = useMainStore();
@@ -143,7 +140,6 @@ const seriesCalc = computed(() => {
   Series.value.forEach((item) => {
     series[0].data.push(item.value);
   });
-  console.log("series", series);
 
   return series;
 });

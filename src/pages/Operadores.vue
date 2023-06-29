@@ -361,7 +361,6 @@ const addUpdateOperador = async () => {
         visible.value = false;
       });
   } else if (accion.value == "Agregar") {
-    console.log(Fila.value);
     await api.post(`usuarios`, Fila.value).then((response) => {
       $q.notify({
         type: "positive",
