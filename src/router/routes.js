@@ -30,6 +30,11 @@ const routes = [
         meta: { requireLogin: true },
         component: () => import("pages/Clientes.vue"),
       },
+      {
+        path: "/prueba",
+        meta: { requireLogin: true },
+        component: () => import("pages/Prueba.vue"),
+      },
 
     ]
   },

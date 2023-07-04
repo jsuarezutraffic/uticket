@@ -170,6 +170,33 @@
                 class="q-ml-md q-pa-md"
               >
               </q-chip>
+
+              <div class="col-md-3 col-sm-4 col-xs-6">
+                <q-circular-progress
+                  show-value
+                  class="text-white q-ma-md"
+                  :value="progressValue"
+                  size="60px"
+                  :thickness="0.2"
+                  color="orange"
+                  track-color="transparent"
+                >
+                  <q-btn
+                    :disable="Fila.audio == null"
+                    @click="startAudio"
+                    outline
+                    round
+                    color="green"
+                    icon="play_arrow"
+                  />
+                </q-circular-progress>
+                <audio
+                  ref="audioPlayer"
+                  :src="Fila.audio"
+                  @play="onPlay"
+                  @pause="onPause"
+                ></audio>
+              </div>
             </div>
 
             <div class="q-pa-md">
@@ -564,7 +591,7 @@
 </template>
 
 <script setup>
-import { defineComponent, ref, onMounted } from "vue";
+import { defineComponent, ref, onMounted, onUnmounted } from "vue";
 import { api } from "boot/axios";
 import { LocalStorage, useQuasar } from "quasar";
 import FileInput from "src/components/FileImage.vue";
@@ -572,6 +599,14 @@ import VerImagenArray from "src/components/VerImagenArray.vue";
 import InputTextJump from "src/components/InputTextSaltoLinea.vue";
 import BackOffice from "../pages/GestionarTiquete.vue";
 import { supabase } from "src/supabase";
+import Recorder from "recorder-js";
+
+//variables para el grabado de notas de voz
+const isRecording = ref(false);
+const progressValue = ref(0);
+let recorder;
+let progressInterval;
+const audioPlayer = ref(null);
 
 const $q = useQuasar();
 const imagen = ref("");
@@ -979,6 +1014,34 @@ function customSort() {
   });
 }
 customSort();
+// ------------------------------------------
+// //funciones para el grabado de notas de voz
+function onPlay() {
+  clearInterval(progressInterval);
+  progressValue.value = 0;
+  progressInterval = setInterval(() => {
+    if (audioPlayer.value) {
+      const currentTime = audioPlayer.value.currentTime;
+      const duration = audioPlayer.value.duration;
+      progressValue.value = (currentTime / duration) * 100;
+    }
+  }, 100);
+}
+
+function startAudio() {
+  audioPlayer.value.play();
+}
+
+function onPause() {
+  clearInterval(progressInterval);
+}
+
+// Limpiar recursos al desmontar el componente
+onUnmounted(() => {
+  if (recorder && isRecording.value) {
+    recorder.stop().catch(() => {});
+  }
+});
 
 onMounted(() => {
   getData();

@@ -28,6 +28,7 @@
         type="password"
         class="username-box"
         required
+        @keyup.enter="IniciarSesion()"
       />
       <q-btn class="login-btn bg-dark no-padding" flat @click="IniciarSesion()"
         >Login</q-btn
@@ -49,15 +50,19 @@ import { useConfigStore } from "src/stores/config";
 import { api } from "boot/axios";
 import { useRouter, useRoute } from "vue-router";
 import { mostrarMensajes, getSelectedString } from "boot/global";
+import { useQuasar } from "quasar";
 // import { supabase } from "../supabase";
 // stores
 const store = useMainStore();
 const config = useConfigStore().config;
+let $q = useQuasar();
 
 // supabase
 // const supabaseKey = store.supabase_Key;
 // const supabaseUrl = store.supabase_Url;
 // const supabase = createClient(supabaseUrl, supabaseKey);
+const supabaseKey =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6b3ZrbmprZGZ5a3Z4aW1wZ3hoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY4MzMyMjY2NCwiZXhwIjoxOTk4ODk4NjY0fQ.Vm7vlm4xnk5FxXwTR66_GcFw8iF5SISvo8U9JRwXvh0";
 
 const datos = ref(null);
 const router = useRouter();
@@ -79,10 +84,34 @@ const IniciarSesion = async () => {
       credenciales
     )
     .then((response) => {
-      store.inicio(response.data);
-      const toPath = `/`;
-      // const toPath = `/${config.nivel}/index`
-      router.push(toPath);
+      api.defaults.headers.common.Authorization =
+        "Bearer " + response.data.access_token;
+      api.defaults.headers.common.apikey = supabaseKey;
+
+      api
+        .get(`usuarios?id=eq.` + response.data.user.id + `&select=*`)
+        .then((response2) => {
+          if (response2.data.length > 0) {
+            store.inicio(response.data);
+            const toPath = `/`;
+            router.push(toPath);
+          } else {
+            $q.notify({
+              type: "negative",
+              message:
+                "No se encuentra registrado en el sistema como un operador",
+              timeout: 4000,
+            });
+          }
+        })
+        .catch((error) => {
+          $q.notify({
+            type: "negative",
+            message:
+              "No se encuentra registrado en el sistema como un operador",
+            timeout: 4000,
+          });
+        });
     })
     .catch((error) => {
       mostrarMensajes({

@@ -1,5 +1,61 @@
 <template>
   <div class="q-pa-md">
+    <div
+      class="row containerDashboard q-col-gutter-md q-my-md"
+      v-if="table && countArrayEstado.length > 0"
+    >
+      <div class="col-md-12 col-xs-12">
+        <span style="font-size: 16px; font-weight: bold"> Generales</span>
+
+        <q-card class="col-md-6 col-xs-6 row justify-evenly">
+          <apex-donut
+            :Series="countArrayEstado"
+            :cliente="cliente"
+            :prioridades="Prioridades"
+            title="Estados"
+            width="300"
+          />
+
+          <apex-donut
+            :Series="countArrayPrioridad"
+            :cliente="cliente"
+            :prioridades="Prioridades"
+            title="Prioridades"
+            width="300"
+          />
+
+          <apex-donut
+            :Series="countArraySolicitud"
+            :cliente="cliente"
+            :prioridades="Prioridades"
+            title="Solicitudes"
+            width="300"
+          />
+
+          <apex-donut
+            :Series="countArrayTipo"
+            :cliente="cliente"
+            :prioridades="Prioridades"
+            title="Tipos"
+            width="300"
+          />
+        </q-card>
+      </div>
+      <div
+        class="col-md-12 col-xs-12 q-mt-md"
+        style="margin-left: auto; margin-right: auto"
+      >
+        <q-card class="q-pa-md"
+          ><apex-bar
+            :Series="countArrayAsignado"
+            :Detalles="arraydatallesUsuarioFiltrada"
+            title="Asignado"
+            width="320"
+        /></q-card>
+
+        <!-- </q-card> -->
+      </div>
+    </div>
     <TransitionGroup>
       <q-table
         :loading="visible"
@@ -168,66 +224,6 @@
       </q-table>
     </TransitionGroup>
 
-    <div
-      class="row containerDashboard q-col-gutter-md"
-      v-if="table && countArrayEstado.length > 0"
-    >
-      <div
-        class="col-md-12 col-xs-12 q-mt-md"
-        style="margin-left: auto; margin-right: auto"
-      >
-        <apex-bar
-          :Series="countArrayAsignado"
-          :Detalles="arraydatallesUsuarioFiltrada"
-          title="Asignado"
-          width="320"
-        />
-        <!-- </q-card> -->
-      </div>
-
-      <div class="col-md-12 col-xs-12">
-        <span style="font-size: 16px; font-weight: bold"> Generales</span>
-
-        <q-card class="col-md-6 col-xs-6 row justify-evenly">
-          <!-- <div class="row">
-          <div class="col-md-6 col-xs-6"> -->
-          <apex-donut
-            :Series="countArrayEstado"
-            :cliente="cliente"
-            :prioridades="Prioridades"
-            title="Estados"
-            width="300"
-          />
-
-          <apex-donut
-            :Series="countArrayPrioridad"
-            :cliente="cliente"
-            :prioridades="Prioridades"
-            title="Prioridades"
-            width="300"
-          />
-
-          <apex-donut
-            :Series="countArraySolicitud"
-            :cliente="cliente"
-            :prioridades="Prioridades"
-            title="Solicitudes"
-            width="300"
-          />
-
-          <apex-donut
-            :Series="countArrayTipo"
-            :cliente="cliente"
-            :prioridades="Prioridades"
-            title="Tipos"
-            width="300"
-          />
-          <!-- </div>
-        </div> -->
-        </q-card>
-      </div>
-    </div>
-
     <q-inner-loading
       :showing="visible"
       label="Cargando..."
@@ -275,7 +271,7 @@
                   <div class="row">
                     <div class="col-12">
                       <div class="row" style="background: #ffffff">
-                        <div class="col-md-3 col-sm-3 col-xs-12">
+                        <div class="col-md-4 col-sm-6 col-xs-12">
                           <q-select
                             readonly
                             label="Cliente"
@@ -292,7 +288,7 @@
                             map-options
                           />
                         </div>
-                        <div class="col-md-3 col-sm-3 col-xs-12">
+                        <div class="col-md-4 col-sm-6 col-xs-12">
                           <q-select
                             readonly
                             label="Telefono"
@@ -309,7 +305,7 @@
                             map-options
                           />
                         </div>
-                        <div class="col-md-3 col-sm-3 col-xs-12">
+                        <div class="col-md-4 col-sm-6 col-xs-12">
                           <q-select
                             readonly
                             outlined
@@ -324,7 +320,7 @@
                             map-options
                           ></q-select>
                         </div>
-                        <div class="col-md-3 col-sm-3 col-xs-12">
+                        <div class="col-md-4 col-sm-6 col-xs-12">
                           <q-select
                             readonly
                             outlined
@@ -339,7 +335,7 @@
                             map-options
                           ></q-select>
                         </div>
-                        <div class="col-md-3 col-sm-4 col-xs-12">
+                        <div class="col-md-4 col-sm-6 col-xs-12">
                           <q-select
                             label="Tipo"
                             transition-show="scale"
@@ -356,7 +352,7 @@
                             class="q-pa-md"
                           />
                         </div>
-                        <div class="col-md-3 col-sm-4 col-xs-12">
+                        <div class="col-md-4 col-sm-6 col-xs-12">
                           <q-select
                             label="Subtipo"
                             transition-show="scale"
@@ -373,7 +369,7 @@
                             class="q-pa-md"
                           />
                         </div>
-                        <div class="col-md-3 col-sm-3 col-xs-12">
+                        <div class="col-md-4 col-sm-6 col-xs-12">
                           <q-select
                             label="Equipo"
                             transition-show="scale"
@@ -389,7 +385,7 @@
                             class="q-pa-md"
                           />
                         </div>
-                        <div class="col-md-3 col-sm-4 col-xs-12">
+                        <div class="col-md-4 col-sm-6 col-xs-12">
                           <q-select
                             readonly
                             label="Prioridad"
@@ -407,7 +403,7 @@
                           />
                         </div>
 
-                        <div class="col-md-3 col-sm-3 col-xs-12">
+                        <div class="col-md-4 col-sm-6 col-xs-12">
                           <q-select
                             readonly
                             label="Tipo de Solicitud"
@@ -425,7 +421,7 @@
                           />
                         </div>
 
-                        <div class="col-md-3 col-sm-3 col-xs-12">
+                        <div class="col-md-3 col-sm-6 col-xs-12">
                           <q-select
                             readonly
                             label="Asignado"
@@ -443,7 +439,7 @@
                           />
                         </div>
 
-                        <div class="col-md-3 col-sm-3 col-xs-12">
+                        <div class="col-md-3 col-sm-4 col-xs-12">
                           <q-select
                             readonly
                             label="Proceso"
@@ -460,13 +456,41 @@
                             map-options
                           />
                         </div>
-                        <div class="col-md-2 col-sm-3 col-xs-12 container">
+
+                        <div class="col-md-3 col-sm-4 col-xs-6 container">
                           <q-btn
                             label="Ver evidencias"
                             color="grey"
                             @click="VerEvidencias(selected[0])"
                           />
                         </div>
+                        <div class="col-md-3 col-sm-4 col-xs-6">
+                          <q-circular-progress
+                            show-value
+                            class="text-white q-ma-md"
+                            :value="progressValue"
+                            size="60px"
+                            :thickness="0.2"
+                            color="orange"
+                            track-color="transparent"
+                          >
+                            <q-btn
+                              :disable="Fila.audio == null"
+                              @click="startAudio"
+                              outline
+                              round
+                              color="green"
+                              icon="play_arrow"
+                            />
+                          </q-circular-progress>
+                          <audio
+                            ref="audioPlayer"
+                            :src="Fila.audio"
+                            @play="onPlay"
+                            @pause="onPause"
+                          ></audio>
+                        </div>
+
                         <div class="col-md-12 col-sm-12 col-xs-12 q-pa-md">
                           <q-editor
                             min-height="5rem"
@@ -1073,6 +1097,7 @@ import {
   watchEffect,
   computed,
   onBeforeUnmount,
+  onUnmounted,
 } from "vue";
 import { LocalStorage, useQuasar } from "quasar";
 import { api } from "boot/axios";
@@ -1087,6 +1112,14 @@ import ApexBar from "src/components/Charts/BarTurno.vue";
 import FileInput from "src/components/FileImage.vue";
 import InputTextJump from "src/components/InputTextSaltoLinea.vue";
 import VerImagenArray from "src/components/VerImagenArray.vue";
+import Recorder from "recorder-js";
+//variables para el grabado de notas de voz
+const isRecording = ref(false);
+const progressValue = ref(0);
+let recorder;
+let progressInterval;
+const audioPlayer = ref(null);
+
 //supabase
 const valorDatosExportado = ref("");
 function actualizarValorDatosExportado(nuevoValor) {
@@ -2668,6 +2701,33 @@ supabase
   .subscribe();
 
 // ------------------------------------------
+// //funciones para el grabado de notas de voz
+function onPlay() {
+  clearInterval(progressInterval);
+  progressValue.value = 0;
+  progressInterval = setInterval(() => {
+    if (audioPlayer.value) {
+      const currentTime = audioPlayer.value.currentTime;
+      const duration = audioPlayer.value.duration;
+      progressValue.value = (currentTime / duration) * 100;
+    }
+  }, 100);
+}
+
+function startAudio() {
+  audioPlayer.value.play();
+}
+
+function onPause() {
+  clearInterval(progressInterval);
+}
+
+// Limpiar recursos al desmontar el componente
+onUnmounted(() => {
+  if (recorder && isRecording.value) {
+    recorder.stop().catch(() => {});
+  }
+});
 </script>
 
 <style lang="scss">
