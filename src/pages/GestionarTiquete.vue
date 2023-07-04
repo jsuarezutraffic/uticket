@@ -1113,6 +1113,7 @@ import FileInput from "src/components/FileImage.vue";
 import InputTextJump from "src/components/InputTextSaltoLinea.vue";
 import VerImagenArray from "src/components/VerImagenArray.vue";
 import Recorder from "recorder-js";
+import axios from "axios";
 //variables para el grabado de notas de voz
 const isRecording = ref(false);
 const progressValue = ref(0);
@@ -2595,23 +2596,69 @@ const CargarContactos = async () => {
   });
 };
 const configJson = require("/public/config.json");
-const enviarCorreo = () => {
+const enviarCorreo = async () => {
   const data = {};
   data.email = cliente.value.filter(
     (p) => p.id == Fila.value.cliente
   )[0].correo;
+  data.cliente = cliente.value.filter(
+    (p) => p.id == Fila.value.cliente
+  )[0].nombres;
   data.estado = "Cerrado";
   data.mensaje1 =
     "La solicitud fue revisada y cerrada por el equipo de soporte de";
   data.mensaje2 = "Por favor verificar y dar por finalizado el ticket";
-  const axios = require("axios");
-  const url = `https://${configJson.host}:${configJson.portMail}/enviar-correo`;
-  axios
-    .post(url, data)
-    .then((response) => {})
+
+  const dominio = "https://uticket.cus.utraffic.co/";
+  const apiKey =
+    "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";
+  var accion = `Ticket ${data.estado} Exitosamente!`;
+  var mensaje = `${data.mensaje1} <strong>Utraffic SAS.</strong><br> ${data.mensaje2}`;
+  var plantilla = require("./PlantillaCorreo.html").default.toString();
+  plantilla = plantilla.replace("${accion}", accion);
+  plantilla = plantilla.replace("${mensaje}", mensaje);
+  plantilla = plantilla.replace("${dominio}", dominio);
+
+  //soporte@utraffic.co
+  //#Utraffic2022**
+  const data2 = {
+    sender: {
+      name: "Soporte Utraffic",
+      email: "soporte@utraffic.co",
+    },
+    to: [
+      {
+        email: data.email,
+        name: data.nombres,
+      },
+    ],
+    subject: `Ticket ${data.estado}`,
+    htmlContent: plantilla,
+  };
+
+  await axios
+    .post("https://api.brevo.com/v3/smtp/email", data2, {
+      headers: {
+        accept: "application/json",
+        "api-key": apiKey,
+        "content-type": "application/json",
+      },
+    })
+    .then((response) => {
+      console.log("Email sent successfully:", response.data);
+    })
     .catch((error) => {
-      console.error(error);
+      console.error("Error sending email:", error);
     });
+
+  // const axios = require("axios");
+  // const url = `https://${configJson.host}:${configJson.portMail}/enviar-correo`;
+  // axios
+  //   .post(url, data)
+  //   .then((response) => {})
+  //   .catch((error) => {
+  //     console.error(error);
+  //   });
 };
 const formatDate = (value) => {
   const date = new Date(value);
