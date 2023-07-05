@@ -64,22 +64,17 @@
           'concesion',
           'peaje',
           'solicitud',
-          'observaciones',
+          // 'observaciones',
           'estado',
           'prioridad',
           'tipo',
           'subtipo',
           'finalizar',
           'devuelto',
+          'eliminar',
         ]"
       >
         <template v-slot:top>
-          <!-- <q-btn color="secondary" size="md" @click="Atras()"
-            >Mis Tickets
-            <q-tooltip class="bg-primary" :offset="[10, 10]">
-            {{ $t("Atras") }}
-          </q-tooltip>
-          </q-btn> -->
           <q-btn
             class="q-ma-xs"
             color="secondary"
@@ -87,11 +82,9 @@
             @click="
               Fila = {};
               modalNuevoTicket = true;
+              clearAudio();
             "
             >Nuevo Ticket
-            <!-- <q-tooltip class="bg-primary" :offset="[10, 10]">
-            {{ $t("Atras") }}
-          </q-tooltip> -->
           </q-btn>
         </template>
 
@@ -137,7 +130,7 @@
                   </q-badge>
                 </div>
                 <div v-else>
-                  <q-badge color="red"> Iniciado </q-badge>
+                  <q-badge color="blue"> En Proceso </q-badge>
                 </div>
               </div>
               <div v-else-if="col.name == 'prioridad'">
@@ -159,18 +152,14 @@
                 <q-btn
                   :disabled="
                     Estados.filter((p) => p.id == props.row.estado)[0]
-                      .descripcion == 'Finalizado'
+                      .descripcion != 'Cerrado'
                   "
                   class="q-px-sm"
                   color="primary"
                   size="sm"
                   no-caps
                   dense
-                  @click="
-                    (FilaFinalizar = props.row),
-                      (mensaje = '¿Esta seguro de Finalizar el Ticket?'),
-                      (modalConfirm = true)
-                  "
+                  @click="FinalizarTiquete(props.row)"
                   >Finalizar
                 </q-btn>
               </div>
@@ -178,9 +167,7 @@
                 <q-btn
                   :disabled="
                     Estados.filter((p) => p.id == props.row.estado)[0]
-                      .descripcion == 'Finalizado' ||
-                    Estados.filter((p) => p.id == props.row.estado)[0]
-                      .descripcion == 'Devuelto'
+                      .descripcion != 'Cerrado'
                   "
                   class="q-px-sm"
                   color="light-green-5"
@@ -193,6 +180,21 @@
                     modalDevolverTiquete = true;
                   "
                   >Devolver
+                </q-btn>
+              </div>
+              <div v-else-if="col.name == 'eliminar'">
+                <q-btn
+                  :disabled="
+                    Estados.filter((p) => p.id == props.row.estado)[0]
+                      .descripcion != 'Iniciado'
+                  "
+                  class="q-px-sm"
+                  color="red"
+                  size="sm"
+                  no-caps
+                  dense
+                  @click="EliminarTiquete(props.row)"
+                  >Eliminar
                 </q-btn>
               </div>
               <div v-else-if="col.name == 'id'">
@@ -221,9 +223,7 @@
                       props.row.observaciones.length <= 50
                     "
                   >
-                    <div
-                      v-html="col.value.replace(/(?:\r\n|\r|\n)/g, '<br />')"
-                    ></div>
+                    <div v-html="col.value"></div>
                   </div>
                   <div v-if="props.row.observaciones.length > 50">
                     <a
@@ -274,7 +274,7 @@
           <div class="row">
             <div class="col-12">
               <div class="row" style="background: #ffffff">
-                <div class="col-md-6 col-sm-6 col-xs-12">
+                <div class="col-md-4 col-sm-6 col-xs-12">
                   <q-input
                     outlined
                     v-model="concesion[0].nombre"
@@ -284,7 +284,7 @@
                     readonly
                   />
                 </div>
-                <div class="col-md-6 col-sm-6 col-xs-12">
+                <div class="col-md-4 col-sm-6 col-xs-12">
                   <q-select
                     outlined
                     v-model="Fila.peaje"
@@ -318,7 +318,7 @@
                     lazy-rules
                   />
                 </div>
-                <div class="col-md-4 col-sm-4 col-xs-12">
+                <div class="col-md-3 col-sm-4 col-xs-12">
                   <q-select
                     label="Tipo"
                     transition-show="scale"
@@ -337,7 +337,7 @@
                     lazy-rules
                   />
                 </div>
-                <div class="col-md-4 col-sm-4 col-xs-12">
+                <div class="col-md-3 col-sm-4 col-xs-12">
                   <q-select
                     label="SubTipo"
                     transition-show="scale"
@@ -352,8 +352,28 @@
                     emit-value
                     map-options
                     hint="Debe seleccionar un Tipo"
+                    @update:model-value="SubTipoSeleccion"
                     :rules="rules"
                     lazy-rules
+                  />
+                </div>
+                <div
+                  v-if="EquiposOptions.length > 0"
+                  class="col-md-3 col-sm-4 col-xs-12"
+                >
+                  <q-select
+                    label="Equipo"
+                    transition-show="scale"
+                    transition-hide="scale"
+                    outlined
+                    v-model="Fila.equipo"
+                    dense
+                    :options="EquiposOptions"
+                    option-label="descripcion"
+                    option-value="id"
+                    class="q-pa-md"
+                    emit-value
+                    map-options
                   />
                 </div>
                 <div v-if="false" class="col-md-4 col-sm-6 col-xs-12">
@@ -393,14 +413,61 @@
                     lazy-rules
                   />
                 </div>
+                <div class="col-md-3 col-sm-12 col-xs-12">
+                  <q-circular-progress
+                    show-value
+                    class="text-white q-ma-md"
+                    :value="progressValue"
+                    size="60px"
+                    :thickness="0.2"
+                    color="orange"
+                    track-color="transparent"
+                  >
+                    <q-btn
+                      v-if="accion == 'play'"
+                      @click="startAudio"
+                      outline
+                      round
+                      color="green"
+                      icon="play_arrow"
+                    />
+                    <q-btn
+                      v-if="accion != 'play'"
+                      @click="startStopRecording"
+                      outline
+                      round
+                      :color="color"
+                      icon="mic"
+                    />
+                  </q-circular-progress>
+                  <div v-if="isRecording">
+                    Duración de la grabación: {{ recordingDuration }}
+                  </div>
+                  <q-btn
+                    v-if="accion == 'play'"
+                    @click="clearAudio"
+                    outline
+                    round
+                    color="red"
+                    icon="delete"
+                  />
+                  <audio
+                    ref="audioPlayer"
+                    :src="recordedAudio"
+                    @play="onPlay"
+                    @pause="onPause"
+                  ></audio>
+                </div>
                 <div class="col-md-12 col-sm-12 col-xs-12">
                   <FileInput
                     @datos-exportado-cambiado="actualizarValorDatosExportado"
                   ></FileInput>
                   <InputTextJump
                     @text-con-salto-linea="actualizarTextExport"
+                    :texto="transcript"
                   ></InputTextJump>
                 </div>
+
                 <div v-if="false" class="col-md-6 col-sm-6 col-xs-12">
                   <q-select
                     label="Proceso"
@@ -455,7 +522,7 @@
         <div class="col-2" style="margin: auto; padding: 10px">
           <q-btn label="No" v-close-popup color="negative" />
           <span style="padding-right: 40px"></span>
-          <q-btn label="Si" color="primary" @click="Finalizar()" />
+          <q-btn label="Si" color="primary" @click="PostTiquete()" />
         </div>
       </div>
     </q-card>
@@ -471,13 +538,21 @@
     <q-card style="width: 90%; max-width: 100%; height: 90vh">
       <q-card-section>
         <div class="row">
-          <div class="col-11 self-center">
+          <div class="col-9 self-center">
             <span
               style="font-size: 18px; font-weight: bold; margin: 10px 0 0 15px"
-              >Gestionar Ticket N° {{ Fila.id }}</span
+              >Ticket N° {{ Fila.id }}</span
             >
           </div>
-
+          <!-- modalNuevoTicket -->
+          <div class="col-2">
+            <q-btn
+              flat
+              label="Copiar Ticket"
+              style="display: flex; margin-left: auto"
+              @click="modalNuevoTicket = true"
+            />
+          </div>
           <div class="col-1">
             <q-btn
               flat
@@ -582,7 +657,23 @@
                             class="q-pa-md"
                           />
                         </div>
-
+                        <div class="col-md-3 col-sm-3 col-xs-12">
+                          <q-select
+                            readonly
+                            label="Equipo"
+                            transition-show="scale"
+                            transition-hide="scale"
+                            outlined
+                            v-model="Fila.equipo"
+                            dense
+                            :options="Equipos"
+                            option-label="descripcion"
+                            option-value="id"
+                            emit-value
+                            map-options
+                            class="q-pa-md"
+                          />
+                        </div>
                         <div class="col-md-3 col-sm-3 col-xs-12">
                           <q-select
                             readonly
@@ -606,6 +697,32 @@
                             color="grey"
                             @click="VerEvidencias(Fila)"
                           />
+                        </div>
+                        <div class="col-md-3 col-sm-12 col-xs-12">
+                          <q-circular-progress
+                            show-value
+                            class="text-white q-ma-md"
+                            :value="progressValue"
+                            size="60px"
+                            :thickness="0.2"
+                            color="orange"
+                            track-color="transparent"
+                          >
+                            <q-btn
+                              :disabled="Fila.audio == null"
+                              @click="startAudio"
+                              outline
+                              round
+                              color="green"
+                              icon="play_arrow"
+                            />
+                          </q-circular-progress>
+                          <audio
+                            ref="audioPlayer"
+                            :src="Fila.audio"
+                            @play="onPlay"
+                            @pause="onPause"
+                          ></audio>
                         </div>
                         <div class="col-md-12 col-sm-12 col-xs-12 q-pa-md">
                           <q-editor
@@ -773,6 +890,7 @@
                   ></FileInput>
                   <InputTextJump
                     @text-con-salto-linea="actualizarTextExport"
+                    :texto="transcript"
                   ></InputTextJump>
                 </div>
               </div>
@@ -803,24 +921,35 @@
 </template>
 
 <script setup>
-import {
-  defineComponent,
-  ref,
-  onMounted,
-  watch,
-  watchEffect,
-  computed,
-} from "vue";
-import { supabase } from "../supabase";
+import { defineComponent, ref, onMounted, watchEffect, onUnmounted } from "vue";
 import { LocalStorage, date } from "quasar";
-import { createClient } from "@supabase/supabase-js";
 import { api } from "boot/axios";
 import { useQuasar } from "quasar";
-import { createBase64Image, mostrarMensajes } from "boot/global";
 import ApexDonut from "src/components/Charts/ApexDonut.vue";
 import FileInput from "src/components/FileImage.vue";
 import InputTextJump from "src/components/InputTextSaltoLinea.vue";
 import VerImagenArray from "src/components/VerImagenArray.vue";
+import Recorder from "recorder-js";
+import axios from "axios";
+
+//variables para la transcripcion de la grabacioon
+const isRecording2 = ref(false);
+const transcript = ref("");
+let recognition;
+
+//variables para el grabado de notas de voz
+const isRecording = ref(false);
+const recordedAudio = ref(null);
+const recordingDuration = ref(0);
+const base64Audio = ref(null);
+const progressValue = ref(0);
+let recorder;
+let startTime;
+let progressInterval;
+const audioPlayer = ref(null);
+const accion = ref("start");
+const color = ref("primary");
+let audioStream;
 
 const idusuario = LocalStorage.getItem("IdUsuario");
 const email = LocalStorage.getItem("email");
@@ -849,7 +978,9 @@ const peajes = ref([]);
 const cliente = ref([]);
 const Tipos = ref([]);
 const Subtipos = ref([]);
+const Equipos = ref([]);
 const SubtipoOptions = ref([]);
+const EquiposOptions = ref([]);
 const Prioridades = ref([]);
 const Estados = ref([]);
 const Procesos = ref([]);
@@ -1007,6 +1138,13 @@ const columns = [
     field: "devuelto",
     sortable: false,
   },
+  {
+    name: "eliminar",
+    align: "left",
+    label: "",
+    field: "eliminar",
+    sortable: false,
+  },
 ];
 const columnsDetalles = [
   {
@@ -1106,8 +1244,12 @@ const getDetalleTiquete = async () => {
   visible.value = false;
 };
 const loadData = async () => {
+  var eliminado = Estados.value.filter((p) => p.descripcion == "Completado")[0]
+    .id;
   await api
-    .get("tiquete?cliente=eq." + cliente.value[0].id + "&select=*")
+    .get(
+      `tiquete?cliente=eq.${cliente.value[0].id}&estado=neq.${eliminado}&select=*`
+    )
     .then((response) => {
       tiquetes.value = response.data;
     });
@@ -1141,6 +1283,9 @@ const DatosGenerales = async () => {
   await api.get("subtipo?select=*").then((response) => {
     Subtipos.value = response.data;
   });
+  await api.get("equipo?select=*").then((response) => {
+    Equipos.value = response.data;
+  });
 
   await api.get("prioridad?select=*").then((response) => {
     Prioridades.value = response.data;
@@ -1169,46 +1314,85 @@ const DatosGenerales = async () => {
 };
 
 const DevolverTiquete = async () => {
+  accion.value = "devolver";
   mensaje.value = "¿Esta seguro de Devolver el Ticket?";
   modalConfirm.value = true;
 };
-const Finalizar = async () => {
+const FinalizarTiquete = async (row) => {
+  accion.value = "finalizar";
+  FilaFinalizar.value = row;
+  mensaje.value = "¿Esta seguro de Finalizar el Ticket?";
+  modalConfirm.value = true;
+};
+const EliminarTiquete = async (row) => {
+  accion.value = "eliminar";
+  FilaFinalizar.value = row;
+  mensaje.value = "¿Esta seguro de Eliminar el Ticket?";
+  modalConfirm.value = true;
+};
+
+const PostTiquete = async () => {
+  dataMessage = {};
+  switch (accion.value) {
+    case "finalizar":
+      dataMessage.estado = "Finalizado";
+      dataMessage.mensaje1 =
+        "La solicitud fue revisada y finalizada por el equipo de soporte de";
+      dataMessage.mensaje2 = "";
+
+      if (
+        Estados.value.filter((p) => p.id == FilaFinalizar.value.estado)[0]
+          .descripcion == "Finalizado"
+      ) {
+        $q.notify({
+          type: "warning",
+          message: "Ticket ya fue Finalizado",
+          timeout: 4000,
+        });
+        return;
+      } else {
+        FilaDetalle.value.valornuevo = "Finalizado";
+        FilaDetalle.value.valoranterior = "Cerrado";
+        FilaFinalizar.value.estado = Estados.value.filter(
+          (p) => p.descripcion == "Finalizado"
+        )[0].id;
+      }
+
+      break;
+    case "devolver":
+      dataMessage.estado = "Devuelto";
+      dataMessage.mensaje1 =
+        "La solicitud sera revisada nuevamente por el equipo de soporte de";
+      dataMessage.mensaje2 =
+        "Sera informado por este medio y el aplicativo cuando se solucione la problematica.";
+      FilaDetalle.value.valoranterior = "Cerrado";
+      FilaDetalle.value.valornuevo = "Devuelto";
+
+      FilaFinalizar.value.estado = Estados.value.filter(
+        (p) => p.descripcion == "Devuelto"
+      )[0].id;
+
+      break;
+    case "eliminar":
+      dataMessage.estado = "Eliminado";
+      dataMessage.mensaje1 = "La solicitud fue eliminada satisfactoriamente";
+      dataMessage.mensaje2 = "";
+      FilaDetalle.value.valornuevo = "Eliminado";
+      FilaDetalle.value.valoranterior = "Iniciado";
+      FilaFinalizar.value.estado = Estados.value.filter(
+        (p) => p.descripcion == "Completado"
+      )[0].id;
+
+      break;
+  }
+
   modalConfirm.value = false;
   modalDevolverTiquete.value = false;
-  FilaDetalle.value.valoranterior = Estados.value.filter(
-    (p) => p.id == FilaFinalizar.value.estado
-  )[0].descripcion;
-  if (mensaje.value == "¿Esta seguro de Devolver el Ticket?") {
-    FilaFinalizar.value.estado = Estados.value.filter(
-      (p) => p.descripcion == "Devuelto"
-    )[0].id;
-  }
-  // }
 
-  if (
-    Estados.value.filter((p) => p.id == FilaFinalizar.value.estado)[0]
-      .descripcion == "Finalizado"
-  ) {
-    $q.notify({
-      type: "warning",
-      message: "Ticket ya fue Finalizado",
-      timeout: 4000,
-    });
-    return;
-  } else {
-    if (mensaje.value == "¿Esta seguro de Finalizar el Ticket?") {
-      FilaFinalizar.value.estado = Estados.value.filter(
-        (p) => p.descripcion == "Finalizado"
-      )[0].id;
-    }
-  }
   FilaDetalle.value.campomodificador = "Estado";
-
-  FilaDetalle.value.valornuevo = "Devuelto";
   FilaDetalle.value.tiquete = FilaFinalizar.value.id;
   FilaDetalle.value.operador = FilaFinalizar.value.asignado;
 
-  // FilaDetalle.value.evidencia = archivos2.value;
   // se actualiza el campo del tiquete que se esta modificando
   FilaDetalle.value.estado = Estados.value.filter(
     (p) => p.id == FilaFinalizar.value.estado
@@ -1221,21 +1405,7 @@ const Finalizar = async () => {
     .then((response) => {
       loadData();
       modalNuevoTicket.value = false;
-      dataMessage = {};
-      if (mensaje.value == "¿Esta seguro de Devolver el Ticket?") {
-        dataMessage.estado = "Devuelto";
-        dataMessage.mensaje1 =
-          "La solicitud sera revisada nuevamente por el equipo de soporte de";
-        dataMessage.mensaje2 =
-          "Sera informado por este medio y el aplicativo cuando se solucione la problematica.";
-      } else {
-        dataMessage.estado = "Finalizado";
-        dataMessage.mensaje1 =
-          "La solicitud fue revisada y finalizada por el equipo de soporte de";
-        dataMessage.mensaje2 = "";
-      }
       enviarCorreo(dataMessage);
-
       if (
         response.status == 201 ||
         response.status == 200 ||
@@ -1255,9 +1425,10 @@ const Finalizar = async () => {
     .post("detalletiquete", FilaDetalle.value)
     .then((response) => {})
     .catch((error) => {
-      mostrarMensajes({
-        tipomensaje: 4,
-        mensaje: "Error, complete todos los campos",
+      $q.notify({
+        type: "negative",
+        message: "Error, complete todos los campos",
+        timeout: 4000,
       });
     });
   Fila.value.id = FilaFinalizar.value.id;
@@ -1268,9 +1439,22 @@ const TipoSeleccion = (value) => {
   Fila.value.subtipo = null;
 };
 
+const SubTipoSeleccion = (value) => {
+  EquiposOptions.value = Equipos.value.filter(
+    (equipo) => equipo.subtipo == value
+  );
+  Fila.value.equipo = null;
+};
+
 const AgregarTicket = async () => {
+  clearAudio();
   modalNuevoTicket.value = false;
   visible.value = true;
+  // Fila.value.id = 0;
+  delete Fila.value.id;
+  delete Fila.value.created_at;
+  delete Fila.value.numero;
+
   Fila.value.cliente = cliente.value[0].id;
   Fila.value.concesion = concesion.value[0].id;
   Fila.value.asignado = Usuarios.value.filter(
@@ -1288,6 +1472,8 @@ const AgregarTicket = async () => {
   } else {
     Fila.value.prioridad = 3;
   }
+  Fila.value.audio = base64Audio.value;
+  console.log(Fila.value);
   await api
     .post("tiquete", Fila.value)
     .then((response) => {
@@ -1326,22 +1512,55 @@ const AgregarTicket = async () => {
 };
 
 const enviarCorreo = async (data) => {
-  data.email = email;
-  Fila.value = {};
-  const axios = require("axios");
-  const url = `http://${configJson.host}:${configJson.portMail}/enviar-correo`;
+  const dominio = "https://uticket.cus.utraffic.co/";
+  const apiKey =
+    "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";
+  var accion = `Ticket ${data.estado} Exitosamente!`;
+  var mensaje = `${data.mensaje1} <strong>Utraffic SAS.</strong><br> ${data.mensaje2}`;
+  var plantilla = require("./PlantillaCorreo.html").default.toString();
+  plantilla = plantilla.replace("${accion}", accion);
+  plantilla = plantilla.replace("${mensaje}", mensaje);
+  plantilla = plantilla.replace("${dominio}", dominio);
+
+  //soporte@utraffic.co
+  //#Utraffic2022**
+  const data2 = {
+    sender: {
+      name: "Soporte Utraffic",
+      email: "soporte@utraffic.co",
+    },
+    to: [
+      {
+        email: email,
+        name: cliente.value[0].nombres,
+      },
+    ],
+    subject: `Ticket ${data.estado}`,
+    htmlContent: plantilla,
+  };
+
   await axios
-    .post(url, data)
-    .then((response) => {})
+    .post("https://api.brevo.com/v3/smtp/email", data2, {
+      headers: {
+        accept: "application/json",
+        "api-key": apiKey,
+        "content-type": "application/json",
+      },
+    })
+    .then((response) => {
+      console.log("Email sent successfully:", response.data);
+    })
     .catch((error) => {
-      console.error(error);
+      console.error("Error sending email:", error);
     });
 };
+
 const formatDate = (value) => {
   const date = new Date(value);
   // return date.toLocaleDateString();  // solo la fecha DD/MM/YY
   return date.toLocaleString(); // DD/MM/YY, 00:00:00
 };
+
 const VerEvidencias = (row) => {
   imagen.value = row.evidencia;
   mostrarImagen.value = true;
@@ -1438,28 +1657,6 @@ watchEffect(() => {
           break;
       }
 
-      // if (estado === 1 || estado === 5 || estado === 6) {
-      //   countByEstado[label] = {
-      //     label: label,
-      //     value: (countByEstado[label]?.value || 0) + 1,
-      //   };
-
-      //   countByEstadoarray.push({
-      //     label: label,
-      //     value: (countByEstado[label]?.value || 0) + 1,
-      //   });
-      // } else {
-      //   countByEstado[label] = {
-      //     label: label,
-      //     value: (countByEstado.privado?.value || 0) + 1,
-      //   };
-
-      //   countByEstadoarray.push({
-      //     label: label,
-      //     value: (countByEstado.privado?.value || 0) + 1,
-      //   });
-      // }
-
       if (estado === 1 || estado === 5 || estado === 6 || estado == 7) {
         if (!countByEstado[label]) {
           countByEstado[label] = {
@@ -1524,17 +1721,160 @@ onMounted(async () => {
   await DatosGenerales();
   loadData();
 });
+
 setInterval(() => {
   loadData();
 }, 60000);
 const labelComentario = ref("Ver más");
 const expanded2 = ref({});
+
 function verMasComentario(rowId) {
   expanded2.value[rowId] = !expanded2.value[rowId];
   if (expanded2.value[rowId]) {
     labelComentario.value = "Ver Menos";
   } else {
     labelComentario.value = "Ver Mas";
+  }
+}
+
+// //funciones para el grabado de notas de voz
+function startStopRecording() {
+  clearInterval(progressInterval);
+  progressValue.value = 0;
+  if (accion.value == "start") {
+    color.value = "red";
+    accion.value = "stop";
+    startRecording();
+
+    navigator.mediaDevices
+      .getUserMedia({ audio: true })
+      .then(function (stream) {
+        audioStream = stream;
+        const audioContext = new (window.AudioContext ||
+          window.webkitAudioContext)();
+        recorder = new Recorder(audioContext, { numChannels: 1 });
+        recorder.init(stream);
+
+        startTime = Date.now();
+        recorder.start();
+        isRecording.value = true;
+
+        // Actualizar la duración de grabación cada segundo
+        setInterval(() => {
+          recordingDuration.value = Math.floor((Date.now() - startTime) / 1000);
+        }, 1000);
+      })
+      .catch(function (err) {
+        console.error("Error al acceder al micrófono: ", err);
+      });
+  } else if (accion.value == "stop") {
+    stopRecording();
+    accion.value = "play";
+    if (recorder && isRecording.value) {
+      color.value = "primary";
+      recorder
+        .stop()
+        .then(function ({ blob }) {
+          recordedAudio.value = URL.createObjectURL(blob);
+          isRecording.value = false;
+          recordingDuration.value = 0;
+          convertToBase64();
+          if (audioStream) {
+            const tracks = audioStream.getTracks();
+            tracks.forEach((track) => track.stop());
+          }
+        })
+        .catch(function (err) {
+          console.error("Error al detener la grabación: ", err);
+        });
+    }
+  }
+}
+
+function convertToBase64() {
+  if (recordedAudio.value) {
+    const audioBlob = fetch(recordedAudio.value).then((response) =>
+      response.blob()
+    );
+    audioBlob.then((blob) => {
+      const reader = new FileReader();
+      reader.onloadend = function () {
+        base64Audio.value = reader.result;
+      };
+      reader.readAsDataURL(blob);
+    });
+  }
+}
+
+function onPlay() {
+  progressInterval = setInterval(() => {
+    if (audioPlayer.value) {
+      const currentTime = audioPlayer.value.currentTime;
+      const duration = audioPlayer.value.duration;
+      progressValue.value = (currentTime / duration) * 100;
+    }
+  }, 100);
+}
+
+function clearAudio() {
+  transcript.value = "";
+  clearInterval(progressInterval);
+  progressValue.value = 0;
+  accion.value = "start";
+  recordedAudio.value = null;
+  color.value = "primary";
+}
+
+function startAudio() {
+  audioPlayer.value.play();
+}
+
+function onPause() {
+  clearInterval(progressInterval);
+}
+
+// Limpiar recursos al desmontar el componente
+onUnmounted(() => {
+  if (recorder && isRecording.value) {
+    recorder.stop().catch(() => {});
+  }
+});
+
+//funciones para la transcripcion de la grabacion
+let silenceTimeout;
+
+function startRecording() {
+  recognition = new webkitSpeechRecognition(); // Para navegadores basados en WebKit (Chrome, Safari)
+  // recognition = new SpeechRecognition(); // Para navegadores compatibles con la especificación W3C
+
+  recognition.lang = "es-ES"; // Establece el idioma del reconocimiento de voz
+  recognition.continuous = true; // Habilita el reconocimiento continuo
+
+  recognition.onresult = (event) => {
+    const lastResult = event.results[event.results.length - 1];
+    transcript.value += lastResult[0].transcript;
+  };
+
+  recognition.onend = () => {
+    // Reiniciar la grabación después de 5 segundos de inactividad
+    silenceTimeout = setTimeout(() => {
+      startRecording();
+    }, 500);
+    // setTimeout(() => {
+    //   startRecording();
+    // }, 500);
+  };
+
+  recognition.start();
+  isRecording2.value = true;
+}
+
+function stopRecording() {
+  if (recognition) {
+    recognition.onend = null; // Eliminar el evento onend para evitar que se reinicie la grabación
+    recognition.stop();
+    clearTimeout(silenceTimeout);
+    isRecording2.value = false;
   }
 }
 defineComponent({

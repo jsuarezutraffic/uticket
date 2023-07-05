@@ -1,18 +1,5 @@
 <template>
-  <!-- <q-page class="flex flex-center"> -->
-  <!-- <div>
-    Lorem ipsum dolor sit amet consectetur adipisicing elit. Optio maxime
-    asperiores natus facilis saepe ipsum, expedita, accusantium beatae voluptate
-    molestiae aut accusamus corrupti nisi mollitia nemo. Odit deleniti culpa
-    nobis.
-  </div>
-  <img
-    alt="Quasar logo"
-    src="~assets/quasar-logo-vertical.svg"
-    style="width: 200px; height: 200px"
-  /> -->
   <MainTable />
-  <!-- </q-page> -->
 </template>
 
 <script setup>

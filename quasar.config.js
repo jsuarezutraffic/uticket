@@ -71,6 +71,13 @@ module.exports = configure(function (ctx) {
           .plugin("eslint-webpack-plugin")
           .use(ESLintPlugin, [{ extensions: ["js", "vue"] }]);
       },
+      chainWebpack(config) {
+        config.module
+          .rule("html")
+          .test(/\.html$/)
+          .use("raw-loader")
+          .loader("raw-loader");
+      },
       // extendWebpack(config) {
       //   if (process.env.NODE_ENV === "development") {
       //     const { spawn } = require("child_process");

@@ -13,6 +13,7 @@
           U-Ticket
         </div>
       </div>
+
       <q-input
         outlined
         v-model="username"
@@ -28,17 +29,24 @@
         type="password"
         class="username-box"
         required
+        @keyup.enter="login()"
       />
-      <q-btn class="login-btn bg-dark no-padding" @click="login()" flat
-        >Login</q-btn
-      >
-      <q-btn
-        width="100%"
-        class="login-btn bg-primary no-padding"
-        to="/register"
-        flat
-        >Sign Up</q-btn
-      >
+      <div class="row">
+        <div class="col-md-6 col-sm-12 q-pa-md">
+          <q-btn class="login-btn bg-dark no-padding" @click="login()" flat
+            >Login</q-btn
+          >
+        </div>
+        <div class="col-md-6 col-sm-12 q-pa-md">
+          <q-btn
+            width="100%"
+            class="login-btn bg-primary no-padding"
+            to="/register"
+            flat
+            >Sign Up</q-btn
+          >
+        </div>
+      </div>
     </q-card>
 
     <q-page-container>
@@ -76,19 +84,6 @@ const username = ref("");
 const password = ref("");
 
 const login = async () => {
-  // const { data, error } = await supabase.auth.signInWithPassword({
-  //   email: username.value,
-  //   password: password.value,
-  // });
-
-  // if (error.length !== 0) {
-  //   $q.notify({
-  //     type: "negative",
-  //     message: error.error_description,
-  //     timeout: 4000,
-  //   });
-  // }
-
   api
     .post(
       "https://xzovknjkdfykvximpgxh.supabase.co/auth/v1/token?grant_type=password",
@@ -96,16 +91,45 @@ const login = async () => {
       { headers }
     )
     .then((response) => {
-      const toPath = "/";
-      router.push(toPath);
       api.defaults.headers.common.Authorization =
         "Bearer " + response.data.access_token;
       api.defaults.headers.common.apikey = supabaseKey;
 
-      store.inicio(response.data);
+      api
+        .get(`cliente?usuario=eq.` + response.data.user.id + `&select=*`)
+        .then((response2) => {
+          if (response2.data.length > 0) {
+            const toPath = "/";
+            router.push(toPath);
+            store.inicio(response.data);
+          } else {
+            $q.notify({
+              type: "negative",
+              message:
+                "No se encuentra registrado en el sistema como un cliente",
+              timeout: 4000,
+            });
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+          $q.notify({
+            type: "negative",
+            message: "No se encuentra registrado en el sistema como un cliente",
+            timeout: 4000,
+          });
+        });
     })
     .catch((error) => {
-      console.error(error);
+      if (error.response.data.error == "invalid_grant") {
+        $q.notify({
+          type: "negative",
+          message: "Credenciales invalidas",
+          timeout: 4000,
+        });
+      } else {
+        console.log(error.response.data);
+      }
     });
 };
 </script>

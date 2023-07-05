@@ -12,9 +12,10 @@
 
 <script setup>
 /*eslint-disable */
-import { ref, watch } from "vue";
-import { createBase64Image } from "boot/global";
-
+import { computed, toRefs, ref, watchEffect, watch } from "vue";
+// Convertir props a variable
+const props = defineProps(["texto"]);
+let { texto } = toRefs(props);
 const text = ref("");
 const ExportText = ref("");
 const inputRules = [
@@ -40,6 +41,16 @@ const emit = defineEmits(["text-con-salto-linea"]);
 watch(text, (currentValue) => {
   ExportText.value = agregarSaltosDeLinea(currentValue);
   emit("text-con-salto-linea", ExportText.value);
+});
+watch(texto, (currentValue) => {
+  if (currentValue == "") {
+    text.value = "";
+  } else {
+    console.log(currentValue);
+
+    // text.value = text.value + currentValue;
+    text.value = currentValue;
+  }
 });
 </script>
 
