@@ -41,6 +41,7 @@
     </q-page-container>
   </q-layout>
 </template>
+
 <script setup>
 import { defineComponent, ref } from "vue";
 import { createClient } from "@supabase/supabase-js";
@@ -133,12 +134,5 @@ const IniciarSesion = async () => {
   border-radius: 30px;
   padding: 10px;
   box-shadow: 0px 2px 5px 0px rgba(110, 110, 110, 1);
-}
-
-.background-style {
-  background-image: url("/assets/img/backgroundlogin.jpg");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
 }
 </style>
