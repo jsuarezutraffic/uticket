@@ -1,60 +1,122 @@
 <template>
-  <q-layout view="hHh lpr fFf" class="background">
-    <q-card class="card-container">
-      <q-img
-        src="../assets/C505EF1B-28CA-4FD4-A240-D5AFBBC9989A-removebg.png"
-        class="u-traffic"
-      />
-      <div class="card-header">
-        <div class="title-class text-h5 text-weight-bold text-uppercase">
-          Welcome back to
+  <div class="row justify-center text-center items-center">
+    <div
+      class="col-md-6 col-lg-6 col-sm-12 col-xs-12 movil background-style window-height"
+    >
+      <div class="div-redondo text-center shadow-5">
+        <q-img
+          class="q-pa-xs"
+          fit="fill"
+          width="13rem"
+          height="21rem"
+          src="../assets/img/LogoUticket.png"
+        />
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-6 col-sm-12 col-xs-12 text-center login">
+      <div class="row justify-center">
+        <div class="col-6 items-end">
+          <q-img
+            class="img-utraffic"
+            alt="Proyecto"
+            src="../assets/img/LogoUtraffic.png"
+            fit="contain"
+            spinner-color="white"
+            width="10rem"
+            height="10rem"
+          ></q-img>
+
+          <!-- tamaño pequeño -->
+          <q-img
+            class="img-uticket"
+            alt="Proyecto"
+            src="../assets/img/LogoUticket.png"
+            fit="contain"
+            spinner-color="white"
+            width="10rem"
+            height="10rem"
+          ></q-img>
         </div>
-        <div class="title-class text-h5 text-weight-bold text-uppercase">
-          U-Ticket
+      </div>
+      <div class="row text-center q-pa-md">
+        <div class="col-12 text-center">
+          <div class="text-h4 text-weight-bold">
+            Welcome to
+            <strong class="text-tertiary text-h4 text-weight-bold"
+              >U-Ticket</strong
+            ><br />
+            <p class="text-h5 text-weight-bold q-pt-lg">
+              Inicia sesión para continuar.
+            </p>
+          </div>
         </div>
       </div>
 
-      <q-input
-        outlined
-        v-model="username"
-        label="Email"
-        type="text"
-        class="username-box"
-        required
-      />
-      <q-input
-        outlined
-        v-model="password"
-        label="Password"
-        type="password"
-        class="username-box"
-        required
-        @keyup.enter="login()"
-      />
-      <div class="row">
-        <div class="col-md-6 col-sm-12 q-pa-md">
-          <q-btn class="login-btn bg-dark no-padding" @click="login()" flat
-            >Login</q-btn
-          >
-        </div>
-        <div class="col-md-6 col-sm-12 q-pa-md">
-          <q-btn
-            width="100%"
-            class="login-btn bg-primary no-padding"
-            to="/register"
-            flat
-            >Sign Up</q-btn
-          >
+      <div class="column items-center q-pt-md">
+        <div class="col text-center">
+          <q-form class="form" ref="myForm" @submit.prevent="login()">
+            <div class="row">
+              <div class="col-12">
+                <q-input
+                  v-model="username"
+                  type="text"
+                  :label="'User'"
+                  :dense="dense"
+                  :rules="[(val) => !!val || 'Required']"
+                  lazy-rules
+                >
+                  <template #prepend>
+                    <q-icon name="person"></q-icon>
+                  </template>
+                </q-input>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-12">
+                <q-input
+                  :type="isPwd ? 'password' : 'text'"
+                  :label="'Password'"
+                  v-model="password"
+                  :dense="dense"
+                  :rules="[
+                    (val) => !!val || 'Required',
+                    (val) => val.length > 2 || 'MinimumCharacter',
+                  ]"
+                  lazy-rules
+                >
+                  <template v-slot:append>
+                    <q-icon
+                      :name="isPwd ? 'visibility_off' : 'visibility'"
+                      class="cursor-pointer"
+                      @click="isPwd = !isPwd"
+                    />
+                  </template>
+                  <template v-slot:prepend>
+                    <q-icon name="password" />
+                  </template>
+                </q-input>
+              </div>
+            </div>
+
+            <div class="row q-pt-md">
+              <div class="col-12">
+                <q-btn
+                  style="width: 100%"
+                  color="tertiary"
+                  text-color="black"
+                  :label="'Login'"
+                  type="submit"
+                  rounded
+                ></q-btn>
+              </div>
+            </div>
+          </q-form>
         </div>
       </div>
-    </q-card>
-
-    <q-page-container>
-      <router-view />
-    </q-page-container>
-  </q-layout>
+    </div>
+  </div>
 </template>
-
 <script setup>
 import { defineComponent, ref } from "vue";
 import { supabase } from "../supabase";
@@ -69,6 +131,7 @@ defineComponent({
 let $q = useQuasar();
 const store = useMainStore();
 const router = useRouter();
+const isPwd = ref(true);
 
 const apiUrl =
   "https://xzovknjkdfykvximpgxh.supabase.co/auth/v1/token?grant_type=password";
@@ -124,7 +187,8 @@ const login = async () => {
       if (error.response.data.error == "invalid_grant") {
         $q.notify({
           type: "negative",
-          message: "Credenciales invalidas",
+          message:
+            "Credensiales invalidas, por favor verificar correo y contraseña",
           timeout: 4000,
         });
       } else {
@@ -133,17 +197,3 @@ const login = async () => {
     });
 };
 </script>
-
-<style scoped>
-.login-btn {
-  width: 100px;
-  margin-top: 20px;
-  margin-bottom: 20px;
-  color: white;
-  font-size: 16px;
-  font-weight: bold;
-  border-radius: 30px;
-  padding: 10px;
-  box-shadow: 0px 2px 5px 0px rgba(110, 110, 110, 1);
-}
-</style>

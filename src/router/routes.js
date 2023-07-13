@@ -17,6 +17,11 @@ const routes = [
       {
         path: "/",
         meta: { requireLogin: true },
+        component: () => import("pages/Dashboard.vue"),
+      },
+      {
+        path: "/tiquetes",
+        meta: { requireLogin: true },
         component: () => import("pages/IndexPage.vue"),
       },
       {

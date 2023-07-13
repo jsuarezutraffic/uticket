@@ -25,17 +25,6 @@
             class="u-trafficRegister"
           />
         </div>
-
-        <!-- <div class="col-12 bg-red">
-          <div>
-            <div class="title-class text-h5 text-weight-bold text-uppercase">
-              Welcome to
-            </div>
-            <div class="title-class text-h5 text-weight-bold text-uppercase">
-              U-Ticket
-            </div>
-          </div>
-        </div> -->
       </div>
       <q-form @submit.prevent="CreateAccount()" id="form">
         <div class="row q-col-gutter-x-md q-col-gutter-y-md">

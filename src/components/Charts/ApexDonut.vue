@@ -1,5 +1,5 @@
 <template>
-  <div class="chart-wrap relative-position">
+  <div class="chart-wrap relative-position" :style="heightDonut">
     <div>
       <apexchart
         type="donut"
@@ -20,19 +20,12 @@
     </q-inner-loading>
   </div>
 </template>
-
-<style>
-.chart-wrap {
-  height: 260px;
-}
-</style>
-
 <script setup>
 import { computed, toRefs, ref, watchEffect } from "vue";
 
 // Convertir props a variable
-const props = defineProps(["Series", "title", "width"]);
-let { Series, title, width } = toRefs(props);
+const props = defineProps(["Series", "title", "width", "heightDonut"]);
+let { Series, title, width, heightDonut } = toRefs(props);
 const visible = ref(true);
 
 watchEffect(() => {
@@ -62,6 +55,15 @@ const titleDefault = computed(() => {
 
 const optionsCalc = computed(() => {
   let options = {
+    colors: [
+      "#002c3e",
+      "#008080",
+      "#86e6a9",
+      "#97ad47",
+      "#ad7747",
+      "#ad4947",
+      "#9047ad",
+    ],
     yaxis: {
       labels: {
         formatter: function (value) {
@@ -69,9 +71,12 @@ const optionsCalc = computed(() => {
         },
       },
     },
-
+    fill: {
+      type: "gradient",
+    },
     title: {
       text: `${titleDefault.value}`,
+      align: "center",
       style: {
         color: "#4a148c",
         fontWeight: 600,

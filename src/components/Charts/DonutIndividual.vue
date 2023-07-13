@@ -1,19 +1,30 @@
 <template>
   <div class="chart-wrap relative-position">
     <div>
-      <apexchart type="donut" width="250" :options="optionsCalc" :series="series" :key="series"></apexchart>
+      <apexchart
+        type="donut"
+        width="250"
+        :options="optionsCalc"
+        :series="series"
+        :key="series"
+      ></apexchart>
     </div>
 
-    <q-inner-loading :showing="visible" label="Please wait..." label-class="text-teal" label-style="font-size: 1.1em">
+    <q-inner-loading
+      :showing="visible"
+      label="Please wait..."
+      label-class="text-teal"
+      label-style="font-size: 1.1em"
+    >
       <q-spinner color="primary" size="3em"></q-spinner>
     </q-inner-loading>
   </div>
 </template>
 
 <style>
-.chart-wrap {
+/* .chart-wrap {
   height: 260px;
-}
+} */
 </style>
 
 <script setup>
@@ -37,8 +48,6 @@ let USDollar = new Intl.NumberFormat("es-US", {
   currency: "USD",
 });
 
-
-
 const optionsCalc = computed(() => {
   let options = {
     yaxis: {
@@ -55,7 +64,7 @@ const optionsCalc = computed(() => {
         color: "#4a148c",
         fontWeight: 600,
         fontSize: "14px",
-      }
+      },
     },
     plotOptions: {
       pie: {
@@ -80,9 +89,12 @@ const optionsCalc = computed(() => {
               fontFamily: " Arial, sans-serif",
               fontWeight: 600,
               formatter: function (w) {
-                let value1 = w.globals.seriesTotals[0]
-                let value2 = w.globals.seriesTotals[1]
-                return (value1 / (value1 + value2)).toLocaleString(undefined, { style: 'percent', minimumFractionDigits: 2 })
+                let value1 = w.globals.seriesTotals[0];
+                let value2 = w.globals.seriesTotals[1];
+                return (value1 / (value1 + value2)).toLocaleString(undefined, {
+                  style: "percent",
+                  minimumFractionDigits: 2,
+                });
               },
             },
           },
@@ -121,9 +133,6 @@ const optionsCalc = computed(() => {
     },
   };
 
-
-
   return options;
 });
 </script>
-

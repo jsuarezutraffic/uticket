@@ -5,6 +5,7 @@
 <script>
 import { defineComponent } from "vue";
 import { useMainStore } from "stores/main";
+import "./css/estilos.scss";
 export default defineComponent({
   name: "App",
   beforeCreate() {

@@ -3,9 +3,23 @@
     <div class="card-perfil" v-show="verPerfil">
       <q-form autofocus @submit.prevent="actualizarPerfil()"
         ><q-card style="max-width: 1000px; width: 600px">
-          <q-card-section>
-            <div style="font-size: 18px; font-weight: bold; align-self: center">
+          <q-card-section class="row">
+            <div
+              class="col-11"
+              style="font-size: 18px; font-weight: bold; align-self: center"
+            >
               Perfil
+            </div>
+            <div
+              class="col-1"
+              style="font-size: 18px; font-weight: bold; align-self: center"
+            >
+              <q-btn
+                to="/"
+                flat
+                icon="arrow_back"
+                style="display: flex; margin-left: auto"
+              />
             </div>
           </q-card-section>
           <q-card-section>

@@ -1,12 +1,13 @@
 <template>
   <div class="q-pa-md flex">
     <TransitionGroup>
-      <div class="container">
+      <div class="container" v-if="showMaintable.showGraficas">
         <q-card
           class="q-my-md q-mr-md row justify-evenly"
           v-if="table && countArrayEstado.length > 0"
         >
           <apex-donut
+            heightDonut="height: 260px;"
             :Series="countArrayEstado"
             :cliente="cliente"
             :prioridades="Prioridades"
@@ -15,6 +16,7 @@
           />
 
           <apex-donut
+            heightDonut="height: 260px;"
             :Series="countArrayPrioridad"
             :cliente="cliente"
             :prioridades="Prioridades"
@@ -23,6 +25,7 @@
           />
 
           <apex-donut
+            heightDonut="height: 260px;"
             :Series="countArraySolicitud"
             :cliente="cliente"
             :prioridades="Prioridades"
@@ -31,6 +34,7 @@
           />
 
           <apex-donut
+            heightDonut="height: 260px;"
             :Series="countArrayTipo"
             :cliente="cliente"
             :prioridades="Prioridades"
@@ -57,27 +61,17 @@
         v-model:expanded="expanded"
         :sort-method="customSort()"
         :sort-method-props="{ sortBy, sortDesc }"
-        :visible-columns="[
-          'id',
-          'created_at',
-          'cliente',
-          'concesion',
-          'peaje',
-          'solicitud',
-          // 'observaciones',
-          'estado',
-          'prioridad',
-          'tipo',
-          'subtipo',
-          'finalizar',
-          'devuelto',
-          'eliminar',
-        ]"
+        :visible-columns="showMaintable.showColums"
+        rows-per-page-label="Registro por página"
+        loading-label="Cargando..."
+        no-data-label="No existen datos para mostrar, por favor cree un nuevo ticket"
       >
         <template v-slot:top>
+          <div style="font-weight: bold" class="q-table__title">Tickets</div>
+          <q-space />
           <q-btn
             class="q-ma-xs"
-            color="secondary"
+            color="tertiary"
             size="md"
             @click="
               Fila = {};
@@ -86,12 +80,30 @@
             "
             >Nuevo Ticket
           </q-btn>
+          <q-btn
+            v-if="showMaintable.showGraficas"
+            outline=""
+            to="/"
+            class="q-ma-xs"
+            color="tertiary"
+            size="md"
+            >Volver
+          </q-btn>
+          <q-btn
+            v-if="!showMaintable.showGraficas"
+            outline=""
+            to="/tiquetes"
+            class="q-ma-xs"
+            color="tertiary"
+            size="md"
+            >Tabla Tiquetes
+          </q-btn>
         </template>
 
         <template v-slot:header="props">
-          <q-tr :props="props" class="head-styles">
+          <q-tr :props="props">
             <q-th
-              class="th-text head-styles"
+              class="th-text"
               auto-width
               v-for="col in props.cols"
               :key="col.name"
@@ -748,6 +760,7 @@
             <q-card flat>
               <div class="q-pa-md" v-if="TablaDetalles">
                 <q-table
+                  title="Detalles Tickets"
                   :loading="visible"
                   separator="horizontal"
                   flat
@@ -772,6 +785,9 @@
                     // 'adjunto_url',
                     'verevidencias',
                   ]"
+                  rows-per-page-label="Registro por página"
+                  loading-label="Cargando..."
+                  no-data-label="No existen datos para mostrar"
                 >
                   <template v-slot:loading>
                     <q-inner-loading showing color="primary" />
@@ -921,7 +937,14 @@
 </template>
 
 <script setup>
-import { defineComponent, ref, onMounted, watchEffect, onUnmounted } from "vue";
+import {
+  defineComponent,
+  ref,
+  toRefs,
+  onMounted,
+  watchEffect,
+  onUnmounted,
+} from "vue";
 import { LocalStorage, date } from "quasar";
 import { api } from "boot/axios";
 import { useQuasar } from "quasar";
@@ -932,6 +955,12 @@ import VerImagenArray from "src/components/VerImagenArray.vue";
 import Recorder from "recorder-js";
 import axios from "axios";
 
+//props
+const props = defineProps(["showMaintable"]);
+let { showMaintable } = toRefs(props);
+
+const filtro = LocalStorage.getItem("filtro");
+console.log(filtro);
 //variables para la transcripcion de la grabacioon
 const isRecording2 = ref(false);
 const transcript = ref("");
@@ -1076,21 +1105,21 @@ const columns = [
 
   {
     name: "estado",
-    align: "left",
+    align: "center",
     label: "Estado",
     field: "estado",
     sortable: true,
   },
   {
     name: "privado",
-    align: "left",
+    align: "center",
     label: "Privado",
     field: "privado",
     sortable: true,
   },
   {
     name: "prioridad",
-    align: "left",
+    align: "center",
     label: "Prioridad",
     field: "prioridad",
     sortable: true,
@@ -1126,21 +1155,21 @@ const columns = [
   },
   {
     name: "finalizar",
-    align: "left",
+    align: "center",
     label: "",
     field: "finalizar",
     sortable: false,
   },
   {
     name: "devuelto",
-    align: "left",
+    align: "center",
     label: "",
     field: "devuelto",
     sortable: false,
   },
   {
     name: "eliminar",
-    align: "left",
+    align: "center",
     label: "",
     field: "eliminar",
     sortable: false,
@@ -1246,13 +1275,47 @@ const getDetalleTiquete = async () => {
 const loadData = async () => {
   var eliminado = Estados.value.filter((p) => p.descripcion == "Completado")[0]
     .id;
-  await api
-    .get(
-      `tiquete?cliente=eq.${cliente.value[0].id}&estado=neq.${eliminado}&select=*`
-    )
-    .then((response) => {
-      tiquetes.value = response.data;
-    });
+  switch (filtro) {
+    case "Solicitudes":
+      await api
+        .get(
+          `tiquete?cliente=eq.${cliente.value[0].id}&estado=neq.${eliminado}&select=*`
+        )
+        .then((response) => {
+          tiquetes.value = response.data;
+        });
+      break;
+    case "Incidentes":
+      var solicitud = Solicitudes.value.filter((v) => v.nombre == filtro)[0].id;
+      await api
+        .get(
+          `tiquete?cliente=eq.${cliente.value[0].id}&estado=neq.${eliminado}&solicitud=eq.${solicitud}&select=*`
+        )
+        .then((response) => {
+          tiquetes.value = response.data;
+        });
+      break;
+    case "Requerimiento":
+      var solicitud = Solicitudes.value.filter((v) => v.nombre == filtro)[0].id;
+      await api
+        .get(
+          `tiquete?cliente=eq.${cliente.value[0].id}&estado=neq.${eliminado}&solicitud=eq.${solicitud}&select=*`
+        )
+        .then((response) => {
+          tiquetes.value = response.data;
+        });
+      break;
+    case "PQR":
+      var solicitud = Solicitudes.value.filter((v) => v.nombre == filtro)[0].id;
+      await api
+        .get(
+          `tiquete?cliente=eq.${cliente.value[0].id}&estado=neq.${eliminado}&solicitud=eq.${solicitud}&select=*`
+        )
+        .then((response) => {
+          tiquetes.value = response.data;
+        });
+      break;
+  }
   visible.value = false;
 };
 
@@ -1473,7 +1536,6 @@ const AgregarTicket = async () => {
     Fila.value.prioridad = 3;
   }
   Fila.value.audio = base64Audio.value;
-  console.log(Fila.value);
   await api
     .post("tiquete", Fila.value)
     .then((response) => {
@@ -1895,28 +1957,11 @@ defineComponent({
   height: 120px; /* Ajusta el tamaño del avatar según tus necesidades */
   border: 1px solid #8a8a8a; /* Ancho y color del borde */
 }
-.th-text {
-  color: $dark !important;
-  font-weight: bold !important;
-  font-size: 1rem !important;
-  text-align: center !important;
-}
 
 .head-styles {
   background-color: white !important;
   padding: 10px !important;
   margin-right: 10px !important;
-}
-
-.table-card {
-  margin-top: 20px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-  display: flex;
-  width: 20vw;
-  height: 20vh;
-  justify-content: center;
-  margin-right: 200px;
 }
 
 .fade-move,

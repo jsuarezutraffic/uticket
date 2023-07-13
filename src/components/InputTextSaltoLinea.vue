@@ -46,8 +46,6 @@ watch(texto, (currentValue) => {
   if (currentValue == "") {
     text.value = "";
   } else {
-    console.log(currentValue);
-
     // text.value = text.value + currentValue;
     text.value = currentValue;
   }

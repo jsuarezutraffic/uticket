@@ -23,9 +23,19 @@
 // $negative  : #C10015;
 // $info      : #31CCEC;
 // $warning   : #F2C037;
-$primary: #31d3ae;
-$secondary: #26a69a;
-$accent: #9c27b0;
+.text-tertiary {
+  color: #26A69A !important;
+}
+
+.bg-tertiary {
+  background: #26A69A !important;
+}
+
+$primary : #002c3e;
+// $primary : #31d3ae;
+$secondary : #86e6a9;
+$accent : #008080;
+$tertiary : #26A69A;
 
 $dark: #1d1d1d;
 $dark-page: #121212;

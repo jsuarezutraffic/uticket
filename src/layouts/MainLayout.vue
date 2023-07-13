@@ -7,18 +7,14 @@
       elevated
     >
       <!-- Header Left-side -->
-      <q-toolbar>
-        <!-- boton de menú -->
-        <!-- <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" /> -->
-
-        <q-space />
-
+      <q-toolbar class="q-py-xs">
         <!-- Logo Header -->
 
-        <q-toolbar-title class="text-center flex flex-center q-mt-xs q-mb-xs">
+        <q-toolbar-title>
           <img
-            src="../assets/U-Traffic-versión-horizontal-removebg-preview-removebg-preview.png"
-            class="header-logo cursor-pointer"
+            fit="scale-down"
+            src="../assets/img/Logo_Customer2.png"
+            class="cursor-pointer img-logo"
             @click="inicio()"
           />
         </q-toolbar-title>
@@ -43,7 +39,7 @@
           </q-btn> -->
 
           <q-btn round flat>
-            <q-avatar size="26px">
+            <q-avatar>
               <img src="https://cdn.quasar.dev/img/boy-avatar.png" />
               <q-menu>
                 <div class="row no-wrap q-pa-md">
@@ -138,10 +134,6 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
-.header-logo {
-  width: 120px;
-}
-
 .header-content {
   display: flex;
   align-items: center;

@@ -1,5 +1,5 @@
 <template>
-  <MainTable />
+  <MainTable :showMaintable="showMaintable" />
 </template>
 
 <script setup>
@@ -14,6 +14,26 @@ import {
 } from "vue";
 import { defineComponent } from "vue";
 import MainTable from "src/components/MainTable.vue";
+
+const showMaintable = {
+  showGraficas: true,
+  showColums: [
+    "id",
+    "created_at",
+    "cliente",
+    "concesion",
+    "peaje",
+    "solicitud",
+    // 'observaciones',
+    "estado",
+    "prioridad",
+    "tipo",
+    "subtipo",
+    "finalizar",
+    "devuelto",
+    "eliminar",
+  ],
+};
 // import { createClient } from "@supabase/supabase-js";
 // const supabase = createClient(
 //   "https://xzovknjkdfykvximpgxh.supabase.co",
