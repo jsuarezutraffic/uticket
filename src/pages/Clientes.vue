@@ -35,7 +35,13 @@
           'subtipo',
           'asignado',
         ]"
+        rows-per-page-label="Registro por página"
+        loading-label="Cargando..."
+        no-data-label="No existen datos para mostrar"
       >
+        <template v-slot:top>
+          <div style="font-weight: bold" class="q-table__title">Clientes</div>
+        </template>
         <template v-slot:loading>
           <q-inner-loading showing color="primary" />
         </template>
@@ -481,6 +487,9 @@
                     // 'adjunto_url',
                     'verevidencias',
                   ]"
+                  rows-per-page-label="Registro por página"
+                  loading-label="Cargando..."
+                  no-data-label="No existen datos para mostrar"
                 >
                   <template v-slot:loading>
                     <q-inner-loading showing color="primary" />
@@ -2244,30 +2253,6 @@ supabase
 </script>
 
 <style lang="scss">
-.th-text {
-  color: $dark !important;
-  font-weight: bold !important;
-  font-size: 1rem !important;
-  text-align: center !important;
-}
-
-.head-styles {
-  background-color: white !important;
-  padding: 10px !important;
-  margin-right: 10px !important;
-}
-
-.table-card {
-  margin-top: 20px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-  display: flex;
-  width: 20vw;
-  height: 20vh;
-  justify-content: center;
-  margin-right: 200px;
-}
-
 .fade-move,
 .fade-enter-active,
 .fade-leave-active {

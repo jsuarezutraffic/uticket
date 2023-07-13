@@ -10,15 +10,20 @@
       <q-toolbar>
         <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
 
-        <q-space />
-
         <!-- Logo Header -->
-        <q-toolbar-title
-          class="text-center flex flex-center q-mt-xs q-mb-xs q-ml-lg"
-        >
+        <q-toolbar-title class="q-py-xs vertical-center">
           <img
-            src="../assets/U-Traffic-versión-horizontal-removebg-preview-removebg-preview.png"
-            class="header-logo cursor-pointer"
+            v-if="config.nivel == 'Operation'"
+            fit="scale-down"
+            src="../assets/img/Logo_Operador2.png"
+            class="cursor-pointer img-logo"
+            @click="inicio()"
+          />
+          <img
+            v-if="config.nivel == 'BackOffice'"
+            fit="scale-down"
+            src="../assets//img/Logo_Backoffice2.png"
+            class="cursor-pointer img-logo"
             @click="inicio()"
           />
         </q-toolbar-title>
@@ -26,23 +31,19 @@
 
         <!-- Header Right-side -->
         <div class="q-gutter-sm row items-center no-wrap">
-          <q-btn
+          <!-- <q-btn
             round
             dense
             flat
-            color="grey-8"
+            color="white"
             icon="message"
             v-if="$q.screen.gt.sm"
           >
             <q-tooltip>Messages</q-tooltip>
-          </q-btn>
-
-          <!-- <q-btn round dense flat color="grey-8" icon="notifications">
-            <q-badge color="red" text-color="white" floating> 2 </q-badge>
-            <q-tooltip>Notifications</q-tooltip>
           </q-btn> -->
+
           <q-btn round flat>
-            <q-avatar size="26px">
+            <q-avatar>
               <img src="https://cdn.quasar.dev/img/boy-avatar.png" />
               <q-menu>
                 <div class="row no-wrap q-pa-md">
@@ -56,10 +57,6 @@
                     </a>
                     <div class="text-weight-bold">{{ user.nombre }}</div>
                     <div>{{ user.correo }}</div>
-
-                    <!-- <div class="text-subtitle1 q-mt-md q-mb-xs">
-                      {{ nameUser }}
-                    </div> -->
 
                     <q-btn
                       class="q-ma-xs"
@@ -80,7 +77,6 @@
       </q-toolbar>
     </q-header>
 
-    <q-item class="background-menu-active" active> </q-item>
     <q-drawer v-model="leftDrawerOpen" side="left" overlay elevated>
       <!-- drawer content -->
       <div class="q-pa-sm">
@@ -98,6 +94,7 @@
 import { defineComponent, ref, onMounted } from "vue";
 import MenuBar from "src/components/MenuBar.vue";
 import { useMainStore } from "stores/main";
+import { useConfigStore } from "src/stores/config";
 import { useRouter, useRoute } from "vue-router";
 import { LocalStorage, useQuasar } from "quasar";
 import { api } from "boot/axios";
@@ -106,6 +103,8 @@ const router = useRouter();
 const user = ref([]);
 
 const store = useMainStore();
+const config = useConfigStore().config;
+
 const leftDrawerOpen = ref(false);
 defineComponent({
   name: "MainLayout",
@@ -137,11 +136,6 @@ onMounted(async () => {
 </script>
 
 <style lang="scss" scoped>
-.header-logo {
-  width: 120px;
-  margin-left: 40px;
-}
-
 .header-content {
   display: flex;
   align-items: center;

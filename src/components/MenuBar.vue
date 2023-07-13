@@ -15,18 +15,12 @@
         <q-item-section>Operadores</q-item-section>
       </q-item>
 
-      <q-item
-        clickable
-        v-ripple
-        active-class="my-menu-link"
-        to="/clientes"
-        exact
-      >
+      <q-item clickable v-ripple active-class="my-menu-link" to="/" exact>
         <q-item-section avatar>
           <q-icon name="person_outline" />
         </q-item-section>
 
-        <q-item-section>Clientes</q-item-section>
+        <q-item-section>Tickets</q-item-section>
       </q-item>
 
       <!-- <q-item
@@ -76,7 +70,7 @@
 
       <q-separator spaced />
 
-      <q-item clickable v-ripple exact active-class="my-menu-link">
+      <!-- <q-item clickable v-ripple exact active-class="my-menu-link">
         <q-item-section avatar>
           <q-icon name="settings" />
         </q-item-section>
@@ -90,7 +84,7 @@
         </q-item-section>
 
         <q-item-section>Help</q-item-section>
-      </q-item>
+      </q-item> -->
     </q-list>
   </div>
 </template>
@@ -106,7 +100,7 @@ defineComponent({
 <style lang="scss">
 .my-menu-link {
   font-weight: bold;
-  color: black;
+  color: rgb(255, 255, 255);
   background: $primary;
 }
 </style>

@@ -62,10 +62,12 @@ export default defineComponent({
           'subtipo',
           'finalizar',
         ]"
+        rows-per-page-label="Registro por página"
+        loading-label="Cargando..."
+        no-data-label="No existen datos para mostrar"
       >
-        >
         <template v-slot:top>
-          <!-- <q-btn color="secondary" size="md" @click="Atras()"
+          <!-- <q-btn color="tertiary" size="md" @click="Atras()"
             >Mis Tickets
             <q-tooltip class="bg-primary" :offset="[10, 10]">
             {{ $t("Atras") }}
@@ -73,7 +75,7 @@ export default defineComponent({
           </q-btn> -->
           <q-btn
             class="q-ma-xs"
-            color="secondary"
+            color="tertiary"
             size="md"
             @click="mostrarModal = true"
             >Nuevo Ticket
@@ -157,12 +159,6 @@ export default defineComponent({
           </q-tr>
         </template>
       </q-table>
-
-      <!-- <q-card class="table-card" v-if="false">
-        <q-card-section>
-          {{ selected[0] }}
-        </q-card-section>
-      </q-card> -->
     </TransitionGroup>
     <q-inner-loading
       :showing="visible"
@@ -895,29 +891,6 @@ defineComponent({
   width: 150px; /* Ajusta el tamaño del avatar según tus necesidades */
   height: 120px; /* Ajusta el tamaño del avatar según tus necesidades */
   border: 1px solid #8a8a8a; /* Ancho y color del borde */
-}
-.th-text {
-  color: $dark !important;
-  font-weight: bold !important;
-  font-size: 1rem !important;
-  text-align: center !important;
-}
-
-.head-styles {
-  background-color: white !important;
-  padding: 10px !important;
-  margin-right: 10px !important;
-}
-
-.table-card {
-  margin-top: 20px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-  display: flex;
-  width: 20vw;
-  height: 20vh;
-  justify-content: center;
-  margin-right: 200px;
 }
 
 .fade-move,

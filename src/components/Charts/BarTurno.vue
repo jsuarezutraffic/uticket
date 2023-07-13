@@ -1,15 +1,5 @@
 <template>
   <div class="wrap">
-    <!-- <div id="chart-year" class="chart-box"></div> -->
-    <!-- <apexchart
-      height="350"
-      type="bar"
-      :width="width"
-      :options="optionsCalc"
-      :series="seriesCalc"
-      :key="seriesCalc"
-    ></apexchart> -->
-
     <div id="chart-year" class="chart-box">
       <apexchart
         type="bar"
@@ -35,18 +25,7 @@
 
 <script setup>
 /*eslint-disable */
-import {
-  onUpdated,
-  defineComponent,
-  reactive,
-  onMounted,
-  ref,
-  onBeforeMount,
-  onUnmounted,
-  computed,
-  toRefs,
-  watchEffect,
-} from "vue";
+import { reactive, onMounted, ref, computed, toRefs, watchEffect } from "vue";
 // import { getCssVar, LocalStorage } from "quasar";
 import { api } from "boot/axios";
 import { useRouter, useRoute } from "vue-router";
@@ -66,90 +45,6 @@ watchEffect(() => {
     visible.value = true;
   }
 });
-const titleDefault = computed(() => {
-  if (title.value === null || title.value === undefined) {
-    return "Ticket";
-  }
-  return title.value;
-});
-
-const optionsCalc = computed(() => {
-  let options = {
-    yaxis: {
-      show: false, // Oculta el eje Y,
-      labels: {
-        formatter: function (value) {
-          return `${value}`;
-        },
-      },
-    },
-    xaxis: {
-      labels: {
-        show: false, // Oculta las etiquetas del eje x
-      },
-    },
-    title: {
-      text: `${titleDefault.value}`,
-      style: {
-        color: "#4a148c",
-        fontWeight: 600,
-        fontSize: "14px",
-      },
-    },
-    plotOptions: {
-      bar: {
-        columnWidth: "45%",
-        distributed: true,
-      },
-    },
-
-    labels: [],
-    chart: {
-      height: 350,
-      type: "bar",
-      toolbar: {
-        show: false, // Oculta la barra de herramientas del gráfico
-      },
-      events: {
-        click: function (chart, w, e) {
-          // console.log(chart, w, e)
-        },
-      },
-    },
-    dataLabels: {
-      enabled: true,
-    },
-    responsive: [
-      {
-        breakpoint: 480,
-        options: {
-          chart: {
-            width: 200,
-          },
-          legend: {
-            show: false,
-          },
-        },
-      },
-    ],
-
-    legend: {
-      position: "bottom",
-      offsetY: 0,
-      show: true,
-      // height: 230,
-    },
-  };
-
-  let labels = [];
-  Series.value.forEach((item) => {
-    labels.push(`${item.label}`);
-  });
-  options.labels = labels;
-
-  return options;
-});
-
 const seriesCalc = computed(() => {
   let series = [{ name: "Cantidad", data: [] }];
 
@@ -159,26 +54,6 @@ const seriesCalc = computed(() => {
   loadData();
   return series;
 });
-
-const store = useMainStore();
-const router = useRouter();
-let $q = useQuasar();
-
-//variables declaracin
-let Parametros = ref([]);
-const listadoInfo = ref([]);
-const fila = ref({});
-const listadoTiqAuditables = ref([]);
-const listadoEvasores = ref([]);
-const listadoTiqRecaudador = ref([]);
-
-const BeforeLoadData = async () => {
-  listadoInfo.value = (
-    await api.get(
-      "/sesionrecaudopistaturno/busqueda?estado=Iniciado&estado=Cerrado"
-    )
-  ).data;
-};
 
 //funciones interactivas con las graficas
 const selectTurno = (e, chart, opts) => {
@@ -202,143 +77,6 @@ const selectTurno = (e, chart, opts) => {
     quarterChartEl.classList.remove("active");
   }
 };
-
-const dataF = (event, chartContext, config) => {
-  fila.value = listadoInfo.value.filter(
-    (x) =>
-      x.identificadorsesion ==
-      parseInt(config.globals.seriesNames[config.seriesIndex].slice(-10))
-  )[0];
-
-  if (
-    config.globals.labels[config.dataPointIndex] == "Auditables" ||
-    config.globals.labels[config.dataPointIndex] == "Pendientes"
-  ) {
-    loadDataTiqAuditables();
-  } else if (config.globals.labels[config.dataPointIndex] == "Evasores") {
-    loadDataEvasor();
-  } else if (
-    config.globals.labels[config.dataPointIndex] == "Tiquetes Manuales" ||
-    config.globals.labels[config.dataPointIndex] == "Tiquetes Electronicos"
-  ) {
-    loadDataTiqRecaudador();
-  } else {
-    $q.notify({
-      message: "Metodo no disponible",
-      color: "info",
-    });
-  }
-};
-
-//sELECCIONANDO
-
-const loadDataTiqAuditables = () => {
-  // loadingListado.value = true;
-  Parametros.value = `identificacion=${fila.value.identificacion}&identificadorsesion=${fila.value.identificadorsesion}&idplaza=${fila.value.idplaza}&idpista=${fila.value.idpista}&idtipoturno=${fila.value.idtipoturno}&turno=${fila.value.turno}&estado=Generada&estado=Detectada&estadoauditoria=Pendiente&estadoauditoria=Reversada`;
-
-  api
-    .get("/transacciontabulacion/busqueda?" + Parametros.value)
-    .then((response) => {
-      if (response.data.codigomensaje == "201") {
-        //  mostrarMensajes(response.data);
-        return;
-      }
-      if (response.status == 200) {
-        listadoTiqAuditables.value = response.data;
-
-        // loadingListado.value = false;
-        store.infoTiqAuditablesfila(fila.value);
-        store.infoTiqAuditables(listadoTiqAuditables.value);
-        //  (listado.value);
-        // if (listado.value.length > 0) {
-        //   createData.value = false;
-        // }
-        setTimeout(() => {
-          toPath();
-        }, 100);
-      } else {
-        loadingListado.value = false;
-        //  mostrarMensajes(response.data);
-      }
-    })
-    .catch((error) => {
-      // if (error.response.status == 401) {
-      //   router.push("/");
-      //   store.borrar();
-      // }
-      mostrarMensajes(error.response.data);
-      // loadingListado.value = false;
-    });
-};
-
-const loadDataEvasor = () => {
-  // loadingListado.value = true;
-  Parametros.value = `identificacion=${fila.value.identificacion}&identificadorsesion=${fila.value.identificadorsesion}&idplaza=${fila.value.idplaza}&idpista=${fila.value.idpista}&idtipoturno=${fila.value.idtipoturno}&turno=${fila.value.turno}&estado=Registrado&estado=Detectada&estadoauditoria=Pendiente&estadoauditoria=Reversada`;
-
-  api
-    .get("/transaccionevasor/busqueda?" + Parametros.value)
-    .then((response) => {
-      if (response.status == 200) {
-        listadoEvasores.value = response.data;
-        // loadingListado.value = false;
-        store.infoEvasores(listadoEvasores.value);
-        store.infoEvasores1(fila.value);
-        //  (listadoEvasores.value);
-        // if (listado.value.length > 0) {
-        //   createData.value = false;
-        // }
-        setTimeout(() => {
-          toPathEvasores();
-        }, 100);
-      } else {
-        // loadingListado.value = false;
-        mostrarMensajes(response.data);
-      }
-    })
-    .catch((error) => {
-      // if (error.response.status == 401) {
-      //   router.push("/Login");
-      //   store.borrar();
-      // }
-      mostrarMensajes(error.response.data);
-      // loadingListado.value = false;
-    });
-};
-
-const loadDataTiqRecaudador = () => {
-  // loadingListado.value = true;
-  Parametros.value = `identificacion=${fila.value.identificacion}
-  &identificadorsesion=${fila.value.identificadorsesion}
-  &idplaza=${fila.value.idplaza}
-  &idpista=${fila.value.idpista}
-  &idtipoturno=${fila.value.idtipoturno}
-  &turno=${fila.value.turno}
-  &estado=Generada&estado=Detectada&subtipotransaccion=Manual&subtipotransaccion=Dinamica&subtipotransaccion=Boleteria&subtipotransaccion=Contigencia`;
-
-  api
-    .get("transacciontabulacion/busqueda?" + Parametros.value)
-    .then((response) => {
-      if (response.status == 200) {
-        listadoTiqRecaudador.value = response.data;
-        // loadingListado.value = false;
-        store.infoTiqRecaudador(listadoTiqRecaudador.value);
-        store.infoTiqRecaudadorfila(fila.value);
-        // if (listado.value.length > 0) {
-        //   createData.value = false;
-        // }
-        setTimeout(() => {
-          toPathTiqRecaudador();
-        }, 100);
-      } else {
-        // loadingListado.value = false;
-        mostrarMensajes(response.data);
-      }
-    })
-    .catch((error) => {
-      // loadingListado.value = false;
-    });
-};
-
 //Funciones
 const loadData = () => {
   var dataSet = shuffleArray();
@@ -375,44 +113,6 @@ const loadData = () => {
   // });
 };
 
-function dateDiffInHours(date1, date2) {
-  const diffInMs = Math.abs(date2 - date1);
-  return diffInMs / 1000 / 60 / 60;
-}
-
-function changeDateFormat(dateString) {
-  // Dividir la cadena en una matriz de día, mes, año y tiempo
-  const dateParts = dateString.split(" ");
-  const date = dateParts[0].split("/");
-  const time = dateParts[1];
-
-  // Crear una nueva fecha con el orden de mes y día invertido
-  const newDate = new Date(`${date[1]}/${date[0]}/${date[2]} ${time}`);
-
-  // Formatear la fecha y el tiempo en el nuevo orden
-  const newDateString = `${newDate.getMonth() + 1 < 10 ? "0" : ""}${
-    newDate.getMonth() + 1
-  }/${
-    newDate.getDate() < 10 ? "0" : ""
-  }${newDate.getDate()}/${newDate.getFullYear()} ${time}`;
-
-  return newDateString;
-}
-
-function generateHexColorsArray(numColors) {
-  var colorsArray = [];
-
-  for (var i = 0; i < numColors; i++) {
-    var hexColor = "#" + Math.floor(Math.random() * 16777215).toString(16);
-    colorsArray.push(hexColor);
-  }
-
-  return colorsArray;
-}
-// var colors = generateHexColorsArray(10);
-// console.log(colors);
-//apexcharts
-
 Apex = {
   chart: {
     toolbar: {
@@ -423,6 +123,7 @@ Apex = {
     shared: false,
   },
 };
+
 var colors = [
   "#008FFB",
   "#00E396",
@@ -563,149 +264,8 @@ const optionsYear = reactive({
 //funciones graficas
 
 function shuffleArray() {
-  // console.log("arraydetalle", arraydetalle);
   var array1 = Detalles.value;
-  // let array2 = [];
-  // var array = [
-  //   {
-  //     y: 400,
-  //     quarters: [
-  //       {
-  //         x: "Q1",
-  //         y: 120,
-  //       },
-  //       {
-  //         x: "Q2",
-  //         y: 90,
-  //       },
-  //       {
-  //         x: "Q3",
-  //         y: 100,
-  //       },
-  //       {
-  //         x: "Q4",
-  //         y: 90,
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     y: 430,
-  //     quarters: [
-  //       {
-  //         x: "Q1",
-  //         y: 120,
-  //       },
-  //       {
-  //         x: "Q2",
-  //         y: 110,
-  //       },
-  //       {
-  //         x: "Q3",
-  //         y: 90,
-  //       },
-  //       {
-  //         x: "Q4",
-  //         y: 110,
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     y: 448,
-  //     quarters: [
-  //       {
-  //         x: "Q1",
-  //         y: 70,
-  //       },
-  //       {
-  //         x: "Q2",
-  //         y: 100,
-  //       },
-  //       {
-  //         x: "Q3",
-  //         y: 140,
-  //       },
-  //       {
-  //         x: "Q4",
-  //         y: 138,
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     y: 470,
-  //     quarters: [
-  //       {
-  //         x: "Q1",
-  //         y: 150,
-  //       },
-  //       {
-  //         x: "Q2",
-  //         y: 60,
-  //       },
-  //       {
-  //         x: "Q3",
-  //         y: 190,
-  //       },
-  //       {
-  //         x: "Q4",
-  //         y: 70,
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     y: 540,
-  //     quarters: [
-  //       {
-  //         x: "Q1",
-  //         y: 120,
-  //       },
-  //       {
-  //         x: "Q2",
-  //         y: 120,
-  //       },
-  //       {
-  //         x: "Q3",
-  //         y: 130,
-  //       },
-  //       {
-  //         x: "Q4",
-  //         y: 170,
-  //       },
-  //     ],
-  //   },
-  //   {
-  //     y: 580,
-  //     quarters: [
-  //       {
-  //         x: "Q1",
-  //         y: 170,
-  //       },
-  //       {
-  //         x: "Q2",
-  //         y: 130,
-  //       },
-  //       {
-  //         x: "Q3",
-  //         y: 120,
-  //       },
-  //       {
-  //         x: "Q4",
-  //         y: 160,
-  //       },
-  //     ],
-  //   },
-  // ];
-  // var quarters = [{ x: null, y: null }];
-
-  // let array4 = [];
-  // for (var i = array.length - 1; i > 0; i--) {
-  //   var j = Math.floor(Math.random() * (i + 1));
-  //   var temp = array[i];
-  //   array[i] = array[j];
-  //   array[j] = temp;
-  // }
-
   return array1;
-  // return array2;
 }
 
 //quarter
@@ -798,23 +358,6 @@ const optionsQuarters = reactive({
     },
   },
 });
-
-//rederigiendo rutas
-function toPath() {
-  var toPath = "/010101-TYR/lstSesionesRecaudoAbierta" + "/Auditable";
-  return router.push(toPath);
-}
-
-function toPathEvasores() {
-  var toPath = "/010101-TYR/lstSesionesRecaudoAbierta" + "/Evasores";
-  return router.push(toPath);
-}
-
-function toPathTiqRecaudador() {
-  var toPath = "/010101-TYR/lstSesionesRecaudoAbierta" + "/Tiquetes";
-  return router.push(toPath);
-}
-
 onMounted(async () => {
   // await BeforeLoadData();
   // loadData();

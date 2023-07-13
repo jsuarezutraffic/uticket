@@ -2,7 +2,7 @@
   <div class="q-pa-md">
     <div
       class="row containerDashboard q-col-gutter-md q-my-md"
-      v-if="table && countArrayEstado.length > 0"
+      v-if="table && countArrayEstado.length > 0 && false"
     >
       <div class="col-md-12 col-xs-12">
         <span style="font-size: 16px; font-weight: bold"> Generales</span>
@@ -52,14 +52,13 @@
             title="Asignado"
             width="320"
         /></q-card>
-
-        <!-- </q-card> -->
       </div>
     </div>
     <TransitionGroup>
       <q-table
         :loading="visible"
         v-if="table"
+        title="Tickets"
         virtual-scroll
         separator="horizontal"
         flat
@@ -77,28 +76,40 @@
         v-model:pagination="pagination"
         :sort-method="customSort()"
         :sort-method-props="{ sortBy, sortDesc }"
-        :visible-columns="[
-          'id',
-          'created_at',
-          'cliente',
-          'concesion',
-          'peaje',
-          'solicitud',
-          // 'observaciones',
-          'estado',
-          'prioridad',
-          'tipo',
-          'subtipo',
-          'asignado',
-        ]"
+        :visible-columns="showMaintable.showColums"
+        rows-per-page-label="Registro por página"
+        loading-label="Cargando..."
+        no-data-label="No existen datos para mostrar"
       >
+        <template v-slot:top>
+          <div style="font-weight: bold" class="q-table__title">Tickets</div>
+          <q-space />
+          <q-btn
+            v-if="showMaintable.showGraficas"
+            outline
+            to="/"
+            class="q-ma-xs"
+            color="tertiary"
+            size="md"
+            >Volver
+          </q-btn>
+          <q-btn
+            v-if="!showMaintable.showGraficas"
+            outline
+            to="/tiquetes"
+            class="q-ma-xs"
+            color="tertiary"
+            size="md"
+            >Tabla Tiquetes
+          </q-btn>
+        </template>
         <template v-slot:loading>
           <q-inner-loading showing color="primary" />
         </template>
         <template v-slot:header="props">
-          <q-tr :props="props" class="head-styles">
+          <q-tr :props="props">
             <q-th
-              class="th-text head-styles"
+              class="th-text"
               auto-width
               v-for="col in props.cols"
               :key="col.name"
@@ -514,6 +525,7 @@
             <q-card flat>
               <div class="q-pa-md" v-if="TablaDetalles">
                 <q-table
+                  title="Detalles Tickets"
                   :loading="visible"
                   separator="horizontal"
                   flat
@@ -538,7 +550,15 @@
                     // 'adjunto_url',
                     'verevidencias',
                   ]"
+                  rows-per-page-label="Registro por página"
+                  loading-label="Cargando..."
+                  no-data-label="No existen datos para mostrar"
                 >
+                  <template v-slot:top>
+                    <div style="font-weight: bold" class="q-table__title">
+                      Detalles Tickets
+                    </div>
+                  </template>
                   <template v-slot:loading>
                     <q-inner-loading showing color="primary" />
                   </template>
@@ -1098,6 +1118,7 @@ import {
   computed,
   onBeforeUnmount,
   onUnmounted,
+  toRefs,
 } from "vue";
 import { LocalStorage, useQuasar } from "quasar";
 import { api } from "boot/axios";
@@ -1120,6 +1141,10 @@ const progressValue = ref(0);
 let recorder;
 let progressInterval;
 const audioPlayer = ref(null);
+
+const props = defineProps(["showMaintable"]);
+let { showMaintable } = toRefs(props);
+const filtro = LocalStorage.getItem("filtro");
 
 //supabase
 const valorDatosExportado = ref("");
@@ -1251,7 +1276,7 @@ const columns = [
 
   {
     name: "estado",
-    align: "left",
+    align: "center",
     label: "Estado",
     field: "estado",
     sortable: true,
@@ -1265,7 +1290,7 @@ const columns = [
   },
   {
     name: "prioridad",
-    align: "left",
+    align: "center",
     label: "Prioridad",
     field: "prioridad",
     sortable: true,
@@ -1437,7 +1462,6 @@ const GestionTiquete = async (accionValue) => {
     if (FilaTemporal.value.tipo != Fila.value.tipo) {
       FilaDetalle.value.campomodificador =
         "- Estado \n- Tipo \n- Subtipo \n- Equipo";
-
       FilaDetalle.value.valoranterior = `- ${
         Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
       }\n- ${
@@ -1453,7 +1477,6 @@ const GestionTiquete = async (accionValue) => {
           : null
       }
         `;
-
       FilaDetalle.value.valornuevo = `- Solucionado\n- ${
         Tipos.value.filter((p) => p.id == Fila.value.tipo)[0].descripcion
       }\n- ${
@@ -1466,7 +1489,6 @@ const GestionTiquete = async (accionValue) => {
       }`;
     } else if (FilaTemporal.value.subtipo != Fila.value.subtipo) {
       FilaDetalle.value.campomodificador = "- Estado \n- Subtipo \n- Equipo";
-
       FilaDetalle.value.valoranterior = `- ${
         Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
       }\n- ${
@@ -1479,7 +1501,6 @@ const GestionTiquete = async (accionValue) => {
           : null
       }
         `;
-
       FilaDetalle.value.valornuevo = `- Solucionado\n- ${
         Subtipos.value.filter((p) => p.id == Fila.value.subtipo)[0].descripcion
       }\n- ${
@@ -1490,7 +1511,6 @@ const GestionTiquete = async (accionValue) => {
       }`;
     } else if (FilaTemporal.value.equipo != Fila.value.equipo) {
       FilaDetalle.value.campomodificador = "- Estado  \n- Equipo";
-
       FilaDetalle.value.valoranterior = `- ${
         Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
       }\n- ${
@@ -1500,7 +1520,6 @@ const GestionTiquete = async (accionValue) => {
           : null
       }
         `;
-
       FilaDetalle.value.valornuevo = `- Solucionado\n- ${
         Fila.value.equipo != null
           ? Equipos.value.filter((p) => p.id == Fila.value.equipo)[0]
@@ -1512,15 +1531,11 @@ const GestionTiquete = async (accionValue) => {
       FilaDetalle.value.valoranterior = `- ${
         Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
       }`;
-
       FilaDetalle.value.valornuevo = `- Solucionado`;
     }
-
     FilaDetalle.value.tiquete = Fila.value.id;
     FilaDetalle.value.operador = idusuario;
-
     // se actualiza el campo del tiquete que se esta modificando
-
     Fila.value.estado = Estados.value.filter(
       (p) => p.descripcion == "Solucionado"
     )[0].id;
@@ -1553,12 +1568,10 @@ const GestionTiquete = async (accionValue) => {
     await getDetalleTiquete();
   } else if (accion.value == "AsignarTicket") {
     mostrarAsignarTiquetes.value = false;
-
     if (oldProridad.value != next.value.prioridad) {
       if (FilaTemporal.value.tipo != Fila.value.tipo) {
         FilaDetalle.value.campomodificador =
           "- Estado \n- Nivel \n- Prioridad \n- Tipo \n- Subtipo \n- Equipo";
-
         FilaDetalle.value.valoranterior = `- ${
           Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
         }\n- ${
@@ -1580,7 +1593,6 @@ const GestionTiquete = async (accionValue) => {
             : null
         }
         `;
-
         FilaDetalle.value.valornuevo = `- Asignado\n- ${
           Procesos.value.filter((p) => p.id == next.value.nivel)[0].descripcion
         }\n- ${
@@ -1600,7 +1612,6 @@ const GestionTiquete = async (accionValue) => {
       } else if (FilaTemporal.value.subtipo != Fila.value.subtipo) {
         FilaDetalle.value.campomodificador =
           "- Estado \n- Nivel \n- Prioridad \n- Subtipo \n- Equipo";
-
         FilaDetalle.value.valoranterior = `- ${
           Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
         }\n- ${
@@ -1619,7 +1630,6 @@ const GestionTiquete = async (accionValue) => {
             : null
         }
         `;
-
         FilaDetalle.value.valornuevo = `- Asignado\n- ${
           Procesos.value.filter((p) => p.id == next.value.nivel)[0].descripcion
         }\n- ${
@@ -1637,7 +1647,6 @@ const GestionTiquete = async (accionValue) => {
       } else if (FilaTemporal.value.equipo != Fila.value.equipo) {
         FilaDetalle.value.campomodificador =
           "- Estado \n- Nivel \n- Prioridad \n- Equipo";
-
         FilaDetalle.value.valoranterior = `- ${
           Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
         }\n- ${
@@ -1653,7 +1662,6 @@ const GestionTiquete = async (accionValue) => {
             : null
         }
         `;
-
         FilaDetalle.value.valornuevo = `- Asignado\n- ${
           Procesos.value.filter((p) => p.id == next.value.nivel)[0].descripcion
         }\n- ${
@@ -1676,7 +1684,6 @@ const GestionTiquete = async (accionValue) => {
           Prioridades.value.filter((p) => p.id == oldProridad.value)[0]
             .descripcion
         }`;
-
         FilaDetalle.value.valornuevo = `- Asignado\n- ${
           Procesos.value.filter((p) => p.id == next.value.nivel)[0].descripcion
         }\n- ${
@@ -1706,7 +1713,6 @@ const GestionTiquete = async (accionValue) => {
             : null
         }
         `;
-
         FilaDetalle.value.valornuevo = `- Asignado\n- ${
           Procesos.value.filter((p) => p.id == next.value.nivel)[0].descripcion
         }\n- ${
@@ -1723,7 +1729,6 @@ const GestionTiquete = async (accionValue) => {
       } else if (FilaTemporal.value.subtipo != Fila.value.subtipo) {
         FilaDetalle.value.campomodificador =
           "- Estado \n- Nivel \n- Subtipo \n- Equipo";
-
         FilaDetalle.value.valoranterior = `- ${
           Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
         }\n- ${
@@ -1739,7 +1744,6 @@ const GestionTiquete = async (accionValue) => {
             : null
         }
         `;
-
         FilaDetalle.value.valornuevo = `- Asignado\n- ${
           Procesos.value.filter((p) => p.id == next.value.nivel)[0].descripcion
         }\n- ${
@@ -1753,7 +1757,6 @@ const GestionTiquete = async (accionValue) => {
         }`;
       } else if (FilaTemporal.value.equipo != Fila.value.equipo) {
         FilaDetalle.value.campomodificador = "- Estado \n- Nivel \n- Equipo";
-
         FilaDetalle.value.valoranterior = `- ${
           Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
         }\n- ${
@@ -1766,7 +1769,6 @@ const GestionTiquete = async (accionValue) => {
             : null
         }
         `;
-
         FilaDetalle.value.valornuevo = `- Asignado\n- ${
           Procesos.value.filter((p) => p.id == next.value.nivel)[0].descripcion
         }\n- ${
@@ -1783,17 +1785,13 @@ const GestionTiquete = async (accionValue) => {
           Procesos.value.filter((p) => p.id == Fila.value.proceso)[0]
             .descripcion
         }`;
-
         FilaDetalle.value.valornuevo = `- Asignado\n- ${
           Procesos.value.filter((p) => p.id == next.value.nivel)[0].descripcion
         }`;
       }
     }
-
     FilaDetalle.value.tiquete = Fila.value.id;
-
     FilaDetalle.value.operador = idusuario;
-
     // se actualiza el campo del tiquete que se esta modificando
     Fila.value.estado = Estados.value.filter(
       (p) => p.descripcion == "Asignado"
@@ -1802,7 +1800,6 @@ const GestionTiquete = async (accionValue) => {
       (p) => p.id == Fila.value.estado
     )[0].vercliente;
     Fila.value.proceso = next.value.nivel;
-
     Fila.value.asignado = next.value.operador;
     Fila.value.prioridad = next.value.prioridad;
     // agregar saltos de linea al campo Comentarios
@@ -1880,19 +1877,12 @@ const GestionTiquete = async (accionValue) => {
 };
 
 const LoadData = async () => {
+  var filtroNivel = "";
   visible.value = true;
   if (users.value.filter((p) => p.id == idusuario)[0].nivel === 3) {
-    await api
-      .get(`tiquete?asignado=eq.${idusuario}&select=*`)
-      .then((response) => {
-        tiquetes.value = response.data;
-        visible.value = false;
-      });
+    filtroNivel = `asignado=eq.${idusuario}&`;
   } else if (users.value.filter((p) => p.id == idusuario)[0].nivel === 1) {
-    await api.get("tiquete?select=*").then((response) => {
-      tiquetes.value = response.data;
-      visible.value = false;
-    });
+    filtroNivel = ``;
   } else {
     $q.notify({
       type: "negative",
@@ -1900,6 +1890,42 @@ const LoadData = async () => {
       timeout: 4000,
     });
     visible.value = false;
+  }
+
+  switch (filtro) {
+    case "Solicitudes":
+      await api.get(`tiquete?${filtroNivel}select=*`).then((response) => {
+        tiquetes.value = response.data;
+        visible.value = false;
+      });
+      break;
+    case "Incidentes":
+      var solicitud = solicitudes.value.filter((v) => v.nombre == filtro)[0].id;
+      await api
+        .get(`tiquete?${filtroNivel}solicitud=eq.${solicitud}&select=*`)
+        .then((response) => {
+          tiquetes.value = response.data;
+          visible.value = false;
+        });
+      break;
+    case "Requerimiento":
+      var solicitud = solicitudes.value.filter((v) => v.nombre == filtro)[0].id;
+      await api
+        .get(`tiquete?${filtroNivel}solicitud=eq.${solicitud}&select=*`)
+        .then((response) => {
+          tiquetes.value = response.data;
+          visible.value = false;
+        });
+      break;
+    case "PQR":
+      var solicitud = solicitudes.value.filter((v) => v.nombre == filtro)[0].id;
+      await api
+        .get(`tiquete?${filtroNivel}solicitud=eq.${solicitud}&select=*`)
+        .then((response) => {
+          tiquetes.value = response.data;
+          visible.value = false;
+        });
+      break;
   }
 };
 
@@ -2730,6 +2756,7 @@ const tiquete = supabase
           timeout: 4000,
         });
       }
+      location.reload();
       LoadData();
       DatosGenerales();
     }
@@ -2778,30 +2805,6 @@ onUnmounted(() => {
 </script>
 
 <style lang="scss">
-.th-text {
-  color: $dark !important;
-  font-weight: bold !important;
-  font-size: 1rem !important;
-  text-align: center !important;
-}
-
-.head-styles {
-  background-color: white !important;
-  padding: 10px !important;
-  margin-right: 10px !important;
-}
-
-.table-card {
-  margin-top: 20px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-  display: flex;
-  width: 20vw;
-  height: 20vh;
-  justify-content: center;
-  margin-right: 200px;
-}
-
 .fade-move,
 .fade-enter-active,
 .fade-leave-active {

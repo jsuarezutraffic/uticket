@@ -32,15 +32,6 @@ export default boot(({ app, router, $Notify }) => {
           message: "La Sesión Ha Expirado. Por Favor Ingrese Nuevamente.",
           timeout: 4000,
         });
-      } else if (error.response.status == 400) {
-        Notify.create({
-          type: "negative",
-          message:
-            error.response.data.message +
-            " - Codigo error: " +
-            error.response.data.code,
-          timeout: 4000,
-        });
       } else if (error.response.status == 500) {
         Notify.create({
           type: "negative",

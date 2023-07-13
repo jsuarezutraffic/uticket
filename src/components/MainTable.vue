@@ -16,6 +16,7 @@
       <TransitionGroup name="fade">
         <q-table
           v-if="table"
+          title="Tickets"
           key="table"
           class="table-container"
           separator="horizontal"
@@ -31,11 +32,16 @@
           v-model:expanded="expanded"
           :sort-method="customSort()"
           :sort-method-props="{ sortBy, sortDesc }"
+          rows-per-page-label="Registro por página"
+          loading-label="Cargando..."
+          no-data-label="No existen datos para mostrar"
         >
+          <template v-slot:top>
+            <div style="font-weight: bold" class="q-table__title">Tickets</div>
+          </template>
           <template v-slot:header="props">
-            <q-tr :props="props" class="bg-primary head-styles">
+            <q-tr :props="props" class="head-styles">
               <q-th
-                class="th-text head-styles"
                 auto-width
                 v-for="col in props.cols"
                 :key="col.name"
@@ -213,11 +219,18 @@
                 :table-colspan="6"
                 row-key="id"
                 v-model:expanded="expanded"
+                rows-per-page-label="Registro por página"
+                loading-label="Cargando..."
+                no-data-label="No existen datos para mostrar"
               >
+                <template v-slot:top>
+                  <div style="font-weight: bold" class="q-table__title">
+                    Detalles Tickets
+                  </div>
+                </template>
                 <template v-slot:header="props">
                   <q-tr :props="props" class="bg-primary head-styles">
                     <q-th
-                      class="th-text head-styles"
                       auto-width
                       v-for="col in props.cols"
                       :key="col.name"
@@ -1054,20 +1067,6 @@ defineComponent({
 </script>
 
 <style lang="scss">
-.th-text {
-  color: $dark !important;
-  font-weight: bold !important;
-  font-size: 1.1rem !important;
-  text-align: center !important;
-}
-
-.head-styles {
-  background-color: $primary !important;
-  padding: 18px !important;
-  justify-content: center !important;
-  align-items: center !important;
-}
-
 .table-card {
   width: fit-content;
   height: fit-content;

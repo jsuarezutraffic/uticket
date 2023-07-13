@@ -21,12 +21,6 @@
   </div>
 </template>
 
-<style>
-.chart-wrap {
-  height: 260px;
-}
-</style>
-
 <script setup>
 /*eslint-disable */
 import { computed, toRefs, ref, watchEffect } from "vue";
@@ -75,6 +69,7 @@ const optionsCalc = computed(() => {
 
     title: {
       text: `${titleDefault.value}`,
+      align: "center",
       style: {
         color: "#4a148c",
         fontWeight: 600,

@@ -30,11 +30,16 @@
           'telefono',
           'created_at',
         ]"
+        rows-per-page-label="Registro por página"
+        loading-label="Cargando..."
+        no-data-label="No existen datos para mostrar"
       >
         <template v-slot:top>
+          <div style="font-weight: bold" class="q-table__title">Operador</div>
+          <q-space />
           <q-btn
             class="q-mr-sm"
-            color="secondary"
+            color="tertiary"
             round
             icon="add"
             @click="
@@ -54,7 +59,7 @@
             v-show="selected.length > 0"
             class="q-mr-sm"
             round
-            color="secondary"
+            color="tertiary"
             icon="edit"
             @click="
               modalAddUpOperador = true;
@@ -69,7 +74,7 @@
               {{ "Modificar Operador" }}
             </q-tooltip>
           </q-btn>
-          <!-- <q-btn class="q-ma-xs" color="secondary" size="md"> </q-btn> -->
+          <!-- <q-btn class="q-ma-xs" color="tertiary" size="md"> </q-btn> -->
         </template>
         <template v-slot:loading>
           <q-inner-loading showing color="primary" />
@@ -472,30 +477,6 @@ supabase
 </script>
 
 <style lang="scss">
-.th-text {
-  color: $dark !important;
-  font-weight: bold !important;
-  font-size: 1rem !important;
-  text-align: center !important;
-}
-
-.head-styles {
-  background-color: white !important;
-  padding: 10px !important;
-  margin-right: 10px !important;
-}
-
-.table-card {
-  margin-top: 20px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-  display: flex;
-  width: 20vw;
-  height: 20vh;
-  justify-content: center;
-  margin-right: 200px;
-}
-
 .fade-move,
 .fade-enter-active,
 .fade-leave-active {

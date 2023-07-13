@@ -35,7 +35,7 @@
           <q-btn
             :disable="!selected.length > 0"
             class="q-ma-xs"
-            color="secondary"
+            color="tertiary"
             size="md"
             @click="getDetalleTiquete()"
             >Gestionar
@@ -1382,30 +1382,6 @@ supabase
 </script>
 
 <style lang="scss">
-.th-text {
-  color: $dark !important;
-  font-weight: bold !important;
-  font-size: 1rem !important;
-  text-align: center !important;
-}
-
-.head-styles {
-  background-color: white !important;
-  padding: 10px !important;
-  margin-right: 10px !important;
-}
-
-.table-card {
-  margin-top: 20px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-  display: flex;
-  width: 20vw;
-  height: 20vh;
-  justify-content: center;
-  margin-right: 200px;
-}
-
 .fade-move,
 .fade-enter-active,
 .fade-leave-active {

@@ -5,22 +5,6 @@
     row-key="id"
     :filter-method="customFilter"
   >
-    <!-- <template v-for="column in columns" v-slot:[`top-row-${column.name}`]>
-      <q-select
-        v-if="filters[column.field]"
-        v-model="filters[column.field]"
-        :options="getDistinctValues(column.field)"
-        option-value="value"
-        option-label="label"
-        placeholder="Filter"
-        dense
-        outlined
-        emit-value
-        map-options
-        use-input
-        clearable
-      />
-    </template> -->
     <template v-slot:header="props">
       <q-tr :props="props" class="head-styles">
         <q-th
