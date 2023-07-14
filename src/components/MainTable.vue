@@ -96,7 +96,7 @@
             class="q-ma-xs"
             color="tertiary"
             size="md"
-            >Tabla Tiquetes
+            >Tabla Tickets
           </q-btn>
         </template>
 

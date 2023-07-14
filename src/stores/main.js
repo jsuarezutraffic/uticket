@@ -1,12 +1,16 @@
 import { defineStore } from "pinia";
 import { LocalStorage } from "quasar";
 import { api } from "src/boot/axios";
+const configJson = require("/public/config.json");
 
 export const useMainStore = defineStore("main", {
   state: () => ({
     token: "",
     isAuthenticated: false,
     TOKEN: "",
+    supabase_Key: configJson.API_KEY,
+    supabase_Key_Admi: configJson.API_KEY_ADMI,
+    supabase_Url: configJson.API_URL,
   }),
   perfil: () => ({
     imagUser: "",

@@ -231,7 +231,7 @@ const actualizarPassword = async () => {
       },
     };
     await api
-      .put(`https://xzovknjkdfykvximpgxh.supabase.co/auth/v1/user`, user)
+      .put(`${store.supabase_Url}/auth/v1/user`, user)
       .then((response) => {
         $q.notify({
           type: "positive",

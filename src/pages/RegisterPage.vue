@@ -1,28 +1,13 @@
 <template>
-  <!-- <q-page> -->
-  <div
-    style="
-      position: fixed;
-      height: 100%;
-      width: 100%;
-      left: 0;
-      bottom: 0;
-      z-index: -1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #31d3ae;
-    "
-  >
-    <q-card class="q-ma-md q-pa-md" style="width: 60%">
+  <div class="container-register bg-primary">
+    <q-card class="q-ma-md q-pa-lg">
       <div class="row">
-        <div
-          class="col-md-12 col-xs-12"
-          style="display: flex; justify-content: center; align-items: center"
-        >
+        <div class="col-md-12 col-xs-12 center-vertical q-pa-sm">
           <q-img
-            src="../assets/C505EF1B-28CA-4FD4-A240-D5AFBBC9989A-removebg.png"
-            class="u-trafficRegister"
+            fit="scale-down"
+            height="9rem"
+            src="../assets/img/LogoUticket.png"
+            class=""
           />
         </div>
       </div>
@@ -144,14 +129,33 @@
           <!-- <p class="text-h6 text-weight-bold register-text text-uppercase">
           You are ready to go!
         </p> -->
-          <q-btn class="button-class r bg-dark no-padding" flat type="submit"
-            >Create account</q-btn
-          >
+          <div class="row q-pt-md" style="width: 100%">
+            <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6 q-pa-sm">
+              <q-btn
+                style="width: 100%"
+                color="primary"
+                text-color="white"
+                :label="'Create Cuenta'"
+                type="submit"
+                rounded
+              ></q-btn>
+            </div>
+            <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6 q-pa-sm">
+              <q-btn
+                outline
+                style="width: 100%"
+                color="primary"
+                text-color="black"
+                :label="'Volver'"
+                to="/"
+                rounded
+              ></q-btn>
+            </div>
+          </div>
         </div>
       </q-form>
     </q-card>
   </div>
-  <!-- </q-page> -->
 </template>
 
 <script setup>
@@ -257,6 +261,19 @@ onMounted(() => {
 });
 </script>
 
+<style lang="scss">
+.cardMain {
+  position: fixed;
+  height: 100%;
+  width: 100%;
+  left: 0;
+  bottom: 0;
+  z-index: -1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+</style>
 <!-- .card-container {
   position: relative;
   top: 15vh;

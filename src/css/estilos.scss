@@ -3,6 +3,8 @@
   animation: changeBackground 10s infinite;
 }
 
+
+
 .th-text {
   color: $dark !important;
   font-size: 1rem !important;
@@ -13,6 +15,11 @@
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.magginPaddinCero {
+  margin: 0px;
+  padding: 0px
 }
 
 @keyframes changeBackground {
@@ -34,6 +41,13 @@
 }
 
 @media (max-width: 767px) {
+  .container-register {
+    display: flex;
+    justify-content: center;
+    // align-items: center;
+    // height: 100vh
+  }
+
   .img-logo {
     max-width: 400px;
     height: 13vw;
@@ -76,6 +90,13 @@
 }
 
 @media (min-width: 768px) and (max-width: 1023px) {
+  .container-register {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh
+  }
+
   .img-logo {
     max-width: 400px;
     height: 4vw;
@@ -118,6 +139,13 @@
 }
 
 @media (min-width: 1024px) {
+  .container-register {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    // height: 100vh
+  }
+
   .img-logo {
     max-width: 400px;
     height: 4vw;

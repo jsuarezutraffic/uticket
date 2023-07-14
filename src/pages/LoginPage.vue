@@ -100,13 +100,24 @@
             </div>
 
             <div class="row q-pt-md">
-              <div class="col-12">
+              <div class="col-12 q-pa-sm">
                 <q-btn
                   style="width: 100%"
                   color="tertiary"
                   text-color="black"
                   :label="'Login'"
                   type="submit"
+                  rounded
+                ></q-btn>
+              </div>
+              <div class="col-12 q-pa-sm">
+                <q-btn
+                  outline
+                  style="width: 100%"
+                  color="tertiary"
+                  text-color="black"
+                  :label="'Registro'"
+                  to="/register"
                   rounded
                 ></q-btn>
               </div>
@@ -133,11 +144,7 @@ const store = useMainStore();
 const router = useRouter();
 const isPwd = ref(true);
 
-const apiUrl =
-  "https://xzovknjkdfykvximpgxh.supabase.co/auth/v1/token?grant_type=password";
-const supabaseKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6b3ZrbmprZGZ5a3Z4aW1wZ3hoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY4MzMyMjY2NCwiZXhwIjoxOTk4ODk4NjY0fQ.Vm7vlm4xnk5FxXwTR66_GcFw8iF5SISvo8U9JRwXvh0";
-
+const supabaseKey = store.supabase_Key_Admi;
 const headers = {
   apikey: supabaseKey,
   "Content-Type": "application/json",
@@ -149,7 +156,7 @@ const password = ref("");
 const login = async () => {
   api
     .post(
-      "https://xzovknjkdfykvximpgxh.supabase.co/auth/v1/token?grant_type=password",
+      `${store.supabase_Url}/auth/v1/token?grant_type=password`,
       { email: username.value, password: password.value },
       { headers }
     )

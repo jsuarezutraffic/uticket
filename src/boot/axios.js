@@ -4,14 +4,10 @@ import { useMainStore } from "stores/main";
 import { useRouter, useRoute } from "vue-router";
 import { useQuasar } from "quasar";
 import { Notify } from "quasar";
-// Be careful when using SSR for cross-request state pollution
-// due to creating a Singleton instance here;
-// If any client changes this (global) instance, it might be a
-// good idea to move this instance creation inside of the
-// "export default () => {}" function below (which runs individually
-// for each client)
+
+const configJson = require("/public/config.json");
 const api = axios.create({
-  baseURL: "https://xzovknjkdfykvximpgxh.supabase.co/rest/v1/",
+  baseURL: configJson.API_URL + "/rest/v1/",
 });
 let $q = useQuasar();
 

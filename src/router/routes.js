@@ -10,6 +10,10 @@ const routes = [
     component: () => import("pages/RegisterPage.vue"),
   },
   {
+    path: "/registerSuccess",
+    component: () => import("pages/RegisterSuccessful.vue"),
+  },
+  {
     path: "/",
     meta: { requireLogin: true },
     component: () => import("layouts/MainLayout.vue"),

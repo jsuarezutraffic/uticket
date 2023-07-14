@@ -9,8 +9,8 @@
         :key="seriesCalc"
       ></apexchart>
     </div>
-
     <q-inner-loading
+      v-if="seriesCalc.length != 0"
       :showing="visible"
       label="Please wait..."
       label-class="text-teal"
@@ -21,7 +21,7 @@
   </div>
 </template>
 <script setup>
-import { computed, toRefs, ref, watchEffect } from "vue";
+import { computed, toRefs, ref, watchEffect, onMounted } from "vue";
 
 // Convertir props a variable
 const props = defineProps(["Series", "title", "width", "heightDonut"]);
@@ -39,10 +39,11 @@ watchEffect(() => {
 
 const seriesCalc = computed(() => {
   let series = [];
-
-  Series.value.forEach((item) => {
-    series.push(item.value);
-  });
+  if (Series.value.length > 0) {
+    Series.value.forEach((item) => {
+      series.push(item.value);
+    });
+  }
 
   return series;
 });
@@ -55,6 +56,9 @@ const titleDefault = computed(() => {
 
 const optionsCalc = computed(() => {
   let options = {
+    noData: {
+      text: "No data",
+    },
     colors: [
       "#002c3e",
       "#008080",
