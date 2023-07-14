@@ -1,6 +1,6 @@
 <template>
   <div class="q-pa-md">
-    <div
+    <!-- <div
       class="row containerDashboard q-col-gutter-md q-my-md"
       v-if="table && countArrayEstado.length > 0 && false"
     >
@@ -53,7 +53,7 @@
             width="320"
         /></q-card>
       </div>
-    </div>
+    </div> -->
     <TransitionGroup>
       <q-table
         :loading="visible"
@@ -100,7 +100,7 @@
             class="q-ma-xs"
             color="tertiary"
             size="md"
-            >Tabla Tiquetes
+            >Tabla Tickets
           </q-btn>
         </template>
         <template v-slot:loading>
@@ -1136,6 +1136,7 @@ import VerImagenArray from "src/components/VerImagenArray.vue";
 import Recorder from "recorder-js";
 import axios from "axios";
 //variables para el grabado de notas de voz
+console.log("entro");
 const isRecording = ref(false);
 const progressValue = ref(0);
 let recorder;
@@ -1881,6 +1882,7 @@ const LoadData = async () => {
   visible.value = true;
   if (users.value.filter((p) => p.id == idusuario)[0].nivel === 3) {
     filtroNivel = `asignado=eq.${idusuario}&`;
+    LocalStorage.set("filtro", "Solicitudes");
   } else if (users.value.filter((p) => p.id == idusuario)[0].nivel === 1) {
     filtroNivel = ``;
   } else {
@@ -1927,6 +1929,7 @@ const LoadData = async () => {
         });
       break;
   }
+  visible.value = false;
 };
 
 const AccionTiquete = (key) => {

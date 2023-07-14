@@ -487,7 +487,8 @@
       </TransitionGroup>
     </div>
     <div v-if="usuarios.filter((p) => p.id == idusuario)[0].nivel === 3">
-      <BackOffice />
+      <!-- <BackOffice /> -->
+      <DashboardPage :showMaintable="showMaintable" />
     </div>
     <!-- Modal de imagen -->
     <q-dialog v-model="mostrarImagen">
@@ -610,10 +611,27 @@ import { LocalStorage, useQuasar } from "quasar";
 import FileInput from "src/components/FileImage.vue";
 import VerImagenArray from "src/components/VerImagenArray.vue";
 import InputTextJump from "src/components/InputTextSaltoLinea.vue";
-import BackOffice from "../pages/GestionarTiquete.vue";
+import BackOffice from "../pages/Tiquetes.vue";
+import DashboardPage from "src/pages/DashboardPage.vue";
 import { supabase } from "src/supabase";
 import Recorder from "recorder-js";
-
+const showMaintable = {
+  showGraficas: true,
+  showColums: [
+    "id",
+    "created_at",
+    "cliente",
+    "concesion",
+    "peaje",
+    "solicitud",
+    // 'observaciones',
+    "estado",
+    "prioridad",
+    "tipo",
+    "subtipo",
+    "asignado",
+  ],
+};
 //variables para el grabado de notas de voz
 const isRecording = ref(false);
 const progressValue = ref(0);

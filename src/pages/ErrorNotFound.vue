@@ -474,26 +474,10 @@ import { createClient } from "@supabase/supabase-js";
 import { api } from "boot/axios";
 import { useQuasar } from "quasar";
 import { createBase64Image } from "boot/global";
-// import nodemailer from "nodemailer";
-// import { sgMail } from "@sendgrid/mail";
-
-// sgMail.setApiKey(
-//   "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"
-// );
-
-// console.log(
-//   JSON.parse(LocalStorage.getItem("sb-xzovknjkdfykvximpgxh-auth-token"))
-//     .access_token
-// );
 
 const idusuario = LocalStorage.getItem("IdUsuario");
 const email = LocalStorage.getItem("email");
 let $q = useQuasar();
-// const supabase = createClient(
-//   "https://xzovknjkdfykvximpgxh.supabase.co",
-//   JSON.parse(LocalStorage.getItem("sb-xzovknjkdfykvximpgxh-auth-token"))
-//     .access_token
-// );
 
 const selected = ref([]);
 // const seedSize = seed.length;

@@ -2,15 +2,15 @@ import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
 import { api } from 'src/boot/axios'
 // import { loadLocalData } from "boot/global";
-
+const configJson = require("/public/config.json");
 export const useMainStore = defineStore('main', {
   state: () => ({
     token: '',
     isAuthenticated: false,
     identificacion: '',
-    supabase_Key: process.env.API_KEY,
-    supabase_Url: process.env.API_URL
-    // supabase_Url: "https://xzovknjkdfykvximpgxh.supabase.co",
+    supabase_Key: configJson.API_KEY,
+    supabase_Key_Admi: configJson.API_KEY_ADMI,
+    supabase_Url: configJson.API_URL
   }),
 
   getters: {

@@ -225,7 +225,7 @@ const actualizarPassword = async () => {
       },
     };
     await api
-      .put(`https://xzovknjkdfykvximpgxh.supabase.co/auth/v1/user`, user)
+      .put(`${store.supabase_Url}/auth/v1/user`, user)
       .then((response) => {
         $q.notify({
           type: "positive",
@@ -238,7 +238,7 @@ const actualizarPassword = async () => {
         if (error.response.data.code == 422) {
           $q.notify({
             type: "negative",
-            message: "La contraseña debe tener mas de 6 caracteres",
+            message: "La contraseña debe tener mas de 5 caracteres",
           });
         }
       });

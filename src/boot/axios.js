@@ -1,18 +1,18 @@
 import { boot } from "quasar/wrappers";
 import axios from "axios";
 import { useMainStore } from "stores/main";
-import { useRouter, useRoute } from "vue-router";
 import { useQuasar } from "quasar";
 import { Notify } from "quasar";
 
-const URL = process.env.API_URL + "/rest/v1/";
+const configJson = require("/public/config.json");
+const URL = configJson.API_URL + "/rest/v1/";
 const api = axios.create({ baseURL: URL });
 
 let $q = useQuasar();
 
 export default boot(({ app, router, $Notify }) => {
-  const store = useMainStore();
-  app.config.globalProperties.$axios = axios;
+const store = useMainStore();
+app.config.globalProperties.$axios = axios;
   app.config.globalProperties.$api = api;
 
   api.interceptors.response.use(
