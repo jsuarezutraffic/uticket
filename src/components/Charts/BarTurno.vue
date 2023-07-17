@@ -81,12 +81,8 @@ const selectTurno = (e, chart, opts) => {
 const loadData = () => {
   var dataSet = shuffleArray();
   optionsYear.series[0].data = [];
-  // api
-  //   .get("/sesionrecaudopistaturno/busqueda?estado=Iniciado&estado=Cerrado")
-  //   .then((response) => {
   let arrayTemporal = [];
   let arrayTemporalnombre = [];
-  // var fechaActual = new Date();
   let jsE = {
     x: "2011",
     y: "dataSet[0].y",
@@ -95,10 +91,6 @@ const loadData = () => {
   };
 
   for (let index = 0; index < Series.value.length; index++) {
-    // const hoursDiff = dateDiffInHours(
-    //   fechaActual,
-    //   new Date(changeDateFormat(response.data[index].fechahorainicialstr))
-    // );
     arrayTemporal.push(Series.value[index].value);
     arrayTemporalnombre.push(Series.value[index].label);
     jsE = {

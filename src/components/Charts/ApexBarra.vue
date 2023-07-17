@@ -102,16 +102,16 @@ const conteoPorParametro = (tiquetesUser) => {
   cardsValue.value.incidentes = tiquetesUser.filter(
     (p) =>
       p.solicitud ==
-      Solicitudes.value.filter((v) => v.nombre == "Incidentes")[0].id
+      Solicitudes.value.filter((v) => v.nombre == "Incidentes")[0].orden
   ).length;
   cardsValue.value.requerimientos = tiquetesUser.filter(
     (p) =>
       p.solicitud ==
-      Solicitudes.value.filter((v) => v.nombre == "Requerimiento")[0].id
+      Solicitudes.value.filter((v) => v.nombre == "Requerimiento")[0].orden
   ).length;
   cardsValue.value.pqr = tiquetesUser.filter(
     (p) =>
-      p.solicitud == Solicitudes.value.filter((v) => v.nombre == "PQR")[0].id
+      p.solicitud == Solicitudes.value.filter((v) => v.nombre == "PQR")[0].orden
   ).length;
 };
 const seriesCalcTipo = computed(() => {

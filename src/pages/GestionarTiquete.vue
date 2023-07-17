@@ -1,59 +1,5 @@
 <template>
   <div class="q-pa-md">
-    <!-- <div
-      class="row containerDashboard q-col-gutter-md q-my-md"
-      v-if="table && countArrayEstado.length > 0 && false"
-    >
-      <div class="col-md-12 col-xs-12">
-        <span style="font-size: 16px; font-weight: bold"> Generales</span>
-
-        <q-card class="col-md-6 col-xs-6 row justify-evenly">
-          <apex-donut
-            :Series="countArrayEstado"
-            :cliente="cliente"
-            :prioridades="Prioridades"
-            title="Estados"
-            width="300"
-          />
-
-          <apex-donut
-            :Series="countArrayPrioridad"
-            :cliente="cliente"
-            :prioridades="Prioridades"
-            title="Prioridades"
-            width="300"
-          />
-
-          <apex-donut
-            :Series="countArraySolicitud"
-            :cliente="cliente"
-            :prioridades="Prioridades"
-            title="Solicitudes"
-            width="300"
-          />
-
-          <apex-donut
-            :Series="countArrayTipo"
-            :cliente="cliente"
-            :prioridades="Prioridades"
-            title="Tipos"
-            width="300"
-          />
-        </q-card>
-      </div>
-      <div
-        class="col-md-12 col-xs-12 q-mt-md"
-        style="margin-left: auto; margin-right: auto"
-      >
-        <q-card class="q-pa-md"
-          ><apex-bar
-            :Series="countArrayAsignado"
-            :Detalles="arraydatallesUsuarioFiltrada"
-            title="Asignado"
-            width="320"
-        /></q-card>
-      </div>
-    </div> -->
     <TransitionGroup>
       <q-table
         :loading="visible"
@@ -134,17 +80,22 @@
               </div>
               <div v-else-if="col.name == 'estado'">
                 <q-badge
-                  :color="Estados.filter((p) => p.id == col.value)[0].color"
+                  :color="Estados.filter((p) => p.orden == col.value)[0].color"
                 >
-                  {{ Estados.filter((p) => p.id == col.value)[0].descripcion }}
+                  {{
+                    Estados.filter((p) => p.orden == col.value)[0].descripcion
+                  }}
                 </q-badge>
               </div>
               <div v-else-if="col.name == 'prioridad'">
                 <q-badge
-                  :color="Prioridades.filter((p) => p.id == col.value)[0].color"
+                  :color="
+                    Prioridades.filter((p) => p.orden == col.value)[0].color
+                  "
                 >
                   {{
-                    Prioridades.filter((p) => p.id == col.value)[0].descripcion
+                    Prioridades.filter((p) => p.orden == col.value)[0]
+                      .descripcion
                   }}
                 </q-badge>
               </div>
@@ -173,7 +124,7 @@
                 </div>
               </div>
               <div v-else-if="col.name == 'solicitud'">
-                {{ solicitudes.filter((p) => p.id == col.value)[0].nombre }}
+                {{ solicitudes.filter((p) => p.orden == col.value)[0].nombre }}
               </div>
               <div v-else-if="col.name == 'created_at'">
                 {{ formatDate(col.value) }}
@@ -226,8 +177,15 @@
                   </div>
                 </div>
               </div>
-              <div v-else>
-                {{ col.value }}
+              <div v-else-if="col.name == 'tiempo' && !selected.length > 0">
+                <!-- verificar si el tiempo que hace falta es menor a una hora -->
+                {{ calcularTiempoTiquete(props.row) }}
+                <q-badge color="red" v-if="props.row.tiempo < 60 * 60">
+                  {{ props.row.contador }}
+                </q-badge>
+                <q-badge color="green" v-else>
+                  {{ props.row.contador }}
+                </q-badge>
               </div>
             </q-td>
           </q-tr>
@@ -263,6 +221,7 @@
           <div class="col-1">
             <q-btn
               flat
+              @click="selected = []"
               icon="close"
               v-close-popup
               style="display: flex; margin-left: auto"
@@ -407,7 +366,7 @@
                             dense
                             :options="Prioridades"
                             option-label="descripcion"
-                            option-value="id"
+                            option-value="orden"
                             class="q-pa-md"
                             emit-value
                             map-options
@@ -425,7 +384,7 @@
                             dense
                             :options="solicitudes"
                             option-label="nombre"
-                            option-value="id"
+                            option-value="orden"
                             class="q-pa-md"
                             emit-value
                             map-options
@@ -461,7 +420,7 @@
                             dense
                             :options="Procesos"
                             option-label="descripcion"
-                            option-value="id"
+                            option-value="orden"
                             class="q-pa-md"
                             emit-value
                             map-options
@@ -707,7 +666,7 @@
             />
             <q-btn
               :disable="
-                Estados.filter((p) => p.id == Fila.estado)[0].descripcion ==
+                Estados.filter((p) => p.orden == Fila.estado)[0].descripcion ==
                 'Cerrado'
               "
               label="Cerrar Ticket"
@@ -747,7 +706,7 @@
                     v-model="Fila.proceso"
                     :options="Procesos"
                     option-label="descripcion"
-                    option-value="id"
+                    option-value="orden"
                     label="Nivel Actual"
                     dense
                     class="q-pa-md"
@@ -765,7 +724,7 @@
                     dense
                     :options="Prioridades"
                     option-label="descripcion"
-                    option-value="id"
+                    option-value="orden"
                     class="q-pa-md"
                     emit-value
                     map-options
@@ -788,14 +747,12 @@
                   <q-select
                     :rules="selectRule"
                     label="Proceso"
-                    transition-show="scale"
-                    transition-hide="scale"
                     outlined
                     v-model="next.nivel"
                     dense
                     :options="Procesos"
                     option-label="descripcion"
-                    option-value="id"
+                    option-value="orden"
                     class="q-pa-md"
                     emit-value
                     map-options
@@ -1126,17 +1083,11 @@ import { mostrarMensajes } from "boot/global";
 import { supabase } from "src/supabase";
 import { useMainStore } from "src/stores/main";
 import { useConfigStore } from "src/stores/config";
-import { createClient } from "@supabase/supabase-js";
-import ApexDonut from "src/components/Charts/ApexDonut.vue";
-import ApexColumn from "src/components/Charts/ApexColumn.vue";
-import ApexBar from "src/components/Charts/BarTurno.vue";
 import FileInput from "src/components/FileImage.vue";
 import InputTextJump from "src/components/InputTextSaltoLinea.vue";
 import VerImagenArray from "src/components/VerImagenArray.vue";
-import Recorder from "recorder-js";
 import axios from "axios";
 //variables para el grabado de notas de voz
-console.log("entro");
 const isRecording = ref(false);
 const progressValue = ref(0);
 let recorder;
@@ -1177,6 +1128,7 @@ const Subtipos = ref([]);
 const Prioridades = ref([]);
 const Estados = ref([]);
 const Procesos = ref([]);
+
 const solicitudes = ref([]);
 const contactos = ref([]);
 const metodoconsulta = ref([]);
@@ -1325,6 +1277,13 @@ const columns = [
     field: "asignado",
     sortable: true,
   },
+  {
+    name: "tiempo",
+    align: "left",
+    label: "Tiempo",
+    field: "tiempo",
+    sortable: true,
+  },
 ];
 
 const columnsDetalles = [
@@ -1464,7 +1423,7 @@ const GestionTiquete = async (accionValue) => {
       FilaDetalle.value.campomodificador =
         "- Estado \n- Tipo \n- Subtipo \n- Equipo";
       FilaDetalle.value.valoranterior = `- ${
-        Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
+        Estados.value.filter((p) => p.orden == Fila.value.estado)[0].descripcion
       }\n- ${
         Tipos.value.filter((p) => p.id == FilaTemporal.value.tipo)[0]
           .descripcion
@@ -1491,7 +1450,7 @@ const GestionTiquete = async (accionValue) => {
     } else if (FilaTemporal.value.subtipo != Fila.value.subtipo) {
       FilaDetalle.value.campomodificador = "- Estado \n- Subtipo \n- Equipo";
       FilaDetalle.value.valoranterior = `- ${
-        Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
+        Estados.value.filter((p) => p.orden == Fila.value.estado)[0].descripcion
       }\n- ${
         Subtipos.value.filter((p) => p.id == FilaTemporal.value.subtipo)[0]
           .descripcion
@@ -1513,7 +1472,7 @@ const GestionTiquete = async (accionValue) => {
     } else if (FilaTemporal.value.equipo != Fila.value.equipo) {
       FilaDetalle.value.campomodificador = "- Estado  \n- Equipo";
       FilaDetalle.value.valoranterior = `- ${
-        Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
+        Estados.value.filter((p) => p.orden == Fila.value.estado)[0].descripcion
       }\n- ${
         FilaTemporal.value.equipo != null
           ? Equipos.value.filter((p) => p.id == FilaTemporal.value.equipo)[0]
@@ -1530,7 +1489,7 @@ const GestionTiquete = async (accionValue) => {
     } else {
       FilaDetalle.value.campomodificador = "- Estado ";
       FilaDetalle.value.valoranterior = `- ${
-        Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
+        Estados.value.filter((p) => p.orden == Fila.value.estado)[0].descripcion
       }`;
       FilaDetalle.value.valornuevo = `- Solucionado`;
     }
@@ -1539,9 +1498,9 @@ const GestionTiquete = async (accionValue) => {
     // se actualiza el campo del tiquete que se esta modificando
     Fila.value.estado = Estados.value.filter(
       (p) => p.descripcion == "Solucionado"
-    )[0].id;
+    )[0].orden;
     FilaDetalle.value.estado = Estados.value.filter(
-      (p) => p.id == Fila.value.estado
+      (p) => p.orden == Fila.value.estado
     )[0].vercliente;
     // agregar saltos de linea al campo Comentarios
     FilaDetalle.value.comentarios = textSaltoLinea.value;
@@ -1574,12 +1533,13 @@ const GestionTiquete = async (accionValue) => {
         FilaDetalle.value.campomodificador =
           "- Estado \n- Nivel \n- Prioridad \n- Tipo \n- Subtipo \n- Equipo";
         FilaDetalle.value.valoranterior = `- ${
-          Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
-        }\n- ${
-          Procesos.value.filter((p) => p.id == Fila.value.proceso)[0]
+          Estados.value.filter((p) => p.orden == Fila.value.estado)[0]
             .descripcion
         }\n- ${
-          Prioridades.value.filter((p) => p.id == oldProridad.value)[0]
+          Procesos.value.filter((p) => p.orden == Fila.value.proceso)[0]
+            .descripcion
+        }\n- ${
+          Prioridades.value.filter((p) => p.orden == oldProridad.value)[0]
             .descripcion
         }\n- ${
           Tipos.value.filter((p) => p.id == FilaTemporal.value.tipo)[0]
@@ -1595,9 +1555,10 @@ const GestionTiquete = async (accionValue) => {
         }
         `;
         FilaDetalle.value.valornuevo = `- Asignado\n- ${
-          Procesos.value.filter((p) => p.id == next.value.nivel)[0].descripcion
+          Procesos.value.filter((p) => p.orden == next.value.nivel)[0]
+            .descripcion
         }\n- ${
-          Prioridades.value.filter((p) => p.id == next.value.prioridad)[0]
+          Prioridades.value.filter((p) => p.orden == next.value.prioridad)[0]
             .descripcion
         }\n- ${
           Tipos.value.filter((p) => p.id == Fila.value.tipo)[0].descripcion
@@ -1614,12 +1575,13 @@ const GestionTiquete = async (accionValue) => {
         FilaDetalle.value.campomodificador =
           "- Estado \n- Nivel \n- Prioridad \n- Subtipo \n- Equipo";
         FilaDetalle.value.valoranterior = `- ${
-          Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
-        }\n- ${
-          Procesos.value.filter((p) => p.id == Fila.value.proceso)[0]
+          Estados.value.filter((p) => p.orden == Fila.value.estado)[0]
             .descripcion
         }\n- ${
-          Prioridades.value.filter((p) => p.id == oldProridad.value)[0]
+          Procesos.value.filter((p) => p.orden == Fila.value.proceso)[0]
+            .descripcion
+        }\n- ${
+          Prioridades.value.filter((p) => p.orden == oldProridad.value)[0]
             .descripcion
         }\n- ${
           Subtipos.value.filter((p) => p.id == FilaTemporal.value.subtipo)[0]
@@ -1632,9 +1594,10 @@ const GestionTiquete = async (accionValue) => {
         }
         `;
         FilaDetalle.value.valornuevo = `- Asignado\n- ${
-          Procesos.value.filter((p) => p.id == next.value.nivel)[0].descripcion
+          Procesos.value.filter((p) => p.orden == next.value.nivel)[0]
+            .descripcion
         }\n- ${
-          Prioridades.value.filter((p) => p.id == next.value.prioridad)[0]
+          Prioridades.value.filter((p) => p.orden == next.value.prioridad)[0]
             .descripcion
         }\n- ${
           Subtipos.value.filter((p) => p.id == Fila.value.subtipo)[0]
@@ -1649,12 +1612,13 @@ const GestionTiquete = async (accionValue) => {
         FilaDetalle.value.campomodificador =
           "- Estado \n- Nivel \n- Prioridad \n- Equipo";
         FilaDetalle.value.valoranterior = `- ${
-          Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
-        }\n- ${
-          Procesos.value.filter((p) => p.id == Fila.value.proceso)[0]
+          Estados.value.filter((p) => p.orden == Fila.value.estado)[0]
             .descripcion
         }\n- ${
-          Prioridades.value.filter((p) => p.id == oldProridad.value)[0]
+          Procesos.value.filter((p) => p.orden == Fila.value.proceso)[0]
+            .descripcion
+        }\n- ${
+          Prioridades.value.filter((p) => p.orden == oldProridad.value)[0]
             .descripcion
         }\n- ${
           FilaTemporal.value.equipo != null
@@ -1664,9 +1628,10 @@ const GestionTiquete = async (accionValue) => {
         }
         `;
         FilaDetalle.value.valornuevo = `- Asignado\n- ${
-          Procesos.value.filter((p) => p.id == next.value.nivel)[0].descripcion
+          Procesos.value.filter((p) => p.orden == next.value.nivel)[0]
+            .descripcion
         }\n- ${
-          Prioridades.value.filter((p) => p.id == next.value.prioridad)[0]
+          Prioridades.value.filter((p) => p.orden == next.value.prioridad)[0]
             .descripcion
         }\n- ${
           Fila.value.equipo != null
@@ -1677,18 +1642,20 @@ const GestionTiquete = async (accionValue) => {
       } else {
         FilaDetalle.value.campomodificador = "- Estado \n- Nivel \n- Prioridad";
         FilaDetalle.value.valoranterior = `- ${
-          Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
-        }\n- ${
-          Procesos.value.filter((p) => p.id == Fila.value.proceso)[0]
+          Estados.value.filter((p) => p.orden == Fila.value.estado)[0]
             .descripcion
         }\n- ${
-          Prioridades.value.filter((p) => p.id == oldProridad.value)[0]
+          Procesos.value.filter((p) => p.orden == Fila.value.proceso)[0]
+            .descripcion
+        }\n- ${
+          Prioridades.value.filter((p) => p.orden == oldProridad.value)[0]
             .descripcion
         }`;
         FilaDetalle.value.valornuevo = `- Asignado\n- ${
-          Procesos.value.filter((p) => p.id == next.value.nivel)[0].descripcion
+          Procesos.value.filter((p) => p.orden == next.value.nivel)[0]
+            .descripcion
         }\n- ${
-          Prioridades.value.filter((p) => p.id == next.value.prioridad)[0]
+          Prioridades.value.filter((p) => p.orden == next.value.prioridad)[0]
             .descripcion
         }`;
       }
@@ -1697,9 +1664,10 @@ const GestionTiquete = async (accionValue) => {
         FilaDetalle.value.campomodificador =
           "- Estado \n- Nivel \n- Tipo \n- Subtipo \n- Equipo";
         FilaDetalle.value.valoranterior = `- ${
-          Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
+          Estados.value.filter((p) => p.orden == Fila.value.estado)[0]
+            .descripcion
         }\n- ${
-          Procesos.value.filter((p) => p.id == Fila.value.proceso)[0]
+          Procesos.value.filter((p) => p.orden == Fila.value.proceso)[0]
             .descripcion
         }\n- ${
           Tipos.value.filter((p) => p.id == FilaTemporal.value.tipo)[0]
@@ -1715,7 +1683,8 @@ const GestionTiquete = async (accionValue) => {
         }
         `;
         FilaDetalle.value.valornuevo = `- Asignado\n- ${
-          Procesos.value.filter((p) => p.id == next.value.nivel)[0].descripcion
+          Procesos.value.filter((p) => p.orden == next.value.nivel)[0]
+            .descripcion
         }\n- ${
           Tipos.value.filter((p) => p.id == Fila.value.tipo)[0].descripcion
         }\n- ${
@@ -1731,9 +1700,10 @@ const GestionTiquete = async (accionValue) => {
         FilaDetalle.value.campomodificador =
           "- Estado \n- Nivel \n- Subtipo \n- Equipo";
         FilaDetalle.value.valoranterior = `- ${
-          Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
+          Estados.value.filter((p) => p.orden == Fila.value.estado)[0]
+            .descripcion
         }\n- ${
-          Procesos.value.filter((p) => p.id == Fila.value.proceso)[0]
+          Procesos.value.filter((p) => p.orden == Fila.value.proceso)[0]
             .descripcion
         }\n- ${
           Subtipos.value.filter((p) => p.id == FilaTemporal.value.subtipo)[0]
@@ -1746,7 +1716,8 @@ const GestionTiquete = async (accionValue) => {
         }
         `;
         FilaDetalle.value.valornuevo = `- Asignado\n- ${
-          Procesos.value.filter((p) => p.id == next.value.nivel)[0].descripcion
+          Procesos.value.filter((p) => p.orden == next.value.nivel)[0]
+            .descripcion
         }\n- ${
           Subtipos.value.filter((p) => p.id == Fila.value.subtipo)[0]
             .descripcion
@@ -1759,9 +1730,10 @@ const GestionTiquete = async (accionValue) => {
       } else if (FilaTemporal.value.equipo != Fila.value.equipo) {
         FilaDetalle.value.campomodificador = "- Estado \n- Nivel \n- Equipo";
         FilaDetalle.value.valoranterior = `- ${
-          Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
+          Estados.value.filter((p) => p.orden == Fila.value.estado)[0]
+            .descripcion
         }\n- ${
-          Procesos.value.filter((p) => p.id == Fila.value.proceso)[0]
+          Procesos.value.filter((p) => p.orden == Fila.value.proceso)[0]
             .descripcion
         }\n- ${
           FilaTemporal.value.equipo != null
@@ -1771,7 +1743,8 @@ const GestionTiquete = async (accionValue) => {
         }
         `;
         FilaDetalle.value.valornuevo = `- Asignado\n- ${
-          Procesos.value.filter((p) => p.id == next.value.nivel)[0].descripcion
+          Procesos.value.filter((p) => p.orden == next.value.nivel)[0]
+            .descripcion
         }\n- ${
           Fila.value.equipo != null
             ? Equipos.value.filter((p) => p.id == Fila.value.equipo)[0]
@@ -1781,13 +1754,15 @@ const GestionTiquete = async (accionValue) => {
       } else {
         FilaDetalle.value.campomodificador = "- Estado \n- Nivel ";
         FilaDetalle.value.valoranterior = `- ${
-          Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
+          Estados.value.filter((p) => p.orden == Fila.value.estado)[0]
+            .descripcion
         }\n- ${
-          Procesos.value.filter((p) => p.id == Fila.value.proceso)[0]
+          Procesos.value.filter((p) => p.orden == Fila.value.proceso)[0]
             .descripcion
         }`;
         FilaDetalle.value.valornuevo = `- Asignado\n- ${
-          Procesos.value.filter((p) => p.id == next.value.nivel)[0].descripcion
+          Procesos.value.filter((p) => p.orden == next.value.nivel)[0]
+            .descripcion
         }`;
       }
     }
@@ -1796,9 +1771,9 @@ const GestionTiquete = async (accionValue) => {
     // se actualiza el campo del tiquete que se esta modificando
     Fila.value.estado = Estados.value.filter(
       (p) => p.descripcion == "Asignado"
-    )[0].id;
+    )[0].orden;
     FilaDetalle.value.estado = Estados.value.filter(
-      (p) => p.id == Fila.value.estado
+      (p) => p.orden == Fila.value.estado
     )[0].vercliente;
     Fila.value.proceso = next.value.nivel;
     Fila.value.asignado = next.value.operador;
@@ -1832,7 +1807,7 @@ const GestionTiquete = async (accionValue) => {
       mostrarConfirm.value = false;
       FilaDetalle.value.campomodificador = "Estado";
       FilaDetalle.value.valoranterior = `${
-        Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
+        Estados.value.filter((p) => p.orden == Fila.value.estado)[0].descripcion
       }`;
       FilaDetalle.value.valornuevo = "Cerrado";
       FilaDetalle.value.tiquete = Fila.value.id;
@@ -1841,9 +1816,9 @@ const GestionTiquete = async (accionValue) => {
       // se actualiza el campo del tiquete que se esta modificando
       Fila.value.estado = Estados.value.filter(
         (p) => p.descripcion == "Cerrado"
-      )[0].id;
+      )[0].orden;
       FilaDetalle.value.estado = Estados.value.filter(
-        (p) => p.id == Fila.value.estado
+        (p) => p.orden == Fila.value.estado
       )[0].vercliente;
       Fila.value.asignado = users.value.filter(
         (p) => p.nivel == 1 && p.estado == true
@@ -1902,7 +1877,8 @@ const LoadData = async () => {
       });
       break;
     case "Incidentes":
-      var solicitud = solicitudes.value.filter((v) => v.nombre == filtro)[0].id;
+      var solicitud = solicitudes.value.filter((v) => v.nombre == filtro)[0]
+        .orden;
       await api
         .get(`tiquete?${filtroNivel}solicitud=eq.${solicitud}&select=*`)
         .then((response) => {
@@ -1911,7 +1887,8 @@ const LoadData = async () => {
         });
       break;
     case "Requerimiento":
-      var solicitud = solicitudes.value.filter((v) => v.nombre == filtro)[0].id;
+      var solicitud = solicitudes.value.filter((v) => v.nombre == filtro)[0]
+        .orden;
       await api
         .get(`tiquete?${filtroNivel}solicitud=eq.${solicitud}&select=*`)
         .then((response) => {
@@ -1920,7 +1897,8 @@ const LoadData = async () => {
         });
       break;
     case "PQR":
-      var solicitud = solicitudes.value.filter((v) => v.nombre == filtro)[0].id;
+      var solicitud = solicitudes.value.filter((v) => v.nombre == filtro)[0]
+        .orden;
       await api
         .get(`tiquete?${filtroNivel}solicitud=eq.${solicitud}&select=*`)
         .then((response) => {
@@ -1938,8 +1916,8 @@ const AccionTiquete = (key) => {
   const ValidadorEstado = () => {
     if (
       key == "CerrarTicket" &&
-      Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion !=
-        "Solucionado"
+      Estados.value.filter((p) => p.orden == Fila.value.estado)[0]
+        .descripcion != "Solucionado"
     ) {
       accion.value = "alerta";
       mensaje.value =
@@ -1952,23 +1930,24 @@ const AccionTiquete = (key) => {
       mostrarConfirm.value = true;
       return true;
     } else if (
-      Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion ==
-        "Solucionado" ||
-      Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion ==
-        "Cerrado" ||
-      Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion ==
-        "Finalizado"
+      Estados.value.filter((p) => p.orden == Fila.value.estado)[0]
+        .descripcion == "Solucionado" ||
+      Estados.value.filter((p) => p.orden == Fila.value.estado)[0]
+        .descripcion == "Cerrado" ||
+      Estados.value.filter((p) => p.orden == Fila.value.estado)[0]
+        .descripcion == "Finalizado"
     ) {
       if (
         key == "CerrarTicket" &&
-        Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion ==
-          "Solucionado"
+        Estados.value.filter((p) => p.orden == Fila.value.estado)[0]
+          .descripcion == "Solucionado"
       ) {
         return false;
       } else {
         accion.value = "alerta";
         mensaje.value = `No se puede realizar esta acción. El ticket se encuentra ${
-          Estados.value.filter((p) => p.id == Fila.value.estado)[0].descripcion
+          Estados.value.filter((p) => p.orden == Fila.value.estado)[0]
+            .descripcion
         }`;
         mostrarConfirm.value = true;
         return true;
@@ -1980,7 +1959,7 @@ const AccionTiquete = (key) => {
       next.value.prioridad = Fila.value.prioridad;
       if (ValidadorEstado()) {
       } else if (
-        Procesos.value.filter((p) => p.id > Fila.value.proceso).length == 0
+        Procesos.value.filter((p) => p.orden > Fila.value.proceso).length == 0
       ) {
         accion.value = "alerta";
         mensaje.value =
@@ -2067,545 +2046,6 @@ const DatosGenerales = async () => {
   table.value = true;
 };
 
-const countArrayEstado = ref([]);
-const countArrayPrioridad = ref([]);
-const countArrayTipo = ref([]);
-const countArraySolicitud = ref([]);
-const countArrayAsignado = ref([]);
-
-const datallesUsuario = ref([
-  {
-    usuario: "Josue Suarez",
-    quarters: [
-      {
-        x: "Incidentes",
-        y: 0,
-      },
-      {
-        x: "Requerimiento",
-        y: 0,
-      },
-      {
-        x: "PQR",
-        y: 0,
-      },
-    ],
-  },
-  {
-    usuario: "Jose Echeverry",
-    quarters: [
-      {
-        x: "Incidentes",
-        y: 0,
-      },
-      {
-        x: "Requerimiento",
-        y: 0,
-      },
-      {
-        x: "PQR",
-        y: 0,
-      },
-    ],
-  },
-  {
-    usuario: "Francisco Miranda",
-    quarters: [
-      {
-        x: "Incidentes",
-        y: 0,
-      },
-      {
-        x: "Requerimiento",
-        y: 0,
-      },
-      {
-        x: "PQR",
-        y: 0,
-      },
-    ],
-  },
-  {
-    usuario: "Jose Payares",
-    quarters: [
-      {
-        x: "Incidentes",
-        y: 0,
-      },
-      {
-        x: "Requerimiento",
-        y: 0,
-      },
-      {
-        x: "PQR",
-        y: 0,
-      },
-    ],
-  },
-  {
-    usuario: "Alvaro Herrada",
-    quarters: [
-      {
-        x: "Incidentes",
-        y: 0,
-      },
-      {
-        x: "Requerimiento",
-        y: 0,
-      },
-      {
-        x: "PQR",
-        y: 0,
-      },
-    ],
-  },
-  {
-    usuario: "Sitio",
-    quarters: [
-      {
-        x: "Incidentes",
-        y: 0,
-      },
-      {
-        x: "Requerimiento",
-        y: 0,
-      },
-      {
-        x: "PQR",
-        y: 0,
-      },
-    ],
-  },
-  {
-    usuario: "Luis Diaz",
-    quarters: [
-      {
-        x: "Incidentes",
-        y: 0,
-      },
-      {
-        x: "Requerimiento",
-        y: 0,
-      },
-      {
-        x: "PQR",
-        y: 0,
-      },
-    ],
-  },
-  {
-    usuario: "Juan Pereira",
-    quarters: [
-      {
-        x: "Incidentes",
-        y: 0,
-      },
-      {
-        x: "Requerimiento",
-        y: 0,
-      },
-      {
-        x: "PQR",
-        y: 0,
-      },
-    ],
-  },
-]);
-
-let jsondatallesUsuario = {
-  usuario: "",
-  quarters: [
-    {
-      x: "Incidentes",
-      y: 0,
-    },
-    {
-      x: "Requerimiento",
-      y: 0,
-    },
-    {
-      x: "PQR",
-      y: 0,
-    },
-  ],
-};
-
-const arraydatallesUsuario = ref([]);
-const arraydatallesUsuarioFiltrada = ref([]);
-watchEffect(() => {
-  {
-    const countByEstado = {};
-    const countByPrioridad = {};
-    const countByTipo = {};
-    const countBySolicitud = {};
-    const countByAsignado = {};
-
-    // Contar la cantidad de objetos por estado
-    tiquetes.value.forEach((obj) => {
-      if (
-        users.value.filter((p) => p.id == obj.asignado)[0].nombre ==
-        "Josue Suarez"
-      ) {
-        if (
-          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
-          "Incidentes"
-        ) {
-          datallesUsuario.value[0].quarters[0].y++;
-        } else if (
-          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
-          "Requerimiento"
-        ) {
-          datallesUsuario.value[0].quarters[1].y++;
-        } else if (
-          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
-          "PQR"
-        ) {
-          datallesUsuario.value[0].quarters[2].y++;
-        }
-      } else if (
-        users.value.filter((p) => p.id == obj.asignado)[0].nombre ==
-        "Jose Echeverry"
-      ) {
-        if (
-          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
-          "Incidentes"
-        ) {
-          datallesUsuario.value[1].quarters[0].y++;
-        } else if (
-          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
-          "Requerimiento"
-        ) {
-          datallesUsuario.value[1].quarters[1].y++;
-        } else if (
-          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
-          "PQR"
-        ) {
-          datallesUsuario.value[1].quarters[2].y++;
-        }
-      } else if (
-        users.value.filter((p) => p.id == obj.asignado)[0].nombre ==
-        "Francisco Miranda"
-      ) {
-        if (
-          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
-          "Incidentes"
-        ) {
-          datallesUsuario.value[2].quarters[0].y++;
-        } else if (
-          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
-          "Requerimiento"
-        ) {
-          datallesUsuario.value[2].quarters[1].y++;
-        } else if (
-          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
-          "PQR"
-        ) {
-          datallesUsuario.value[2].quarters[2].y++;
-        }
-      } else if (
-        users.value.filter((p) => p.id == obj.asignado)[0].nombre ==
-        "Jose Payares"
-      ) {
-        if (
-          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
-          "Incidentes"
-        ) {
-          datallesUsuario.value[3].quarters[0].y++;
-        } else if (
-          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
-          "Requerimiento"
-        ) {
-          datallesUsuario.value[3].quarters[1].y++;
-        } else if (
-          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
-          "PQR"
-        ) {
-          datallesUsuario.value[3].quarters[2].y++;
-        }
-      } else if (
-        users.value.filter((p) => p.id == obj.asignado)[0].nombre ==
-        "Alvaro Herrada"
-      ) {
-        if (
-          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
-          "Incidentes"
-        ) {
-          datallesUsuario.value[4].quarters[0].y++;
-        } else if (
-          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
-          "Requerimiento"
-        ) {
-          datallesUsuario.value[4].quarters[1].y++;
-        } else if (
-          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
-          "PQR"
-        ) {
-          datallesUsuario.value[4].quarters[2].y++;
-        }
-      } else if (
-        users.value.filter((p) => p.id == obj.asignado)[0].nombre == "Sitio"
-      ) {
-        if (
-          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
-          "Incidentes"
-        ) {
-          datallesUsuario.value[5].quarters[0].y++;
-        } else if (
-          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
-          "Requerimiento"
-        ) {
-          datallesUsuario.value[5].quarters[1].y++;
-        } else if (
-          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
-          "PQR"
-        ) {
-          datallesUsuario.value[5].quarters[2].y++;
-        }
-      } else if (
-        users.value.filter((p) => p.id == obj.asignado)[0].nombre == "Luis Diaz"
-      ) {
-        if (
-          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
-          "Incidentes"
-        ) {
-          datallesUsuario.value[5].quarters[0].y++;
-        } else if (
-          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
-          "Requerimiento"
-        ) {
-          datallesUsuario.value[5].quarters[1].y++;
-        } else if (
-          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
-          "PQR"
-        ) {
-          datallesUsuario.value[5].quarters[2].y++;
-        }
-      } else if (
-        users.value.filter((p) => p.id == obj.asignado)[0].nombre ==
-        "Juan Pereira"
-      ) {
-        if (
-          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
-          "Incidentes"
-        ) {
-          datallesUsuario.value[6].quarters[0].y++;
-        } else if (
-          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
-          "Requerimiento"
-        ) {
-          datallesUsuario.value[6].quarters[1].y++;
-        } else if (
-          solicitudes.value.filter((p) => p.id == obj.solicitud)[0].nombre ==
-          "PQR"
-        ) {
-          datallesUsuario.value[6].quarters[2].y++;
-        }
-      }
-
-      arraydatallesUsuarioFiltrada.value = [];
-      const estado = obj.estado;
-      const prioridad = obj.prioridad;
-      const tipo = obj.tipo;
-      const solicitud = obj.solicitud;
-      const asignado = obj.asignado;
-
-      let label;
-      let labelPrioridad;
-      let labelTipo;
-      let labelSolicitud;
-      let labelAsigando;
-
-      switch (users.value.filter((p) => p.id == asignado)[0].nombre) {
-        case "Francisco Miranda":
-          labelAsigando = users.value.filter((p) => p.id == asignado)[0].nombre;
-          break;
-        case "Josue Suarez":
-          labelAsigando = users.value.filter((p) => p.id == asignado)[0].nombre;
-          break;
-        case "Jose Echeverry":
-          labelAsigando = users.value.filter((p) => p.id == asignado)[0].nombre;
-          break;
-        case "Jose Payares":
-          labelAsigando = users.value.filter((p) => p.id == asignado)[0].nombre;
-          break;
-        case "Alvaro Herrada":
-          labelAsigando = users.value.filter((p) => p.id == asignado)[0].nombre;
-          break;
-        case "Sitio":
-          labelAsigando = users.value.filter((p) => p.id == asignado)[0].nombre;
-          break;
-        case "Luis Diaz":
-          labelAsigando = users.value.filter((p) => p.id == asignado)[0].nombre;
-          break;
-        case "Juan Pereira":
-          labelAsigando = users.value.filter((p) => p.id == asignado)[0].nombre;
-          break;
-        default:
-          labelAsigando = "Operador desconocido";
-          break;
-      }
-
-      switch (estado) {
-        case 1:
-          label = "Iniciado";
-          break;
-        case 5:
-          label = "Cerrado";
-          break;
-        case 6:
-          label = "Finalizado";
-          break;
-        case 2:
-          label = "Asignado";
-          break;
-        case 3:
-          label = "Escalado";
-          break;
-        case 4:
-          label = "Solucionado";
-          break;
-        case 7:
-          label = "Devuelto";
-          break;
-      }
-
-      switch (prioridad) {
-        case 1:
-          labelPrioridad = "Alta";
-          break;
-        case 2:
-          labelPrioridad = "Media";
-          break;
-        case 3:
-          labelPrioridad = "Baja";
-          break;
-      }
-
-      switch (tipo) {
-        case 1:
-          labelTipo = "Dispositivos";
-          break;
-        case 2:
-          labelTipo = "Software";
-          break;
-        case 3:
-          labelTipo = "Red";
-          break;
-      }
-
-      switch (solicitud) {
-        case 1:
-          labelSolicitud = "Incidentes";
-
-          break;
-        case 2:
-          labelSolicitud = "Requerimiento";
-          break;
-        case 3:
-          labelSolicitud = "PQR";
-          break;
-      }
-
-      if (!countByEstado[label]) {
-        countByEstado[label] = {
-          label: label,
-          value: 1,
-        };
-      } else {
-        countByEstado[label].value++;
-      }
-
-      if (!countByPrioridad[labelPrioridad]) {
-        countByPrioridad[labelPrioridad] = {
-          label: labelPrioridad,
-          value: 1,
-        };
-      } else {
-        countByPrioridad[labelPrioridad].value++;
-      }
-
-      if (!countByTipo[labelTipo]) {
-        countByTipo[labelTipo] = {
-          label: labelTipo,
-          value: 1,
-        };
-      } else {
-        countByTipo[labelTipo].value++;
-      }
-
-      if (!countBySolicitud[labelSolicitud]) {
-        countBySolicitud[labelSolicitud] = {
-          label: labelSolicitud,
-          value: 1,
-        };
-      } else {
-        countBySolicitud[labelSolicitud].value++;
-      }
-
-      if (!countByAsignado[labelAsigando]) {
-        countByAsignado[labelAsigando] = {
-          label: labelAsigando,
-          value: 1,
-        };
-      } else {
-        countByAsignado[labelAsigando].value++;
-      }
-    });
-    countArrayEstado.value = Object.values(countByEstado);
-    countArrayPrioridad.value = Object.values(countByPrioridad);
-    countArrayTipo.value = Object.values(countByTipo);
-    countArraySolicitud.value = Object.values(countBySolicitud);
-    countArrayAsignado.value = Object.values(countByAsignado);
-    countArrayAsignado.value.sort((a, b) => a.label.localeCompare(b.label));
-    arraydatallesUsuario.value = datallesUsuario.value.slice();
-
-    arraydatallesUsuarioFiltrada.value = arraydatallesUsuario.value.filter(
-      (item) => item.quarters.some((q) => q.y !== 0)
-    );
-    arraydatallesUsuarioFiltrada.value.sort((a, b) =>
-      a.usuario.localeCompare(b.usuario)
-    );
-    // for (let index = 0; index < arraydatallesUsuario.value.length; index++) {
-    //   let estat = 0;
-    //   arraydatallesUsuario.value[index].quarters.forEach((objeto) => {
-    //     if (objeto.y == 0) {
-    //       estat++;
-    //     }
-    //   });
-    //   if (estat == 3) {
-    //     arraydatallesUsuario.value.splice(index, 1);
-    //   }
-    // }
-    // countArrayAsignado.value.forEach((obj) => {
-    //   switch (users.value.filter((p) => p.id == asignado)[0].nombre) {
-    //     case "Francisco Miranda":
-    //     tiquetes.value.forEach((obj2) => {
-
-    //     })
-    //     break
-    //     case "Josue Suarez":
-    //       labelAsigando = users.value.filter((p) => p.id == asignado)[0].nombre;
-    //       break;
-    //     case "Jose Echeverry":
-    //       labelAsigando = users.value.filter((p) => p.id == asignado)[0].nombre;
-    //       break;
-    //     case "Jose Payares":
-    //       labelAsigando = users.value.filter((p) => p.id == asignado)[0].nombre;
-    //       break;
-    //     case "Alvaro Herrada":
-    //       labelAsigando = users.value.filter((p) => p.id == asignado)[0].nombre;
-    //       break;
-    //     case "Sitio":
-    //       labelAsigando = users.value.filter((p) => p.id == asignado)[0].nombre;
-    //       break;
-    //     default:
-    //       labelAsigando = "Operador desconocido";
-    //       break;
-    //   }
-    // });
-  }
-});
-
 // -------------------------------------------------------
 // Funciones generales
 //-------------------------------------------------------
@@ -2679,19 +2119,10 @@ const enviarCorreo = async () => {
     .catch((error) => {
       console.error("Error sending email:", error);
     });
-
-  // const axios = require("axios");
-  // const url = `https://${configJson.host}:${configJson.portMail}/enviar-correo`;
-  // axios
-  //   .post(url, data)
-  //   .then((response) => {})
-  //   .catch((error) => {
-  //     console.error(error);
-  //   });
 };
 const formatDate = (value) => {
-  const date = new Date(value);
   // return date.toLocaleDateString();  // solo la fecha DD/MM/YY
+  const date = new Date(value);
   return date.toLocaleString(); // DD/MM/YY, 00:00:00
 };
 
@@ -2700,23 +2131,75 @@ const VerEvidencias = (row) => {
   mostrarImagen.value = true;
 };
 
-const sortBy = ref("id");
-const sortDesc = ref(true);
-function customSort() {
-  tiquetes.value.sort((a, b) => {
-    const aValue = a[sortBy.value];
-    const bValue = b[sortBy.value];
-
-    if (aValue < bValue) {
-      return sortDesc.value ? 1 : -1;
+const calcularTiempoTiquete = (row) => {
+  let diferenciaSegundos = 0;
+  let tiempo = "";
+  const intervalo = setInterval(() => {
+    const fechaActual = new Date(); // Obtener la fecha actual
+    const fechaString = row.created_at; // Tu fecha en formato 'yyyy-mm-ddThh'
+    const fechaEspecifica = new Date(fechaString); // Convertir la cadena en un objeto Date
+    const diferenciaEnMilisegundos = Math.abs(fechaEspecifica - fechaActual); // Restar las fechas
+    //se pasa el tiempo de milisegundos a segundos
+    diferenciaSegundos = diferenciaEnMilisegundos / 1000;
+    switch (row.solicitud) {
+      case 1:
+        switch (row.prioridad) {
+          case 1:
+            row.tiempo = 60 * 60 * 2 - diferenciaSegundos;
+            tiempo = "2 horas";
+            break;
+          case 2:
+            row.tiempo = 60 * 60 * 8 - diferenciaSegundos;
+            tiempo = "8 horas";
+            break;
+          case 3:
+            row.tiempo = 60 * 60 * 48 - diferenciaSegundos;
+            tiempo = "48 horas";
+            break;
+        }
+        break;
+      case 2:
+        switch (row.prioridad) {
+          case 1:
+            row.tiempo = 60 * 60 * 8 - diferenciaSegundos;
+            tiempo = "8 horas";
+            break;
+          case 2:
+            row.tiempo = 60 * 60 * 24 - diferenciaSegundos;
+            tiempo = "24 horas";
+            break;
+          case 3:
+            row.tiempo = 60 * 60 * 72 - diferenciaSegundos;
+            tiempo = "72 horas";
+            break;
+        }
+        break;
+      case 3:
+        row.tiempo = 60 * 60 * 24 * 8 - diferenciaSegundos;
+        tiempo = "8 Dias";
+        break;
     }
-    if (aValue > bValue) {
-      return sortDesc.value ? -1 : 1;
+    //se calculan los segunos, minutos y horas para luego pasarlos al formato de fecha
+    const segundos = Math.floor(row.tiempo) % 60;
+    const minutos = Math.floor(row.tiempo / 60) % 60;
+    const horas = Math.floor(row.tiempo / 60 / 60);
+    const dias = Math.floor(row.tiempo / 86400);
+    // row.ordenTiempo = diferenciaSegundos;
+    let formatoDiferencia;
+    if (horas > 24) {
+      formatoDiferencia = `${dias} dias - ${
+        horas - dias * (24).toString().padStart(2, "0")
+      }:${minutos.toString().padStart(2, "0")}:${segundos
+        .toString()
+        .padStart(2, "0")}`;
+    } else {
+      formatoDiferencia = `${horas.toString().padStart(2, "0")}:${minutos
+        .toString()
+        .padStart(2, "0")}:${segundos.toString().padStart(2, "0")}`;
     }
-    return 0;
-  });
-}
-customSort();
+    row.contador = formatoDiferencia;
+  }, 1000);
+};
 
 const labelComentario = ref("Ver más");
 const expanded2 = ref({});
@@ -2729,6 +2212,51 @@ function verMasComentario(rowId) {
   }
 }
 
+//Ordenar tabla
+const sortBy = ref("prioridad");
+const sortDesc = ref(false);
+function customSort() {
+  tiquetes.value.sort((a, b) => {
+    // const aValue = a[sortBy.value];
+    // const bValue = b[sortBy.value];
+
+    // if (aValue < bValue) {
+    //   return sortDesc.value ? 1 : -1;
+    // }
+    // if (aValue > bValue) {
+    //   return sortDesc.value ? -1 : 1;
+    // }
+    // return 0;
+    const tiempoA = a["tiempo"];
+    const tiempoB = b["tiempo"];
+
+    // Ordenar por prioridad (ascendente)
+    if (tiempoA !== tiempoB) {
+      return tiempoA - tiempoB;
+    }
+
+    const priorityA = a["prioridad"];
+    const priorityB = b["prioridad"];
+
+    // Ordenar por prioridad (ascendente)
+    if (priorityA !== priorityB) {
+      return priorityA - priorityB;
+    }
+
+    const statusA = a["estado"];
+    const statusB = b["estado"];
+
+    // Ordenar por estado (ascendente)
+    return statusA - statusB;
+
+    // const timeA = a["time"];
+    // const timeB = b["time"];
+
+    // // Ordenar por tiempo (ascendente)
+    // return timeA - timeB;
+  });
+}
+customSort();
 onMounted(async () => {
   await DatosGenerales();
   LoadData();

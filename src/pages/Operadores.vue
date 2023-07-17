@@ -102,13 +102,17 @@
             <q-td v-for="col in props.cols" :key="col.name" :props="props">
               <div v-if="col.name == 'estado'">
                 <q-badge
-                  :color="Estados.filter((p) => p.id == col.value)[0].color"
+                  :color="Estados.filter((p) => p.orden == col.value)[0].color"
                 >
-                  {{ Estados.filter((p) => p.id == col.value)[0].descripcion }}
+                  {{
+                    Estados.filter((p) => p.orden == col.value)[0].descripcion
+                  }}
                 </q-badge>
               </div>
               <div v-else-if="col.name == 'nivel'">
-                {{ Procesos.filter((p) => p.id == col.value)[0].descripcion }}
+                {{
+                  Procesos.filter((p) => p.orden == col.value)[0].descripcion
+                }}
               </div>
               <div v-else-if="col.name == 'created_at'">
                 {{ formatDate(col.value) }}
@@ -189,7 +193,7 @@
                     dense
                     :options="Procesos"
                     option-label="descripcion"
-                    option-value="id"
+                    option-value="orden"
                     class="q-pa-md"
                     emit-value
                     map-options

@@ -7,7 +7,6 @@ import { Notify } from "quasar";
 const configJson = require("/public/config.json");
 const URL = configJson.API_URL + "/rest/v1/";
 const api = axios.create({ baseURL: URL });
-
 let $q = useQuasar();
 
 export default boot(({ app, router, $Notify }) => {

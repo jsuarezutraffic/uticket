@@ -259,11 +259,6 @@ watchEffect(() => {
       }
     });
 
-    // const filteredArray = computed(() => {
-    //   return tiquetes.value.filter((item1) =>
-    //     Prioridades.value.some((item2) => item2.id === item1.prioridad)
-    //   );
-    // });
     countArrayEstado.value = Object.values(countByEstado);
     countArrayPrioridad.value = Object.values(countByPrioridad);
     countArrayTipo.value = Object.values(countByTipo);
@@ -298,16 +293,16 @@ const conteoPorParametro = () => {
   cardsValue.value.incidentes = tiquetes.value.filter(
     (p) =>
       p.solicitud ==
-      Solicitudes.value.filter((v) => v.nombre == "Incidentes")[0].id
+      Solicitudes.value.filter((v) => v.nombre == "Incidentes")[0].orden
   ).length;
   cardsValue.value.requerimientos = tiquetes.value.filter(
     (p) =>
       p.solicitud ==
-      Solicitudes.value.filter((v) => v.nombre == "Requerimiento")[0].id
+      Solicitudes.value.filter((v) => v.nombre == "Requerimiento")[0].orden
   ).length;
   cardsValue.value.pqr = tiquetes.value.filter(
     (p) =>
-      p.solicitud == Solicitudes.value.filter((v) => v.nombre == "PQR")[0].id
+      p.solicitud == Solicitudes.value.filter((v) => v.nombre == "PQR")[0].orden
   ).length;
 };
 

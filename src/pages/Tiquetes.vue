@@ -22,6 +22,7 @@ const showMaintable = {
     "finalizar",
     "devuelto",
     "eliminar",
+    "tiempo",
   ],
 };
 defineComponent({

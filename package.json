@@ -24,6 +24,7 @@
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "fs": "^0.0.1-security",
     "nodemailer": "^6.9.2",
     "pinia": "^2.0.36",
     "quasar": "^2.6.0",
@@ -35,6 +36,8 @@
   "devDependencies": {
     "@babel/eslint-parser": "^7.13.14",
     "@quasar/app-webpack": "^3.0.0",
+    "electron": "^25.3.0",
+    "electron-packager": "^15.5.2",
     "eslint": "^8.10.0",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.19.1",

@@ -80,7 +80,9 @@
                 </div>
 
                 <div v-else-if="col.name == 'estado'">
-                  {{ estado.filter((p) => p.id == col.value)[0].descripcion }}
+                  {{
+                    estado.filter((p) => p.orden == col.value)[0].descripcion
+                  }}
                 </div>
 
                 <div v-else-if="col.name == 'concesion'">
@@ -88,7 +90,7 @@
                 </div>
 
                 <div v-else-if="col.name == 'solicitud'">
-                  {{ solicitud.filter((p) => p.id == col.value)[0].nombre }}
+                  {{ solicitud.filter((p) => p.orden == col.value)[0].nombre }}
                 </div>
 
                 <div v-else-if="col.name == 'peaje'">
@@ -349,7 +351,7 @@
               text-color="white"
               @click="dialog = true"
               :disable="
-                estado.filter((p) => p.id == Fila.estado)[0].descripcion !==
+                estado.filter((p) => p.orden == Fila.estado)[0].descripcion !==
                 'Asignado'
               "
             />
@@ -363,7 +365,7 @@
                       filled
                       v-model="ticketState"
                       :options="optionState"
-                      option-value="id"
+                      option-value="orden"
                       option-label="descripcion"
                       label="Estado"
                       class="q-mb-xs"
@@ -909,7 +911,7 @@ async function clickRow(row) {
   }
 
   estadoDisplay.value = estado.value.filter(
-    (p) => p.id === row.estado
+    (p) => p.orden === row.estado
   )[0].descripcion;
   if (row.estado === 1) {
     colorEstado.value = "green";
@@ -953,7 +955,7 @@ const VerEvidencias = (row) => {
 };
 
 async function gestionarTicket() {
-  Fila.value.estado = ticketState.value.id;
+  Fila.value.estado = ticketState.value.orden;
   FilaDetalle.value.tiquete = Fila.value.id;
   FilaDetalle.value.campomodificador = "Estado";
   FilaDetalle.value.valoranterior = "Asignado";

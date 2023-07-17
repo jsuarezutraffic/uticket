@@ -411,7 +411,7 @@ export default defineComponent({
                               dense
                               :options="Procesos"
                               option-label="descripcion"
-                              option-value="id"
+                              option-value="orden"
                               class="q-pa-md"
                               emit-value
                               map-options

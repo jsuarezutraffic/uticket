@@ -50,7 +50,7 @@
                       v-model="users.nivel"
                       :options="Procesos"
                       option-label="descripcion"
-                      option-value="id"
+                      option-value="orden"
                       label="Nivel Actual"
                       class="q-pa-md"
                       emit-value
