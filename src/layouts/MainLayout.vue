@@ -9,7 +9,14 @@
       <!-- Header Left-side -->
       <q-toolbar class="q-py-xs">
         <!-- Logo Header -->
-
+        <q-btn
+          v-if="LocalStorage.getItem('admi')"
+          dense
+          flat
+          round
+          icon="menu"
+          @click="toggleLeftDrawer"
+        />
         <q-toolbar-title>
           <img
             fit="scale-down"

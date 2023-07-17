@@ -169,9 +169,19 @@ const login = async () => {
         .get(`cliente?usuario=eq.` + response.data.user.id + `&select=*`)
         .then((response2) => {
           if (response2.data.length > 0) {
-            const toPath = "/";
-            router.push(toPath);
-            store.inicio(response.data);
+            if (response2.data[0].estado) {
+              const toPath = "/";
+              router.push(toPath);
+              store.inicio(response.data);
+              store.inicioCliente(response2.data[0]);
+            } else {
+              $q.notify({
+                type: "negative",
+                message:
+                  "El usuario se encuentra desactivado, por favor comuníquese con el área de soporte. ",
+                timeout: 4000,
+              });
+            }
           } else {
             $q.notify({
               type: "negative",

@@ -1,6 +1,6 @@
 <template>
-  <div class="row">
-    <div class="col-sm-12 col-xs-12 col-md-6 col-lg-6">
+  <div class="row bg-accent">
+    <div class="col-sm-12 col-xs-12 col-md-6 col-lg-6 bg-white">
       <div class="row text-primary">
         <div class="col-12 q-py-lg q-px-sm">
           <div class="row justify-between">
@@ -88,6 +88,18 @@
         </div>
       </div>
     </div>
+    <div class="col-12 q-pa-md" v-if="LocalStorage.getItem('admi')">
+      <q-card>
+        <ApexBarra
+          heightDonut="height: 160px;"
+          :Series="countArrayEstado"
+          :cliente="cliente"
+          :prioridades="Prioridades"
+          title="Estados"
+          width="250"
+        />
+      </q-card>
+    </div>
   </div>
 
   <q-inner-loading
@@ -109,7 +121,8 @@ import {
   watchEffect,
 } from "vue";
 import { useQuasar } from "quasar";
-import { useMainStore } from "../stores/main";
+import ApexBarra from "src/components/Charts/ApexBarra.vue";
+
 import { LocalStorage } from "quasar";
 import BtnBox from "src/components/Charts/BtnBox.vue";
 import ApexDonut from "src/components/Charts/ApexDonut.vue";
@@ -119,6 +132,7 @@ import { api } from "boot/axios";
 import { supabase } from "src/supabase";
 LocalStorage.set("filtro", "Solicitudes");
 const idusuario = LocalStorage.getItem("IdUsuario");
+const admi = LocalStorage.getItem("admi");
 const tiquetes = ref([]);
 const concesion = ref([]);
 const peajes = ref([]);
@@ -263,14 +277,24 @@ watchEffect(() => {
 });
 const loadData = async () => {
   var eliminado = Estados.value.filter((p) => p.descripcion == "Completado")[0]
-    .id;
-  await api
-    .get(
-      `tiquete?cliente=eq.${cliente.value[0].id}&estado=neq.${eliminado}&select=*`
-    )
-    .then((response) => {
-      tiquetes.value = response.data;
-    });
+    .orden;
+  if (!admi) {
+    await api
+      .get(
+        `tiquete?cliente=eq.${cliente.value[0].id}&estado=neq.${eliminado}&select=*`
+      )
+      .then((response) => {
+        tiquetes.value = response.data;
+      });
+  } else {
+    await api
+      .get(
+        `tiquete?concesion=eq.${cliente.value[0].concesion}&estado=neq.${eliminado}&select=*`
+      )
+      .then((response) => {
+        tiquetes.value = response.data;
+      });
+  }
   solicitudesTiempo();
   visible.value = false;
 };
@@ -279,16 +303,16 @@ const conteoPorParametro = () => {
   cardsValue.value.incidentes = tiquetes.value.filter(
     (p) =>
       p.solicitud ==
-      Solicitudes.value.filter((v) => v.nombre == "Incidentes")[0].id
+      Solicitudes.value.filter((v) => v.nombre == "Incidentes")[0].orden
   ).length;
   cardsValue.value.requerimientos = tiquetes.value.filter(
     (p) =>
       p.solicitud ==
-      Solicitudes.value.filter((v) => v.nombre == "Requerimiento")[0].id
+      Solicitudes.value.filter((v) => v.nombre == "Requerimiento")[0].orden
   ).length;
   cardsValue.value.pqr = tiquetes.value.filter(
     (p) =>
-      p.solicitud == Solicitudes.value.filter((v) => v.nombre == "PQR")[0].id
+      p.solicitud == Solicitudes.value.filter((v) => v.nombre == "PQR")[0].orden
   ).length;
 };
 
@@ -393,7 +417,7 @@ const tiquete = supabase
     "postgres_changes",
     { event: "*", schema: "public", table: "tiquete" },
     (payload) => {
-      location.reload();
+      // location.reload();
     }
   )
   .subscribe();

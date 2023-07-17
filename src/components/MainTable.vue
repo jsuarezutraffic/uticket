@@ -118,7 +118,7 @@
           <q-tr :props="props" @click="props.selected = !props.selected">
             <q-td v-for="col in props.cols" :key="col.name" :props="props">
               <div v-if="col.name == 'cliente'">
-                {{ cliente.filter((p) => p.id == col.value)[0].nombres }}
+                {{ clientes.filter((p) => p.id == col.value)[0].nombres }}
               </div>
               <div v-else-if="col.name == 'concesion'">
                 {{ concesion.filter((p) => p.id == col.value)[0].nombre }}
@@ -127,17 +127,21 @@
                 {{ peajes.filter((p) => p.id == col.value)[0].nombre }}
               </div>
               <div v-else-if="col.name == 'solicitud'">
-                {{ Solicitudes.filter((p) => p.id == col.value)[0].nombre }}
+                {{ Solicitudes.filter((p) => p.orden == col.value)[0].nombre }}
               </div>
               <div v-else-if="col.name == 'estado'">
                 <div
-                  v-if="Estados.filter((p) => p.id == col.value)[0].vercliente"
+                  v-if="
+                    Estados.filter((p) => p.orden == col.value)[0].vercliente
+                  "
                 >
                   <q-badge
-                    :color="Estados.filter((p) => p.id == col.value)[0].color"
+                    :color="
+                      Estados.filter((p) => p.orden == col.value)[0].color
+                    "
                   >
                     {{
-                      Estados.filter((p) => p.id == col.value)[0].descripcion
+                      Estados.filter((p) => p.orden == col.value)[0].descripcion
                     }}
                   </q-badge>
                 </div>
@@ -163,7 +167,7 @@
               <div v-else-if="col.name == 'finalizar'">
                 <q-btn
                   :disabled="
-                    Estados.filter((p) => p.id == props.row.estado)[0]
+                    Estados.filter((p) => p.orden == props.row.estado)[0]
                       .descripcion != 'Cerrado'
                   "
                   class="q-px-sm"
@@ -178,7 +182,7 @@
               <div v-else-if="col.name == 'devuelto'">
                 <q-btn
                   :disabled="
-                    Estados.filter((p) => p.id == props.row.estado)[0]
+                    Estados.filter((p) => p.orden == props.row.estado)[0]
                       .descripcion != 'Cerrado'
                   "
                   class="q-px-sm"
@@ -197,7 +201,7 @@
               <div v-else-if="col.name == 'eliminar'">
                 <q-btn
                   :disabled="
-                    Estados.filter((p) => p.id == props.row.estado)[0]
+                    Estados.filter((p) => p.orden == props.row.estado)[0]
                       .descripcion != 'Iniciado'
                   "
                   class="q-px-sm"
@@ -322,7 +326,7 @@
                     dense
                     :options="Solicitudes"
                     option-label="nombre"
-                    option-value="id"
+                    option-value="orden"
                     class="q-pa-md"
                     emit-value
                     map-options
@@ -417,7 +421,7 @@
                     dense
                     :options="Estados"
                     option-label="descripcion"
-                    option-value="id"
+                    option-value="orden"
                     class="q-pa-md"
                     emit-value
                     map-options
@@ -490,7 +494,7 @@
                     dense
                     :options="Procesos"
                     option-label="descripcion"
-                    option-value="id"
+                    option-value="orden"
                     class="q-pa-md"
                     emit-value
                     map-options
@@ -955,12 +959,13 @@ import VerImagenArray from "src/components/VerImagenArray.vue";
 import Recorder from "recorder-js";
 import axios from "axios";
 
+const admi = LocalStorage.getItem("admi");
+
 //props
 const props = defineProps(["showMaintable"]);
 let { showMaintable } = toRefs(props);
 
 const filtro = LocalStorage.getItem("filtro");
-console.log(filtro);
 //variables para la transcripcion de la grabacioon
 const isRecording2 = ref(false);
 const transcript = ref("");
@@ -1005,6 +1010,7 @@ const tiquetes = ref([]);
 const concesion = ref([]);
 const peajes = ref([]);
 const cliente = ref([]);
+const clientes = ref([]);
 const Tipos = ref([]);
 const Subtipos = ref([]);
 const Equipos = ref([]);
@@ -1272,49 +1278,101 @@ const getDetalleTiquete = async () => {
     });
   visible.value = false;
 };
+
 const loadData = async () => {
   var eliminado = Estados.value.filter((p) => p.descripcion == "Completado")[0]
-    .id;
-  switch (filtro) {
-    case "Solicitudes":
-      await api
-        .get(
-          `tiquete?cliente=eq.${cliente.value[0].id}&estado=neq.${eliminado}&select=*`
-        )
-        .then((response) => {
-          tiquetes.value = response.data;
-        });
-      break;
-    case "Incidentes":
-      var solicitud = Solicitudes.value.filter((v) => v.nombre == filtro)[0].id;
-      await api
-        .get(
-          `tiquete?cliente=eq.${cliente.value[0].id}&estado=neq.${eliminado}&solicitud=eq.${solicitud}&select=*`
-        )
-        .then((response) => {
-          tiquetes.value = response.data;
-        });
-      break;
-    case "Requerimiento":
-      var solicitud = Solicitudes.value.filter((v) => v.nombre == filtro)[0].id;
-      await api
-        .get(
-          `tiquete?cliente=eq.${cliente.value[0].id}&estado=neq.${eliminado}&solicitud=eq.${solicitud}&select=*`
-        )
-        .then((response) => {
-          tiquetes.value = response.data;
-        });
-      break;
-    case "PQR":
-      var solicitud = Solicitudes.value.filter((v) => v.nombre == filtro)[0].id;
-      await api
-        .get(
-          `tiquete?cliente=eq.${cliente.value[0].id}&estado=neq.${eliminado}&solicitud=eq.${solicitud}&select=*`
-        )
-        .then((response) => {
-          tiquetes.value = response.data;
-        });
-      break;
+    .orden;
+  if (!admi) {
+    switch (filtro) {
+      case "Solicitudes":
+        await api
+          .get(
+            `tiquete?cliente=eq.${cliente.value[0].id}&estado=neq.${eliminado}&select=*`
+          )
+          .then((response) => {
+            tiquetes.value = response.data;
+          });
+        break;
+      case "Incidentes":
+        var solicitud = Solicitudes.value.filter((v) => v.nombre == filtro)[0]
+          .orden;
+        await api
+          .get(
+            `tiquete?cliente=eq.${cliente.value[0].id}&estado=neq.${eliminado}&solicitud=eq.${solicitud}&select=*`
+          )
+          .then((response) => {
+            tiquetes.value = response.data;
+          });
+        break;
+      case "Requerimiento":
+        var solicitud = Solicitudes.value.filter((v) => v.nombre == filtro)[0]
+          .orden;
+        await api
+          .get(
+            `tiquete?cliente=eq.${cliente.value[0].id}&estado=neq.${eliminado}&solicitud=eq.${solicitud}&select=*`
+          )
+          .then((response) => {
+            tiquetes.value = response.data;
+          });
+        break;
+      case "PQR":
+        var solicitud = Solicitudes.value.filter((v) => v.nombre == filtro)[0]
+          .orden;
+        await api
+          .get(
+            `tiquete?cliente=eq.${cliente.value[0].id}&estado=neq.${eliminado}&solicitud=eq.${solicitud}&select=*`
+          )
+          .then((response) => {
+            tiquetes.value = response.data;
+          });
+        break;
+    }
+  } else {
+    switch (filtro) {
+      case "Solicitudes":
+        //tiquete?concesion=eq.${cliente.value[0].concesion}&estado=neq.${eliminado}&select=*
+        await api
+          .get(
+            `tiquete?concesion=eq.${cliente.value[0].concesion}&estado=neq.${eliminado}&select=*`
+          )
+          .then((response) => {
+            tiquetes.value = response.data;
+          });
+        break;
+      case "Incidentes":
+        var solicitud = Solicitudes.value.filter((v) => v.nombre == filtro)[0]
+          .orden;
+        await api
+          .get(
+            `tiquete?concesion=eq.${cliente.value[0].concesion}&estado=neq.${eliminado}&solicitud=eq.${solicitud}&select=*`
+          )
+          .then((response) => {
+            tiquetes.value = response.data;
+          });
+        break;
+      case "Requerimiento":
+        var solicitud = Solicitudes.value.filter((v) => v.nombre == filtro)[0]
+          .orden;
+        await api
+          .get(
+            `tiquete?concesion=eq.${cliente.value[0].concesion}&estado=neq.${eliminado}&solicitud=eq.${solicitud}&select=*`
+          )
+          .then((response) => {
+            tiquetes.value = response.data;
+          });
+        break;
+      case "PQR":
+        var solicitud = Solicitudes.value.filter((v) => v.nombre == filtro)[0]
+          .orden;
+        await api
+          .get(
+            `tiquete?concesion=eq.${cliente.value[0].concesion}&estado=neq.${eliminado}&solicitud=eq.${solicitud}&select=*`
+          )
+          .then((response) => {
+            tiquetes.value = response.data;
+          });
+        break;
+    }
   }
   visible.value = false;
 };
@@ -1326,6 +1384,9 @@ const DatosGenerales = async () => {
     .then((response) => {
       cliente.value = response.data;
     });
+  await api.get(`cliente?select=*`).then((response) => {
+    clientes.value = response.data;
+  });
 
   await api
     .get("concesion?id=eq." + cliente.value[0].concesion + "&select=*")
@@ -1404,7 +1465,7 @@ const PostTiquete = async () => {
       dataMessage.mensaje2 = "";
 
       if (
-        Estados.value.filter((p) => p.id == FilaFinalizar.value.estado)[0]
+        Estados.value.filter((p) => p.orden == FilaFinalizar.value.estado)[0]
           .descripcion == "Finalizado"
       ) {
         $q.notify({
@@ -1418,7 +1479,7 @@ const PostTiquete = async () => {
         FilaDetalle.value.valoranterior = "Cerrado";
         FilaFinalizar.value.estado = Estados.value.filter(
           (p) => p.descripcion == "Finalizado"
-        )[0].id;
+        )[0].orden;
       }
 
       break;
@@ -1433,7 +1494,7 @@ const PostTiquete = async () => {
 
       FilaFinalizar.value.estado = Estados.value.filter(
         (p) => p.descripcion == "Devuelto"
-      )[0].id;
+      )[0].orden;
 
       break;
     case "eliminar":
@@ -1444,7 +1505,7 @@ const PostTiquete = async () => {
       FilaDetalle.value.valoranterior = "Iniciado";
       FilaFinalizar.value.estado = Estados.value.filter(
         (p) => p.descripcion == "Completado"
-      )[0].id;
+      )[0].orden;
 
       break;
   }
@@ -1458,7 +1519,7 @@ const PostTiquete = async () => {
 
   // se actualiza el campo del tiquete que se esta modificando
   FilaDetalle.value.estado = Estados.value.filter(
-    (p) => p.id == FilaFinalizar.value.estado
+    (p) => p.orden == FilaFinalizar.value.estado
   )[0].vercliente;
   // agregar saltos de linea al campo Comentarios
   FilaDetalle.value.comentarios = textSaltoLinea.value;
@@ -1527,6 +1588,7 @@ const AgregarTicket = async () => {
   Fila.value.proceso = 1;
   Fila.value.estado = 1;
   Fila.value.evidencia = valorDatosExportado.value;
+  //Solicitudes.value.filter((x) => x.nombre == 'Incidentes')[0].nombre;
   Fila.value.observaciones = textSaltoLinea.value;
   if (Fila.value.solicitud == 1 || Fila.value.solicitud == 3) {
     Fila.value.prioridad = 1;

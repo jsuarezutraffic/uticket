@@ -224,16 +224,6 @@ const CreateAccount = async () => {
 
     object.value.estado = true;
     object.value.usuario = data.user.id;
-
-    // SessionStorage.set("ClienteCrear", {
-    //   correo: object.value.email,
-    //   nombres: object.value.name + " " + object.value.lastName,
-    //   concesion: object.value.concesion,
-    //   estado: true,
-    //   usuario: data.user.id,
-    //   telefono: object.value.phoneNumber,
-    // });
-
     const { datacliente, errorcliente } = await supabase
       .from("cliente")
       .insert([

@@ -29,6 +29,11 @@ const routes = [
         component: () => import("pages/IndexPage.vue"),
       },
       {
+        path: "/clientes",
+        meta: { requireLogin: true },
+        component: () => import("pages/Clientes.vue"),
+      },
+      {
         path: "/perfil",
         meta: { requireLogin: true },
         component: () => import("pages/Perfil.vue"),

@@ -31,6 +31,9 @@ export const useMainStore = defineStore("main", {
       LocalStorage.set("IdUsuario", data.user.id);
       LocalStorage.set("email", data.user.email);
     },
+    inicioCliente(data) {
+      LocalStorage.set("admi", data.admi);
+    },
     iniciosesion(iniSesion) {
       LocalStorage.set("AfterLogin", iniSesion);
       this.isAuthenticated = true;
