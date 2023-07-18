@@ -158,7 +158,7 @@ const countArrayPrioridad = ref([]);
 const countArrayTipo = ref([]);
 const showMaintable = {
   showGraficas: false,
-  showColums: ["id", "estado", "prioridad"],
+  showColums: ["id", "estado", "prioridad", "tiempo"],
 };
 const filtro = ref("all");
 watchEffect(() => {

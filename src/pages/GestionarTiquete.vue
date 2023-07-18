@@ -181,6 +181,7 @@
                 <!-- verificar si el tiempo que hace falta es menor a una hora -->
                 {{ calcularTiempoTiquete(props.row) }}
                 <q-badge color="red" v-if="props.row.tiempo < 60 * 60">
+                  <div v-show="false">{{ mensajeAviso(props.row) }}</div>
                   {{ props.row.contador }}
                 </q-badge>
                 <q-badge color="green" v-else>
@@ -1128,6 +1129,7 @@ const Subtipos = ref([]);
 const Prioridades = ref([]);
 const Estados = ref([]);
 const Procesos = ref([]);
+const Correos = ref([]);
 
 const solicitudes = ref([]);
 const contactos = ref([]);
@@ -1279,7 +1281,7 @@ const columns = [
   },
   {
     name: "tiempo",
-    align: "left",
+    align: "center",
     label: "Tiempo",
     field: "tiempo",
     sortable: true,
@@ -1781,6 +1783,8 @@ const GestionTiquete = async (accionValue) => {
     // agregar saltos de linea al campo Comentarios
     FilaDetalle.value.comentarios = textSaltoLinea.value;
     FilaDetalle.value.evidencia = valorDatosExportado.value;
+    delete Fila.value["contador"];
+    delete Fila.value["tiempo"];
     await api
       .post("detalletiquete", FilaDetalle.value)
       .then((response) => {
@@ -1837,7 +1841,7 @@ const GestionTiquete = async (accionValue) => {
                 mensaje: "El ticket se cerro correctamente",
               });
               mostrarModal.value = false;
-              enviarCorreo();
+              mensajeCliente();
               valorDatosExportado.value = "";
             });
         })
@@ -2039,6 +2043,12 @@ const DatosGenerales = async () => {
     Equipos.value = response.data;
   });
 
+  await api.get("enviocorreos?select=idtiquete").then((response) => {
+    for (const iterator of response.data) {
+      Correos.value.push(iterator.idtiquete);
+    }
+  });
+
   await CargarContactos();
   // Fila.value.asignado = "4ca6c4d3-c2f9-4c1f-9411-de9271b9519f";
   // Fila.value.privado = null;
@@ -2064,8 +2074,60 @@ const CargarContactos = async () => {
     contactos.value = response.data;
   });
 };
-const configJson = require("/public/config.json");
-const enviarCorreo = async () => {
+let idTemporal = Correos.value;
+
+const mensajeAviso = async (row) => {
+  const estaPresente1 = idTemporal.includes(row.id);
+  if (!estaPresente1) {
+    idTemporal.push(row.id);
+    const data = {};
+    data.email = users.value.filter((p) => p.id == row.asignado)[0].correo;
+    data.cliente = users.value.filter((p) => p.id == row.asignado)[0].nombre;
+    data.estado = "Pendiente";
+    data.mensaje1 = `La solicitud N° ${row.id} asignada a usted esta proxima a vencer.`;
+    data.mensaje2 = "Por favor verificar y dar solución al ticket.";
+    let dominio;
+    if (store.nivel == "BackOffice") {
+      dominio = "https://uticket.bak.utraffic.co/";
+    } else {
+      dominio = "https://uticket.ope.utraffic.co/";
+    }
+    var accion = `Ticket N°${row.id} Pendiente Por Solición!`;
+    var mensaje = `${data.mensaje1}<br> ${data.mensaje2}`;
+    var plantilla = require("./PlantillaCorreo.html").default.toString();
+    plantilla = plantilla.replace("${accion}", accion);
+    plantilla = plantilla.replace("${mensaje}", mensaje);
+    plantilla = plantilla.replace("${dominio}", dominio);
+
+    //soporte@utraffic.co
+    //#Utraffic2022**
+    const data2 = {
+      sender: {
+        name: "Soporte Utraffic",
+        email: "soporte@utraffic.co",
+      },
+      to: [
+        {
+          email: data.email,
+          name: data.nombres,
+        },
+      ],
+      subject: `Ticket ${data.estado}`,
+      htmlContent: plantilla,
+    };
+    var dataControlCorreo = {
+      idtiquete: row.id,
+      operador: row.asignado,
+      asunto: `Recordatorio para solucionar ticket`,
+    };
+    console.log(idTemporal);
+
+    await api.post("enviocorreos", dataControlCorreo).then((response) => {});
+    await enviarCorreo(data2);
+  }
+};
+
+const mensajeCliente = async () => {
   const data = {};
   data.email = cliente.value.filter(
     (p) => p.id == Fila.value.cliente
@@ -2079,8 +2141,6 @@ const enviarCorreo = async () => {
   data.mensaje2 = "Por favor verificar y dar por finalizado el ticket";
 
   const dominio = "https://uticket.cus.utraffic.co/";
-  const apiKey =
-    "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";
   var accion = `Ticket ${data.estado} Exitosamente!`;
   var mensaje = `${data.mensaje1} <strong>Utraffic SAS.</strong><br> ${data.mensaje2}`;
   var plantilla = require("./PlantillaCorreo.html").default.toString();
@@ -2104,6 +2164,12 @@ const enviarCorreo = async () => {
     subject: `Ticket ${data.estado}`,
     htmlContent: plantilla,
   };
+  enviarCorreo(data2);
+};
+
+const enviarCorreo = async (data2) => {
+  const apiKey =
+    "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";
 
   await axios
     .post("https://api.brevo.com/v3/smtp/email", data2, {
@@ -2130,11 +2196,11 @@ const VerEvidencias = (row) => {
   imagen.value = row.evidencia;
   mostrarImagen.value = true;
 };
-
+let intervalo;
 const calcularTiempoTiquete = (row) => {
   let diferenciaSegundos = 0;
   let tiempo = "";
-  const intervalo = setInterval(() => {
+  intervalo = setInterval(() => {
     const fechaActual = new Date(); // Obtener la fecha actual
     const fechaString = row.created_at; // Tu fecha en formato 'yyyy-mm-ddThh'
     const fechaEspecifica = new Date(fechaString); // Convertir la cadena en un objeto Date
@@ -2261,7 +2327,9 @@ onMounted(async () => {
   await DatosGenerales();
   LoadData();
 });
-
+onUnmounted(() => {
+  clearInterval(intervalo);
+});
 defineComponent({
   name: "MainTable",
 });

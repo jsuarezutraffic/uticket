@@ -11,6 +11,7 @@
     </div>
 
     <q-inner-loading
+      v-if="seriesCalc.length != 0"
       :showing="visible"
       label="Please wait..."
       label-class="text-teal"
@@ -59,6 +60,9 @@ const titleDefault = computed(() => {
 
 const optionsCalc = computed(() => {
   let options = {
+    noData: {
+      text: "No data",
+    },
     yaxis: {
       labels: {
         formatter: function (value) {

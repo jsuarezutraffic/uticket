@@ -1,5 +1,5 @@
 <template>
-  <div class="chart-wrap row">
+  <div class="chart-wrap row" v-if="tiquetes.length > 0">
     <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6 q-pa-lg">
       <apexchart
         type="bar"
@@ -130,6 +130,9 @@ const seriesCalcTipo = computed(() => {
 });
 const optionsCalcTipo = computed(() => {
   var options = {
+    noData: {
+      text: "No data",
+    },
     chart: {
       type: "bar",
       height: 250,
