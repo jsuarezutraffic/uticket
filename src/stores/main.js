@@ -9,7 +9,9 @@ export const useMainStore = defineStore('main', {
     identificacion: '',
     supabase_Key: configJson.API_KEY,
     supabase_Key_Admi: configJson.API_KEY_ADMI,
-    supabase_Url: configJson.API_URL
+    supabase_Url: configJson.API_URL,
+    url_bak: configJson.API_URL_BAK,
+    url_cus: configJson.API_URL_CUS,
   }),
 
   getters: {

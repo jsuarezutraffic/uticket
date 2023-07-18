@@ -264,6 +264,7 @@ watchEffect(() => {
     countArrayTipo.value = Object.values(countByTipo);
   }
 });
+
 const loadData = async () => {
   visible.value = true;
   if (users.value.filter((p) => p.id == idusuario)[0].nivel === 3) {

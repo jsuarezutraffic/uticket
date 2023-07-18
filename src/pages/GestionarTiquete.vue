@@ -177,7 +177,15 @@
                   </div>
                 </div>
               </div>
-              <div v-else-if="col.name == 'tiempo' && !selected.length > 0">
+              <div
+                v-else-if="
+                  col.name == 'tiempo' &&
+                  !selected.length > 0 &&
+                  (props.row.estado == 1 ||
+                    props.row.estado == 2 ||
+                    props.row.estado == 3)
+                "
+              >
                 <!-- verificar si el tiempo que hace falta es menor a una hora -->
                 {{ calcularTiempoTiquete(props.row) }}
                 <q-badge color="red" v-if="props.row.tiempo < 60 * 60">
@@ -1417,6 +1425,8 @@ const getDetalleTiquete = async () => {
     });
 };
 const GestionTiquete = async (accionValue) => {
+  delete Fila.value["contador"];
+  delete Fila.value["tiempo"];
   if (accion.value == "SolucionarTicket") {
     mostrarSolucionarTiquetes.value = false;
     // JSON de tabla de detalles, Se modifican los estados de acuerdo a la base de datos, basandose en la descripcion
@@ -1783,8 +1793,7 @@ const GestionTiquete = async (accionValue) => {
     // agregar saltos de linea al campo Comentarios
     FilaDetalle.value.comentarios = textSaltoLinea.value;
     FilaDetalle.value.evidencia = valorDatosExportado.value;
-    delete Fila.value["contador"];
-    delete Fila.value["tiempo"];
+
     await api
       .post("detalletiquete", FilaDetalle.value)
       .then((response) => {
@@ -1915,6 +1924,8 @@ const LoadData = async () => {
 };
 
 const AccionTiquete = (key) => {
+  clearInterval(intervalo);
+  intervalo = null;
   accion.value = key;
   FilaDetalle.value = {};
   const ValidadorEstado = () => {
@@ -2078,21 +2089,20 @@ let idTemporal = Correos.value;
 
 const mensajeAviso = async (row) => {
   const estaPresente1 = idTemporal.includes(row.id);
-  if (!estaPresente1) {
+  if (
+    !estaPresente1 &&
+    (row.estado == 1 || row.estado == 2 || row.estado == 3)
+  ) {
+    console.log(row);
     idTemporal.push(row.id);
     const data = {};
     data.email = users.value.filter((p) => p.id == row.asignado)[0].correo;
     data.cliente = users.value.filter((p) => p.id == row.asignado)[0].nombre;
     data.estado = "Pendiente";
-    data.mensaje1 = `La solicitud N° ${row.id} asignada a usted esta proxima a vencer.`;
+    data.mensaje1 = `La solicitud N° ${row.id} asignada a usted está próxima a vencer.`;
     data.mensaje2 = "Por favor verificar y dar solución al ticket.";
-    let dominio;
-    if (store.nivel == "BackOffice") {
-      dominio = "https://uticket.bak.utraffic.co/";
-    } else {
-      dominio = "https://uticket.ope.utraffic.co/";
-    }
-    var accion = `Ticket N°${row.id} Pendiente Por Solición!`;
+    let dominio = store.API_URL_BAK;
+    var accion = `Ticket N°${row.id} Pendiente Por Solución!`;
     var mensaje = `${data.mensaje1}<br> ${data.mensaje2}`;
     var plantilla = require("./PlantillaCorreo.html").default.toString();
     plantilla = plantilla.replace("${accion}", accion);
