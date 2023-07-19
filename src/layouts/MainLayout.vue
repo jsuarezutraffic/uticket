@@ -100,7 +100,7 @@ import MenuBar from "src/components/MenuBar.vue";
 import { useMainStore } from "stores/main";
 import { useRouter, useRoute } from "vue-router";
 import { LocalStorage } from "quasar";
-import { api } from "boot/axios";
+import { getCliente } from "../services/services";
 
 const store = useMainStore();
 const router = useRouter();
@@ -114,7 +114,7 @@ defineComponent({
   },
 });
 const getUsers = async () => {
-  await api.get(`cliente?usuario=eq.${idusuario}&select=*`).then((response) => {
+  await getCliente(`usuario=eq.${idusuario}&`).then((response) => {
     user.value = response.data[0];
   });
 };

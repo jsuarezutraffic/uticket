@@ -93,8 +93,6 @@
         <ApexBarra
           heightDonut="height: 160px;"
           :Series="countArrayEstado"
-          :cliente="cliente"
-          :prioridades="Prioridades"
           title="Estados"
           width="250"
         />
@@ -111,25 +109,15 @@
 </template>
 
 <script setup>
-import {
-  ref,
-  onBeforeMount,
-  onMounted,
-  watch,
-  defineComponent,
-  getCurrentInstance,
-  watchEffect,
-} from "vue";
-import { useQuasar } from "quasar";
+import { ref, onMounted, watchEffect } from "vue";
 import ApexBarra from "src/components/Charts/ApexBarra.vue";
-
 import { LocalStorage } from "quasar";
 import BtnBox from "src/components/Charts/BtnBox.vue";
 import ApexDonut from "src/components/Charts/ApexDonut.vue";
 import SolicitudesTiempo from "src/components/Charts/SolicitudesTiempo.vue";
 import MainTable from "src/components/MainTable.vue";
-import { api } from "boot/axios";
 import { supabase } from "src/supabase";
+import { getTiquetes, getDatosGenerales } from "../services/services";
 LocalStorage.set("filtro", "Solicitudes");
 const idusuario = LocalStorage.getItem("IdUsuario");
 const admi = LocalStorage.getItem("admi");
@@ -166,7 +154,6 @@ const showMaintable = {
     "eliminar",
   ],
 };
-const filtro = ref("all");
 watchEffect(() => {
   {
     const countByEstado = {};
@@ -276,99 +263,49 @@ watchEffect(() => {
   }
 });
 const loadData = async () => {
-  var eliminado = Estados.value.filter((p) => p.descripcion == "Completado")[0]
-    .orden;
   if (!admi) {
-    await api
-      .get(
-        `tiquete?cliente=eq.${cliente.value[0].id}&estado=neq.${eliminado}&select=*`
-      )
-      .then((response) => {
+    await getTiquetes(`cliente=eq.${cliente.value[0].id}&estado=neq.8&`).then(
+      (response) => {
         tiquetes.value = response.data;
-      });
+        solicitudesTiempo();
+      }
+    );
   } else {
-    await api
-      .get(
-        `tiquete?concesion=eq.${cliente.value[0].concesion}&estado=neq.${eliminado}&select=*`
-      )
-      .then((response) => {
-        tiquetes.value = response.data;
-      });
+    await getTiquetes(
+      `concesion=eq.${cliente.value[0].concesion}&estado=neq.8&`
+    ).then((response) => {
+      tiquetes.value = response.data;
+      solicitudesTiempo();
+    });
   }
-  solicitudesTiempo();
   visible.value = false;
 };
 
 const conteoPorParametro = () => {
   cardsValue.value.incidentes = tiquetes.value.filter(
-    (p) =>
-      p.solicitud ==
-      Solicitudes.value.filter((v) => v.nombre == "Incidentes")[0].orden
+    (p) => p.solicitud == 1
   ).length;
   cardsValue.value.requerimientos = tiquetes.value.filter(
-    (p) =>
-      p.solicitud ==
-      Solicitudes.value.filter((v) => v.nombre == "Requerimiento")[0].orden
+    (p) => p.solicitud == 2
   ).length;
-  cardsValue.value.pqr = tiquetes.value.filter(
-    (p) =>
-      p.solicitud == Solicitudes.value.filter((v) => v.nombre == "PQR")[0].orden
-  ).length;
+  cardsValue.value.pqr = tiquetes.value.filter((p) => p.solicitud == 3).length;
 };
 
 const DatosGenerales = async () => {
   visible.value = true;
-  await api
-    .get(`cliente?usuario=eq.` + idusuario + `&select=*`)
-    .then((response) => {
-      cliente.value = response.data;
-    });
-
-  await api
-    .get("concesion?id=eq." + cliente.value[0].concesion + "&select=*")
-    .then((response) => {
-      concesion.value = response.data;
-    });
-
-  await api
-    .get("peaje?concesion=eq." + concesion.value[0].id + "&select=*")
-    .then((response) => {
-      peajes.value = response.data;
-    });
-
-  await api.get("tipo?select=*").then((response) => {
-    Tipos.value = response.data;
-  });
-
-  await api.get("subtipo?select=*").then((response) => {
-    Subtipos.value = response.data;
-  });
-  await api.get("equipo?select=*").then((response) => {
-    Equipos.value = response.data;
-  });
-
-  await api.get("prioridad?select=*").then((response) => {
-    Prioridades.value = response.data;
-    Prioridades.value.sort(function (b, a) {
-      return b.orden - a.orden;
-    });
-  });
-
-  await api.get("estado?select=*").then((response) => {
-    Estados.value = response.data;
-  });
-
-  await api.get("solicitud?select=*").then((response) => {
-    Solicitudes.value = response.data;
-  });
-
-  await api.get("proceso?select=*").then((response) => {
-    Procesos.value = response.data;
+  await getDatosGenerales(idusuario).then((response) => {
+    cliente.value = response.cliente;
+    concesion.value = response.concesion;
+    peajes.value = response.peajes;
+    Tipos.value = response.Tipos;
+    Subtipos.value = response.Subtipos;
+    Equipos.value = response.Equipos;
+    Prioridades.value = response.Prioridades;
+    Estados.value = response.Estados;
+    Solicitudes.value = response.Solicitudes;
+    Procesos.value = response.Procesos;
+    Usuarios.value = response.Usuarios;
     visible.value = false;
-  });
-
-  await api.get("usuarios?select=*").then((response) => {
-    Usuarios.value = response.data;
   });
 };
 
@@ -399,7 +336,7 @@ const solicitudesTiempo = () => {
     arrayCantidadPorMes.push(cantidad);
   }
 
-  // Imprime el nuevo array
+  // Imprime el nuevo array  Object.values(countByTipo);
   dataSolicitudesTiempo.value = arrayCantidadPorMes;
 };
 
@@ -418,8 +355,10 @@ const tiquete = supabase
     { event: "*", schema: "public", table: "tiquete" },
     (payload) => {
       // location.reload();
+      loadData();
     }
   )
+
   .subscribe();
 </script>
 <style lang="scss"></style>

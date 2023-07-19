@@ -950,14 +950,13 @@ import {
   onUnmounted,
 } from "vue";
 import { LocalStorage, date } from "quasar";
-import { api } from "boot/axios";
 import { useQuasar } from "quasar";
 import ApexDonut from "src/components/Charts/ApexDonut.vue";
 import FileInput from "src/components/FileImage.vue";
 import InputTextJump from "src/components/InputTextSaltoLinea.vue";
 import VerImagenArray from "src/components/VerImagenArray.vue";
 import Recorder from "recorder-js";
-import axios from "axios";
+import * as services from "../services/services";
 
 const admi = LocalStorage.getItem("admi");
 
@@ -1269,9 +1268,8 @@ const clickRow = (row) => {
 
 const getDetalleTiquete = async () => {
   visible.value = true;
-  // Fila.value.id = FilaFinalizar.value.id;
-  await api
-    .get(`detalletiquete?tiquete=eq.${Fila.value.id}&estado=eq.true&select=*`)
+  await services
+    .getDetalleTiquete(`tiquete=eq.${Fila.value.id}&estado=eq.true&`)
     .then((response) => {
       tiquetesDetalles.value = response.data;
       TablaDetalles.value = true;
@@ -1280,160 +1278,79 @@ const getDetalleTiquete = async () => {
 };
 
 const loadData = async () => {
-  var eliminado = Estados.value.filter((p) => p.descripcion == "Completado")[0]
-    .orden;
   if (!admi) {
     switch (filtro) {
       case "Solicitudes":
-        await api
-          .get(
-            `tiquete?cliente=eq.${cliente.value[0].id}&estado=neq.${eliminado}&select=*`
-          )
-          .then((response) => {
-            tiquetes.value = response.data;
-          });
+        await getDataTiquetes(
+          `cliente=eq.${cliente.value[0].id}&estado=neq.8&`
+        );
         break;
       case "Incidentes":
-        var solicitud = Solicitudes.value.filter((v) => v.nombre == filtro)[0]
-          .orden;
-        await api
-          .get(
-            `tiquete?cliente=eq.${cliente.value[0].id}&estado=neq.${eliminado}&solicitud=eq.${solicitud}&select=*`
-          )
-          .then((response) => {
-            tiquetes.value = response.data;
-          });
+        await getDataTiquetes(
+          `cliente=eq.${cliente.value[0].id}&estado=neq.8&solicitud=eq.1&`
+        );
         break;
       case "Requerimiento":
-        var solicitud = Solicitudes.value.filter((v) => v.nombre == filtro)[0]
-          .orden;
-        await api
-          .get(
-            `tiquete?cliente=eq.${cliente.value[0].id}&estado=neq.${eliminado}&solicitud=eq.${solicitud}&select=*`
-          )
-          .then((response) => {
-            tiquetes.value = response.data;
-          });
+        await getDataTiquetes(
+          `cliente=eq.${cliente.value[0].id}&estado=neq.8&solicitud=eq.2&`
+        );
         break;
       case "PQR":
-        var solicitud = Solicitudes.value.filter((v) => v.nombre == filtro)[0]
-          .orden;
-        await api
-          .get(
-            `tiquete?cliente=eq.${cliente.value[0].id}&estado=neq.${eliminado}&solicitud=eq.${solicitud}&select=*`
-          )
-          .then((response) => {
-            tiquetes.value = response.data;
-          });
+        await getDataTiquetes(
+          `cliente=eq.${cliente.value[0].id}&estado=neq.8&solicitud=eq.3&`
+        );
         break;
     }
   } else {
     switch (filtro) {
       case "Solicitudes":
-        //tiquete?concesion=eq.${cliente.value[0].concesion}&estado=neq.${eliminado}&select=*
-        await api
-          .get(
-            `tiquete?concesion=eq.${cliente.value[0].concesion}&estado=neq.${eliminado}&select=*`
-          )
-          .then((response) => {
-            tiquetes.value = response.data;
-          });
+        await getDataTiquetes(
+          `concesion=eq.${cliente.value[0].concesion}&estado=neq.8&`
+        );
         break;
       case "Incidentes":
-        var solicitud = Solicitudes.value.filter((v) => v.nombre == filtro)[0]
-          .orden;
-        await api
-          .get(
-            `tiquete?concesion=eq.${cliente.value[0].concesion}&estado=neq.${eliminado}&solicitud=eq.${solicitud}&select=*`
-          )
-          .then((response) => {
-            tiquetes.value = response.data;
-          });
+        await getDataTiquetes(
+          `concesion=eq.${cliente.value[0].concesion}&estado=neq.8&solicitud=eq.1&`
+        );
         break;
       case "Requerimiento":
-        var solicitud = Solicitudes.value.filter((v) => v.nombre == filtro)[0]
-          .orden;
-        await api
-          .get(
-            `tiquete?concesion=eq.${cliente.value[0].concesion}&estado=neq.${eliminado}&solicitud=eq.${solicitud}&select=*`
-          )
-          .then((response) => {
-            tiquetes.value = response.data;
-          });
+        await getDataTiquetes(
+          `concesion=eq.${cliente.value[0].concesion}&estado=neq.8&solicitud=eq.2&`
+        );
         break;
       case "PQR":
-        var solicitud = Solicitudes.value.filter((v) => v.nombre == filtro)[0]
-          .orden;
-        await api
-          .get(
-            `tiquete?concesion=eq.${cliente.value[0].concesion}&estado=neq.${eliminado}&solicitud=eq.${solicitud}&select=*`
-          )
-          .then((response) => {
-            tiquetes.value = response.data;
-          });
+        await getDataTiquetes(
+          `concesion=eq.${cliente.value[0].concesion}&estado=neq.8&solicitud=eq.3&`
+        );
         break;
     }
   }
   visible.value = false;
 };
 
+const getDataTiquetes = async (filtro) => {
+  services.getTiquetes(filtro).then((response) => {
+    tiquetes.value = response.data;
+  });
+};
+
 const DatosGenerales = async () => {
   visible.value = true;
-  await api
-    .get(`cliente?usuario=eq.` + idusuario + `&select=*`)
-    .then((response) => {
-      cliente.value = response.data;
-    });
-  await api.get(`cliente?select=*`).then((response) => {
-    clientes.value = response.data;
-  });
-
-  await api
-    .get("concesion?id=eq." + cliente.value[0].concesion + "&select=*")
-    .then((response) => {
-      concesion.value = response.data;
-    });
-
-  await api
-    .get("peaje?concesion=eq." + concesion.value[0].id + "&select=*")
-    .then((response) => {
-      peajes.value = response.data;
-    });
-
-  await api.get("tipo?select=*").then((response) => {
-    Tipos.value = response.data;
-  });
-
-  await api.get("subtipo?select=*").then((response) => {
-    Subtipos.value = response.data;
-  });
-  await api.get("equipo?select=*").then((response) => {
-    Equipos.value = response.data;
-  });
-
-  await api.get("prioridad?select=*").then((response) => {
-    Prioridades.value = response.data;
-    Prioridades.value.sort(function (b, a) {
-      return b.orden - a.orden;
-    });
-  });
-
-  await api.get("estado?select=*").then((response) => {
-    Estados.value = response.data;
-  });
-
-  await api.get("solicitud?select=*").then((response) => {
-    Solicitudes.value = response.data;
-  });
-
-  await api.get("proceso?select=*").then((response) => {
-    Procesos.value = response.data;
+  await services.getDatosGenerales(idusuario).then((response) => {
+    cliente.value = response.cliente;
+    clientes.value = response.clientes;
+    concesion.value = response.concesion;
+    peajes.value = response.peajes;
+    Tipos.value = response.Tipos;
+    Subtipos.value = response.Subtipos;
+    Equipos.value = response.Equipos;
+    Prioridades.value = response.Prioridades;
+    Estados.value = response.Estados;
+    Solicitudes.value = response.Solicitudes;
+    Procesos.value = response.Procesos;
+    Usuarios.value = response.Usuarios;
     table.value = true;
     visible.value = false;
-  });
-
-  await api.get("usuarios?select=*").then((response) => {
-    Usuarios.value = response.data;
   });
 };
 
@@ -1524,8 +1441,8 @@ const PostTiquete = async () => {
   // agregar saltos de linea al campo Comentarios
   FilaDetalle.value.comentarios = textSaltoLinea.value;
   FilaDetalle.value.evidencia = valorDatosExportado.value;
-  await api
-    .put("tiquete?id=eq." + FilaFinalizar.value.id, FilaFinalizar.value)
+  await services
+    .putTiquetes(`id=eq.${FilaFinalizar.value.id}`, FilaFinalizar.value)
     .then((response) => {
       loadData();
       modalNuevoTicket.value = false;
@@ -1545,8 +1462,8 @@ const PostTiquete = async () => {
     });
 
   // post a la tabla de detalles tiquetes------------------
-  await api
-    .post("detalletiquete", FilaDetalle.value)
+  await services
+    .postDetallesTiquetes(FilaDetalle.value)
     .then((response) => {})
     .catch((error) => {
       $q.notify({
@@ -1598,8 +1515,8 @@ const AgregarTicket = async () => {
     Fila.value.prioridad = 3;
   }
   Fila.value.audio = base64Audio.value;
-  await api
-    .post("tiquete", Fila.value)
+  await services
+    .postTiquetes(Fila.value)
     .then((response) => {
       if (response.status == 201 || response.status == 200) {
         $q.notify({
@@ -1637,8 +1554,6 @@ const AgregarTicket = async () => {
 
 const enviarCorreo = async (data) => {
   const dominio = "https://uticket.cus.utraffic.co/";
-  const apiKey =
-    "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";
   var accion = `Ticket ${data.estado} Exitosamente!`;
   var mensaje = `${data.mensaje1} <strong>Utraffic SAS.</strong><br> ${data.mensaje2}`;
   var plantilla = require("./PlantillaCorreo.html").default.toString();
@@ -1662,21 +1577,7 @@ const enviarCorreo = async (data) => {
     subject: `Ticket ${data.estado}`,
     htmlContent: plantilla,
   };
-
-  await axios
-    .post("https://api.brevo.com/v3/smtp/email", data2, {
-      headers: {
-        accept: "application/json",
-        "api-key": apiKey,
-        "content-type": "application/json",
-      },
-    })
-    .then((response) => {
-      console.log("Email sent successfully:", response.data);
-    })
-    .catch((error) => {
-      console.error("Error sending email:", error);
-    });
+  await services.postCorreo(data2);
 };
 
 const formatDate = (value) => {

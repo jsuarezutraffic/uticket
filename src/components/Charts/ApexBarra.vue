@@ -1,12 +1,11 @@
 <template>
-  <div class="chart-wrap row">
+  <div class="chart-wrap row" v-if="tiquetes.length > 0">
     <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6 q-pa-lg">
       <apexchart
         type="bar"
         width="100%"
         :options="optionsCalcUser"
         :series="seriesCalcUser"
-        :key="seriesCalcUser"
         @click="selectTurno"
       ></apexchart>
     </div>
@@ -37,65 +36,23 @@
 <script setup>
 /*eslint-disable */
 import { computed, toRefs, ref, watchEffect, onMounted } from "vue";
-import { api } from "boot/axios";
+import * as services from "../../services/services";
 
 // Convertir props a variable
 const props = defineProps(["Series", "title", "width"]);
 let { Series, title, width } = toRefs(props);
+
+//variables
 const visible = ref(true);
 const tiquetes = ref([]);
 const usuarios = ref([]);
 const clientes = ref([]);
 const Solicitudes = ref([]);
-
-var serieUser = [];
-var categoriesUser = [];
-var dataUser = [];
-
-const procesarDataTiquetes = async () => {
-  await api.get(`tiquete?select=*`).then((response) => {
-    tiquetes.value = response.data;
-    visible.value = false;
-  });
-  await api.get(`usuarios?select=*`).then((response) => {
-    usuarios.value = response.data;
-    visible.value = false;
-  });
-  await api.get(`cliente?select=*`).then((response) => {
-    clientes.value = response.data;
-    visible.value = false;
-  });
-  await api.get("solicitud?select=*").then((response) => {
-    Solicitudes.value = response.data;
-  });
-  for (const iterator of clientes.value) {
-    dataUser.push({
-      id: iterator.id,
-      nombre: iterator.nombres,
-      numtiquetes:
-        tiquetes.value.filter((x) => x.cliente == iterator.id) == []
-          ? 0
-          : tiquetes.value.filter((x) => x.cliente == iterator.id).length,
-    });
-    serieUser.push(
-      tiquetes.value.filter((x) => x.cliente == iterator.id) == []
-        ? 0
-        : tiquetes.value.filter((x) => x.cliente == iterator.id).length
-    );
-    categoriesUser.push(iterator.nombres);
-  }
-};
 const active = ref(false);
-const selectTurno = (e, chart, opts) => {
-  active.value = opts.globals.selectedDataPoints[0].length == 0 ? false : true;
-  var userSelected = categoriesUser[opts.dataPointIndex];
-  var userSelectedJson = dataUser.filter((x) => x.nombre == userSelected)[0];
-  var tiquetesUser = tiquetes.value.filter(
-    (p) => p.cliente == userSelectedJson.id
-  );
-  conteoPorParametro(tiquetesUser);
-  // generarNewGraphic(userSelectedJson);
-};
+
+const serieUser = ref([]);
+const dataUser = ref([]);
+const categoriesUser = ref([]);
 
 const cardsValue = ref({
   incidentes: 0,
@@ -103,22 +60,65 @@ const cardsValue = ref({
   pqr: 0,
 });
 
+const procesarDataTiquetes = async () => {
+  dataUser.value = [];
+  serieUser.value = [];
+  categoriesUser.value = [];
+  //tiquete?cliente=eq.${cliente.value[0].id}&estado=neq.8&select=*
+  await services.getTiquetes(`&estado=neq.8&`).then((response) => {
+    tiquetes.value = response.data;
+  });
+  await services.getUsuarios("").then((response) => {
+    usuarios.value = response.data;
+  });
+  await services.getCliente("").then((response) => {
+    clientes.value = response.data;
+  });
+  await services.getSolicitud("").then((response) => {
+    Solicitudes.value = response.data;
+    visible.value = false;
+  });
+
+  for (const iterator of clientes.value) {
+    dataUser.value.push({
+      id: iterator.id,
+      nombre: iterator.nombres,
+      numtiquetes:
+        tiquetes.value.filter((x) => x.cliente == iterator.id) == []
+          ? 0
+          : tiquetes.value.filter((x) => x.cliente == iterator.id).length,
+    });
+    serieUser.value.push(
+      tiquetes.value.filter((x) => x.cliente == iterator.id) == []
+        ? 0
+        : tiquetes.value.filter((x) => x.cliente == iterator.id).length
+    );
+    categoriesUser.value.push(iterator.nombres);
+  }
+};
+const selectTurno = (e, chart, opts) => {
+  active.value = opts.globals.selectedDataPoints[0].length == 0 ? false : true;
+  var userSelected = categoriesUser.value[opts.dataPointIndex];
+  var userSelectedJson = dataUser.value.filter(
+    (x) => x.nombre == userSelected
+  )[0];
+  var tiquetesUser = tiquetes.value.filter(
+    (p) => p.cliente == userSelectedJson.id
+  );
+  conteoPorParametro(tiquetesUser);
+  // generarNewGraphic(userSelectedJson);
+};
+
 const conteoPorParametro = (tiquetesUser) => {
   cardsValue.value.incidentes = tiquetesUser.filter(
-    (p) =>
-      p.solicitud ==
-      Solicitudes.value.filter((v) => v.nombre == "Incidentes")[0].orden
+    (p) => p.solicitud == 1
   ).length;
   cardsValue.value.requerimientos = tiquetesUser.filter(
-    (p) =>
-      p.solicitud ==
-      Solicitudes.value.filter((v) => v.nombre == "Requerimiento")[0].orden
+    (p) => p.solicitud == 2
   ).length;
-  cardsValue.value.pqr = tiquetesUser.filter(
-    (p) =>
-      p.solicitud == Solicitudes.value.filter((v) => v.nombre == "PQR")[0].orden
-  ).length;
+  cardsValue.value.pqr = tiquetesUser.filter((p) => p.solicitud == 3).length;
 };
+
 const seriesCalcTipo = computed(() => {
   let series = [
     {
@@ -205,6 +205,8 @@ const optionsCalcTipo = computed(() => {
 });
 
 watchEffect(() => {
+  console.log(Series.value[0]);
+  procesarDataTiquetes();
   if (Series.value[0]) {
     visible.value = false;
   }
@@ -217,10 +219,9 @@ const seriesCalcUser = computed(() => {
   let series = [
     {
       name: "Numero de tiquetes",
-      data: serieUser,
+      data: serieUser.value,
     },
   ];
-
   return series;
 });
 const optionsCalcUser = computed(() => {
@@ -242,7 +243,7 @@ const optionsCalcUser = computed(() => {
       title: {
         text: "Numero de tiquetes",
       },
-      categories: categoriesUser,
+      categories: categoriesUser.value,
     },
     yaxis: {
       title: {
@@ -272,12 +273,11 @@ const optionsCalcUser = computed(() => {
   });
   options.labels = labels;
 
-  // console.log("labels: ", options.labels);
   return options;
 });
 
 onMounted(() => {
-  active.value = true;
-  procesarDataTiquetes();
+  active.value = false;
+  // procesarDataTiquetes();
 });
 </script>

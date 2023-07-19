@@ -244,10 +244,9 @@
 <script setup>
 /*eslint-disable */
 import { defineComponent, ref, onMounted } from "vue";
-import { LocalStorage, useQuasar } from "quasar";
-import { api } from "boot/axios";
+import { useQuasar } from "quasar";
 import { supabase } from "src/supabase";
-import { useMainStore } from "src/stores/main";
+import * as services from "../services/services";
 //supabase
 let $q = useQuasar();
 const selected = ref([]);
@@ -340,8 +339,9 @@ const clickRow = (row) => {
 const updateCliente = async () => {
   visible.value = true;
   modalAddUpOperador.value = false;
-  await api
-    .put(`cliente?id=eq.${Fila.value.id}`, Fila.value)
+
+  await services
+    .putCliente(`id=eq.${Fila.value.id}`, Fila.value)
     .then((response) => {
       $q.notify({
         type: "positive",
@@ -353,40 +353,41 @@ const updateCliente = async () => {
 
 const loadData = async () => {
   visible.value = true;
-  await api.get("cliente?select=*").then((response) => {
+
+  await services.getCliente("").then((response) => {
     cliente.value = response.data;
   });
 
-  await api.get("concesion?select=*").then((response) => {
+  await services.getConcesion("").then((response) => {
     concesion.value = response.data;
   });
 
-  await api.get("peaje?select=*").then((response) => {
+  await services.getPeaje("").then((response) => {
     peajes.value = response.data;
   });
 
-  await api.get("tipo?select=*").then((response) => {
+  await services.getTipo("").then((response) => {
     Tipos.value = response.data;
   });
 
-  await api.get("subtipo?select=*").then((response) => {
+  await services.getSubtipo("").then((response) => {
     Subtipos.value = response.data;
   });
 
-  await api.get("prioridad?select=*").then((response) => {
+  await services.getPrioridad("").then((response) => {
     Prioridades.value = response.data;
   });
-  await api.get("solicitud?select=*").then((response) => {
+  await services.getSolicitud("").then((response) => {
     solicitudes.value = response.data;
   });
 
-  await api.get("metodoconsulta?select=*").then((response) => {
+  await services.getMetodoConsulta("").then((response) => {
     metodoconsulta.value = response.data;
   });
-
   visible.value = false;
   table.value = true;
 };
+
 // -------------------------------------------------------
 // Funciones generales
 //-------------------------------------------------------
