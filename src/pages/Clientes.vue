@@ -347,7 +347,6 @@ const clickRow = (row) => {
   Fila.value = row;
 };
 const updateCliente = async () => {
-  console.log(Fila.value);
   visible.value = true;
   modalAddUpOperador.value = false;
   await api

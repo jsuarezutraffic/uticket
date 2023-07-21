@@ -84,7 +84,7 @@
           </div>
         </div>
         <div class="col-12">
-          <BackOffice :showMaintable="showMaintable" />
+          <BackOffice :key="countArrayEstado" :showMaintable="showMaintable" />
         </div>
       </div>
     </div>
@@ -166,8 +166,6 @@ watchEffect(() => {
     const countByEstado = {};
     const countByPrioridad = {};
     const countByTipo = {};
-    const countBySolicitud = {};
-
     // Contar la cantidad de objetos por estado
     tiquetes.value.forEach((obj) => {
       const estado = obj.estado;
@@ -258,7 +256,6 @@ watchEffect(() => {
         countByTipo[labelTipo].value++;
       }
     });
-
     countArrayEstado.value = Object.values(countByEstado);
     countArrayPrioridad.value = Object.values(countByPrioridad);
     countArrayTipo.value = Object.values(countByTipo);
@@ -288,6 +285,7 @@ const loadData = async () => {
     visible.value = false;
   }
   solicitudesTiempo();
+  conteoPorParametro();
 };
 
 const conteoPorParametro = () => {
@@ -407,8 +405,7 @@ supabase
     "postgres_changes",
     { event: "*", schema: "public", table: "tiquete" },
     (payload) => {
-      location.reload();
-      console.log("cambio tiquete");
+      loadData();
     }
   )
   .subscribe();

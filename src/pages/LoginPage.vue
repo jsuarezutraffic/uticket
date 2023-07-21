@@ -6,8 +6,7 @@
       <div class="div-redondo text-center shadow-5">
         <q-img
           class="q-pa-xs"
-          fit="fill"
-          width="13rem"
+          fit="scale-down"
           height="21rem"
           src="../assets/img/LogoUticket.png"
         />
@@ -43,7 +42,9 @@
           <div class="text-h4 text-weight-bold">
             Welcome to
             <strong class="text-tertiary text-h4 text-weight-bold"
-              >U-Ticket - {{ config.nivel }}</strong
+              >U-Ticket -
+              <div v-if="configJson.nivel == 1">BackOffice</div>
+              <div v-if="configJson.nivel == 2">Operation</div></strong
             ><br />
             <p class="text-h5 text-weight-bold q-pt-lg">
               Inicia sesión para continuar.
@@ -126,6 +127,7 @@ import { api } from "boot/axios";
 import { useRouter, useRoute } from "vue-router";
 import { mostrarMensajes, getSelectedString } from "boot/global";
 import { useQuasar } from "quasar";
+const configJson = require("/public/config.json");
 // import { supabase } from "../supabase";
 // stores
 const store = useMainStore();

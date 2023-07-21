@@ -43,7 +43,6 @@ watchEffect(() => {
 
 const seriesCalc = computed(() => {
   let series = [];
-
   Series.value.forEach((item) => {
     series.push(item.value);
   });
@@ -63,6 +62,15 @@ const optionsCalc = computed(() => {
     noData: {
       text: "No data",
     },
+    colors: [
+      "#002c3e",
+      "#008080",
+      "#86e6a9",
+      "#97ad47",
+      "#ad7747",
+      "#ad4947",
+      "#9047ad",
+    ],
     yaxis: {
       labels: {
         formatter: function (value) {
@@ -79,6 +87,9 @@ const optionsCalc = computed(() => {
         fontWeight: 600,
         fontSize: "14px",
       },
+    },
+    fill: {
+      type: "gradient",
     },
     plotOptions: {
       pie: {

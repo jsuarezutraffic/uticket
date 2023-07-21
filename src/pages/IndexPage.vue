@@ -1,13 +1,6 @@
 <template>
-  <DashboardPage
-    v-if="storeConfig.config.nivel == 'BackOffice'"
-    :showMaintable="showMaintable"
-  />
-  <Operation
-    v-if="storeConfig.config.nivel == 'Operation'"
-    :showMaintable="showMaintable"
-  />
-  <!-- <Prueba v-if="store.config.nivel == 'Operation'"/> -->
+  <DashboardPage v-if="configJson.nivel == 1" :showMaintable="showMaintable" />
+  <Operation v-if="configJson.nivel == 2" :showMaintable="showMaintable" />
 </template>
 
 <script setup>
@@ -16,6 +9,7 @@ import DashboardPage from "src/pages/DashboardPage.vue";
 import Operation from "src/components/MainTable.vue";
 import Prueba from "src/components/index.vue";
 import { useConfigStore } from "stores/config";
+const configJson = require("/public/config.json");
 
 const showMaintable = {
   showGraficas: true,

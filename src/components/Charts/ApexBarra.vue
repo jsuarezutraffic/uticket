@@ -40,18 +40,28 @@ import { computed, toRefs, ref, watchEffect, onMounted } from "vue";
 import { api } from "boot/axios";
 
 // Convertir props a variable
-const props = defineProps(["Series", "title", "width"]);
-let { Series, title, width } = toRefs(props);
+const props = defineProps(["Series"]);
+let { Series } = toRefs(props);
 const visible = ref(true);
 const tiquetes = ref([]);
 const usuarios = ref([]);
 const Solicitudes = ref([]);
+const active = ref(false);
 
-var serieUser = [];
-var categoriesUser = [];
-var dataUser = [];
+const serieUser = ref([]);
+const dataUser = ref([]);
+const categoriesUser = ref([]);
+const cardsValue = ref({
+  incidentes: 0,
+  requerimientos: 0,
+  pqr: 0,
+});
 
 const procesarDataTiquetes = async () => {
+  dataUser.value = [];
+  serieUser.value = [];
+  categoriesUser.value = [];
+
   await api.get(`tiquete?select=*`).then((response) => {
     tiquetes.value = response.data;
     visible.value = false;
@@ -64,7 +74,7 @@ const procesarDataTiquetes = async () => {
     Solicitudes.value = response.data;
   });
   for (const iterator of usuarios.value) {
-    dataUser.push({
+    dataUser.value.push({
       id: iterator.id,
       nombre: iterator.nombre,
       numtiquetes:
@@ -72,31 +82,26 @@ const procesarDataTiquetes = async () => {
           ? 0
           : tiquetes.value.filter((x) => x.asignado == iterator.id).length,
     });
-    serieUser.push(
+    serieUser.value.push(
       tiquetes.value.filter((x) => x.asignado == iterator.id) == []
         ? 0
         : tiquetes.value.filter((x) => x.asignado == iterator.id).length
     );
-    categoriesUser.push(iterator.nombre);
+    categoriesUser.value.push(iterator.nombre);
   }
 };
-const active = ref(false);
 const selectTurno = (e, chart, opts) => {
   active.value = opts.globals.selectedDataPoints[0].length == 0 ? false : true;
-  var userSelected = categoriesUser[opts.dataPointIndex];
-  var userSelectedJson = dataUser.filter((x) => x.nombre == userSelected)[0];
+  var userSelected = categoriesUser.value[opts.dataPointIndex];
+  var userSelectedJson = dataUser.value.filter(
+    (x) => x.nombre == userSelected
+  )[0];
   var tiquetesUser = tiquetes.value.filter(
     (p) => p.asignado == userSelectedJson.id
   );
   conteoPorParametro(tiquetesUser);
   // generarNewGraphic(userSelectedJson);
 };
-
-const cardsValue = ref({
-  incidentes: 0,
-  requerimientos: 0,
-  pqr: 0,
-});
 
 const conteoPorParametro = (tiquetesUser) => {
   cardsValue.value.incidentes = tiquetesUser.filter(
@@ -203,11 +208,9 @@ const optionsCalcTipo = computed(() => {
 });
 
 watchEffect(() => {
+  procesarDataTiquetes();
   if (Series.value[0]) {
     visible.value = false;
-  }
-  if (!Series.value[0]) {
-    visible.value = true;
   }
 });
 
@@ -215,7 +218,7 @@ const seriesCalcUser = computed(() => {
   let series = [
     {
       name: "Numero de tiquetes",
-      data: serieUser,
+      data: serieUser.value,
     },
   ];
 
@@ -240,7 +243,7 @@ const optionsCalcUser = computed(() => {
       title: {
         text: "Numero de tiquetes",
       },
-      categories: categoriesUser,
+      categories: categoriesUser.value,
     },
     yaxis: {
       title: {
@@ -263,19 +266,10 @@ const optionsCalcUser = computed(() => {
     },
     colors: ["#47ad9e"],
   };
-
-  let labels = [];
-  Series.value.forEach((item) => {
-    labels.push(`${item.label}`);
-  });
-  options.labels = labels;
-
-  // console.log("labels: ", options.labels);
   return options;
 });
 
 onMounted(() => {
-  active.value = true;
-  procesarDataTiquetes();
+  active.value = false;
 });
 </script>

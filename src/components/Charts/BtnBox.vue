@@ -7,7 +7,7 @@
     >
       <div class="col-6">
         <span class="text-h6">{{ title }}</span>
-        <p class="text-h3 text-weight-bold">{{ counterElement }}</p>
+        <p class="text-h3 text-weight-bold">{{ counterElementComputed }}</p>
       </div>
       <div class="col-6" style="height: 5vw">
         <apexchart
@@ -32,6 +32,12 @@ var dataLength = 9; // Longitud de los datos
 var minValue = 30; // Valor mínimo de los datos
 var maxValue = 150; // Valor máximo de los datos
 var randomData = generateData(dataLength, minValue, maxValue);
+const counterElement = ref(0);
+
+const counterElementComputed = computed(() => {
+  return counterElement.value;
+});
+
 var series = [
   {
     name: "series-1",
@@ -83,7 +89,6 @@ var options = {
     show: false, // Oculta las líneas horizontales y verticales
   },
 };
-const counterElement = ref(0);
 
 function generateData(length, min, max) {
   var data = [];

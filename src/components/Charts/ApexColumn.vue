@@ -91,9 +91,7 @@ const optionsCalc = computed(() => {
         show: false, // Oculta la barra de herramientas del gráfico
       },
       events: {
-        click: function (chart, w, e) {
-          // console.log(chart, w, e)
-        },
+        click: function (chart, w, e) {},
       },
     },
     dataLabels: {

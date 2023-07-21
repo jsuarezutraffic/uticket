@@ -13,16 +13,16 @@
         <!-- Logo Header -->
         <q-toolbar-title class="q-py-xs vertical-center">
           <img
-            v-if="config.nivel == 'Operation'"
+            v-if="configJson.nivel == 1"
             fit="scale-down"
-            src="../assets/img/Logo_Operador2.png"
+            src="../assets//img/Logo_Backoffice2.png"
             class="cursor-pointer img-logo"
             @click="inicio()"
           />
           <img
-            v-if="config.nivel == 'BackOffice'"
+            v-if="configJson.nivel == 2"
             fit="scale-down"
-            src="../assets//img/Logo_Backoffice2.png"
+            src="../assets/img/Logo_Operador2.png"
             class="cursor-pointer img-logo"
             @click="inicio()"
           />
@@ -98,6 +98,7 @@ import { useConfigStore } from "src/stores/config";
 import { useRouter, useRoute } from "vue-router";
 import { LocalStorage, useQuasar } from "quasar";
 import { api } from "boot/axios";
+const configJson = require("/public/config.json");
 const idusuario = LocalStorage.getItem("IdUsuario");
 const router = useRouter();
 const user = ref([]);

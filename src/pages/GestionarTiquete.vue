@@ -2093,7 +2093,6 @@ const mensajeAviso = async (row) => {
     !estaPresente1 &&
     (row.estado == 1 || row.estado == 2 || row.estado == 3)
   ) {
-    console.log(row);
     idTemporal.push(row.id);
     const data = {};
     data.email = users.value.filter((p) => p.id == row.asignado)[0].correo;
@@ -2130,7 +2129,6 @@ const mensajeAviso = async (row) => {
       operador: row.asignado,
       asunto: `Recordatorio para solucionar ticket`,
     };
-    console.log(idTemporal);
 
     await api.post("enviocorreos", dataControlCorreo).then((response) => {});
     await enviarCorreo(data2);
@@ -2343,34 +2341,6 @@ onUnmounted(() => {
 defineComponent({
   name: "MainTable",
 });
-
-//----------------Subscripcion a la tabla tiquetes--------------------------
-const tiquete = supabase
-  .channel("custom-all-channel")
-  .on(
-    "postgres_changes",
-    { event: "*", schema: "public", table: "tiquete" },
-    (payload) => {
-      if (payload.eventType == "INSERT") {
-        $q.notify({
-          type: "positive",
-          message: `Se ha agregado un nuevo ticket`,
-          timeout: 4000,
-        });
-      }
-      if (payload.eventType == "UPDATE") {
-        $q.notify({
-          type: "warning",
-          message: `Se ha actualizado el ticket N° ${payload.old.id}`,
-          timeout: 4000,
-        });
-      }
-      location.reload();
-      LoadData();
-      DatosGenerales();
-    }
-  )
-  .subscribe();
 
 supabase
   .channel("custom-insert-channel")

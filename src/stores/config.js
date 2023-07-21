@@ -1,10 +1,11 @@
 import { defineStore } from 'pinia'
-
+const configJson = require("/public/config.json");
 export const useConfigStore = defineStore('config', {
   state: () => ({
     config: {
-      // nivel: 'Operation',
-      nivel: 'BackOffice',
+      // Operation: 1
+      // BackOffice: 2
+      // nivel: configJson.nivel,
       UrlApp: 'http://localhost:8080/#'
     }
   }),
