@@ -195,23 +195,25 @@ const store = useMainStore();
 const verPerfil = ref(true);
 
 const getUsers = async () => {
-  await api.get(`usuarios?id=eq.${idusuario}&select=*`).then((response) => {
+  await services.getUsuarios(`id=eq.${idusuario}&`).then((response) => {
     users.value = response.data[0];
   });
-  await api.get("proceso?select=*").then((response) => {
+  await services.getProceso("proceso?select=*").then((response) => {
     Procesos.value = response.data;
   });
 };
 
 async function actualizarPerfil() {
   visible.value = true;
-  await api.put(`usuarios?id=eq.${idusuario}`, users.value).then((response) => {
-    $q.notify({
-      type: "positive",
-      message: "Perfil Actualizado Correctamente",
+  await services
+    .putUsuarios(`id=eq.${idusuario}`, users.value)
+    .then((response) => {
+      $q.notify({
+        type: "positive",
+        message: "Perfil Actualizado Correctamente",
+      });
+      visible.value = false;
     });
-    visible.value = false;
-  });
 }
 
 const actualizarPassword = async () => {
@@ -251,8 +253,6 @@ const actualizarPassword = async () => {
 };
 
 onMounted(async () => {
-  // api.defaults.headers.common["Accept-Language"] = locale.value;
-  // $q = useQuasar();
   await getUsers();
   // loadData();
 });

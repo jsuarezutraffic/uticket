@@ -10,7 +10,7 @@
       ></apexchart>
     </div>
 
-    <q-inner-loading
+    <!-- <q-inner-loading
       v-if="seriesCalc.length != 0"
       :showing="visible"
       label="Please wait..."
@@ -18,7 +18,7 @@
       label-style="font-size: 1.1em"
     >
       <q-spinner color="primary" size="3em"></q-spinner>
-    </q-inner-loading>
+    </q-inner-loading> -->
   </div>
 </template>
 

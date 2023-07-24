@@ -6,7 +6,7 @@
         width="100%"
         :options="optionsCalcUser"
         :series="seriesCalcUser"
-        :key="seriesCalcUser"
+        :key="Series"
         @click="selectTurno"
       ></apexchart>
     </div>
@@ -40,12 +40,9 @@ import { computed, toRefs, ref, watchEffect, onMounted } from "vue";
 import { api } from "boot/axios";
 
 // Convertir props a variable
-const props = defineProps(["Series"]);
-let { Series } = toRefs(props);
+const props = defineProps(["Series", "tiquetes", "usuarios", "Solicitudes"]);
+let { Series, tiquetes, usuarios, Solicitudes } = toRefs(props);
 const visible = ref(true);
-const tiquetes = ref([]);
-const usuarios = ref([]);
-const Solicitudes = ref([]);
 const active = ref(false);
 
 const serieUser = ref([]);
@@ -61,18 +58,6 @@ const procesarDataTiquetes = async () => {
   dataUser.value = [];
   serieUser.value = [];
   categoriesUser.value = [];
-
-  await api.get(`tiquete?select=*`).then((response) => {
-    tiquetes.value = response.data;
-    visible.value = false;
-  });
-  await api.get(`usuarios?select=*`).then((response) => {
-    usuarios.value = response.data;
-    visible.value = false;
-  });
-  await api.get("solicitud?select=*").then((response) => {
-    Solicitudes.value = response.data;
-  });
   for (const iterator of usuarios.value) {
     dataUser.value.push({
       id: iterator.id,
@@ -89,6 +74,7 @@ const procesarDataTiquetes = async () => {
     );
     categoriesUser.value.push(iterator.nombre);
   }
+  visible.value = false;
 };
 const selectTurno = (e, chart, opts) => {
   active.value = opts.globals.selectedDataPoints[0].length == 0 ? false : true;
@@ -105,19 +91,12 @@ const selectTurno = (e, chart, opts) => {
 
 const conteoPorParametro = (tiquetesUser) => {
   cardsValue.value.incidentes = tiquetesUser.filter(
-    (p) =>
-      p.solicitud ==
-      Solicitudes.value.filter((v) => v.nombre == "Incidentes")[0].orden
+    (p) => p.solicitud == 1
   ).length;
   cardsValue.value.requerimientos = tiquetesUser.filter(
-    (p) =>
-      p.solicitud ==
-      Solicitudes.value.filter((v) => v.nombre == "Requerimiento")[0].orden
+    (p) => p.solicitud == 2
   ).length;
-  cardsValue.value.pqr = tiquetesUser.filter(
-    (p) =>
-      p.solicitud == Solicitudes.value.filter((v) => v.nombre == "PQR")[0].orden
-  ).length;
+  cardsValue.value.pqr = tiquetesUser.filter((p) => p.solicitud == 3).length;
 };
 const seriesCalcTipo = computed(() => {
   let series = [

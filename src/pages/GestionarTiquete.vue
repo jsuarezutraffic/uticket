@@ -69,39 +69,60 @@
         <template v-slot:body="props">
           <q-tr :props="props">
             <q-td v-for="col in props.cols" :key="col.name" :props="props">
+              <!--  -->
               <div v-if="col.name == 'cliente'">
                 {{ cliente.filter((p) => p.id == col.value)[0].nombres }}
               </div>
+
               <div v-else-if="col.name == 'concesion'">
-                {{ concesion.filter((p) => p.id == col.value)[0].nombre }}
+                {{
+                  store.generalData.concesion.filter(
+                    (p) => p.id == col.value
+                  )[0].nombre
+                }}
               </div>
               <div v-else-if="col.name == 'peaje'">
-                {{ peajes.filter((p) => p.id == col.value)[0].nombre }}
+                {{
+                  store.generalData.peaje.filter((p) => p.id == col.value)[0]
+                    .nombre
+                }}
               </div>
               <div v-else-if="col.name == 'estado'">
                 <q-badge
-                  :color="Estados.filter((p) => p.orden == col.value)[0].color"
+                  :color="
+                    store.generalData.estado.filter(
+                      (p) => p.orden == col.value
+                    )[0].color
+                  "
                 >
                   {{
-                    Estados.filter((p) => p.orden == col.value)[0].descripcion
+                    store.generalData.estado.filter(
+                      (p) => p.orden == col.value
+                    )[0].descripcion
                   }}
                 </q-badge>
               </div>
               <div v-else-if="col.name == 'prioridad'">
                 <q-badge
                   :color="
-                    Prioridades.filter((p) => p.orden == col.value)[0].color
+                    store.generalData.prioridad.filter(
+                      (p) => p.orden == col.value
+                    )[0].color
                   "
                 >
                   {{
-                    Prioridades.filter((p) => p.orden == col.value)[0]
-                      .descripcion
+                    store.generalData.prioridad.filter(
+                      (p) => p.orden == col.value
+                    )[0].descripcion
                   }}
                 </q-badge>
               </div>
               <div v-else-if="col.name == 'tipo'">
                 <div v-if="col.value != null">
-                  {{ Tipos.filter((p) => p.id == col.value)[0].descripcion }}
+                  {{
+                    store.generalData.tipo.filter((p) => p.id == col.value)[0]
+                      .descripcion
+                  }}
                 </div>
                 <div v-else>
                   {{ col.value }}
@@ -109,7 +130,11 @@
               </div>
               <div v-else-if="col.name == 'subtipo'">
                 <div v-if="col.value != null">
-                  {{ Subtipos.filter((p) => p.id == col.value)[0].descripcion }}
+                  {{
+                    store.generalData.subtipo.filter(
+                      (p) => p.id == col.value
+                    )[0].descripcion
+                  }}
                 </div>
                 <div v-else>
                   {{ col.value }}
@@ -117,17 +142,24 @@
               </div>
               <div v-else-if="col.name == 'equipo'">
                 <div v-if="col.value != null">
-                  {{ Subtipos.filter((p) => p.id == col.value)[0].descripcion }}
+                  {{
+                    store.generalData.equipo.filter((p) => p.id == col.value)[0]
+                      .descripcion
+                  }}
                 </div>
                 <div v-else>
                   {{ col.value }}
                 </div>
               </div>
               <div v-else-if="col.name == 'solicitud'">
-                {{ solicitudes.filter((p) => p.orden == col.value)[0].nombre }}
+                {{
+                  store.generalData.solicitud.filter(
+                    (p) => p.orden == col.value
+                  )[0].nombre
+                }}
               </div>
               <div v-else-if="col.name == 'created_at'">
-                {{ formatDate(col.value) }}
+                {{ col.value }}
               </div>
               <div v-else-if="col.name == 'asignado'">
                 {{ users.filter((p) => p.id == col.value)[0].nombre }}
@@ -177,6 +209,7 @@
                   </div>
                 </div>
               </div>
+
               <div
                 v-else-if="
                   col.name == 'tiempo' &&
@@ -187,10 +220,9 @@
                 "
               >
                 <!-- verificar si el tiempo que hace falta es menor a una hora -->
-                {{ calcularTiempoTiquete(props.row) }}
                 <q-badge color="red" v-if="props.row.tiempo < 60 * 60">
                   <div v-show="false">{{ mensajeAviso(props.row) }}</div>
-                  {{ props.row.contador }}
+                  - {{ props.row.contador }}
                 </q-badge>
                 <q-badge color="green" v-else>
                   {{ props.row.contador }}
@@ -202,12 +234,12 @@
       </q-table>
     </TransitionGroup>
 
-    <q-inner-loading
+    <!-- <q-inner-loading
       :showing="visible"
       label="Cargando..."
       label-class="text-teal"
       label-style="font-size: 1.1em"
-    />
+    /> -->
   </div>
 
   <!-- Modal Principal de accion de tiquete -->
@@ -1096,6 +1128,7 @@ import FileInput from "src/components/FileImage.vue";
 import InputTextJump from "src/components/InputTextSaltoLinea.vue";
 import VerImagenArray from "src/components/VerImagenArray.vue";
 import axios from "axios";
+import * as services from "../services/services.js";
 //variables para el grabado de notas de voz
 const isRecording = ref(false);
 const progressValue = ref(0);
@@ -1103,8 +1136,8 @@ let recorder;
 let progressInterval;
 const audioPlayer = ref(null);
 
-const props = defineProps(["showMaintable"]);
-let { showMaintable } = toRefs(props);
+const props = defineProps(["showMaintable", "dataTiquetes"]);
+let { showMaintable, dataTiquetes } = toRefs(props);
 const filtro = LocalStorage.getItem("filtro");
 
 //supabase
@@ -1123,25 +1156,24 @@ const selected = ref([]);
 const selectedDetalle = ref([]);
 const store = useMainStore();
 const configStore = useConfigStore();
-const tiquetes = ref([]);
 const tiquetesDetalles = ref([]);
-const concesion = ref({});
-const peajes = ref([]);
-const cliente = ref([]);
-const users = ref([]);
-const Equipos = ref([]);
 const EquiposOptions = ref([]);
 const SubtipoOptions = ref([]);
-const Tipos = ref([]);
-const Subtipos = ref([]);
-const Prioridades = ref([]);
-const Estados = ref([]);
-const Procesos = ref([]);
 const Correos = ref([]);
-
-const solicitudes = ref([]);
+const tiquetes = ref([]);
+const concesion = ref(store.generalData.concesion);
+const peajes = ref(store.generalData.peaje);
+const cliente = ref([]);
+const Tipos = ref(store.generalData.tipo);
+const Subtipos = ref(store.generalData.subtipo);
+const Equipos = ref(store.generalData.equipo);
+const Prioridades = ref(store.generalData.prioridad);
+const Estados = ref(store.generalData.estado);
+const Procesos = ref(store.generalData.proceso);
+const solicitudes = ref(store.generalData.solicitud);
+const users = ref([]);
+const metodoconsulta = ref(store.generalData.metodoconsulta);
 const contactos = ref([]);
-const metodoconsulta = ref([]);
 const visible = ref(false);
 const next = ref({
   nivel: null,
@@ -1168,7 +1200,7 @@ const FilaDetalle = ref({});
 const FilaContacto = ref({});
 const tableRef = ref(null);
 const expanded = ref([]);
-const table = ref(false);
+const table = ref(true);
 const TablaDetalles = ref(false);
 const selectRule = [(value) => !!value || "Este campo es obligatorio"];
 const inputRules = [
@@ -1190,6 +1222,7 @@ const columns = [
     label: "Creacion",
     field: "created_at",
     sortable: true,
+    format: (val) => `${formatDate(val)}`,
   },
   {
     name: "numero",
@@ -1281,6 +1314,13 @@ const columns = [
     sortable: true,
   },
   {
+    name: "equipo",
+    align: "left",
+    label: "Equipo",
+    field: "equipo",
+    sortable: true,
+  },
+  {
     name: "asignado",
     align: "left",
     label: "Asignado",
@@ -1365,6 +1405,7 @@ const columnsDetalles = [
     label: "Fecha",
     field: "created_at",
     sortable: true,
+    format: (val) => `${formatDate(val)}`,
   },
   {
     name: "verevidencias",
@@ -1375,7 +1416,6 @@ const columnsDetalles = [
     sortable: true,
   },
 ];
-// -------------------------------------------------------
 // Metodos
 const clickRow = (row) => {
   Fila.value = row;
@@ -1865,13 +1905,14 @@ const GestionTiquete = async (accionValue) => {
   }
 };
 
-const LoadData = async () => {
+const loadData = async () => {
   var filtroNivel = "";
   visible.value = true;
-  if (users.value.filter((p) => p.id == idusuario)[0].nivel === 3) {
+  let nivelUser = users.value.filter((p) => p.id == idusuario)[0].nivel;
+  if (nivelUser === 3) {
     filtroNivel = `asignado=eq.${idusuario}&`;
     LocalStorage.set("filtro", "Solicitudes");
-  } else if (users.value.filter((p) => p.id == idusuario)[0].nivel === 1) {
+  } else if (nivelUser === 1) {
     filtroNivel = ``;
   } else {
     $q.notify({
@@ -1884,36 +1925,30 @@ const LoadData = async () => {
 
   switch (filtro) {
     case "Solicitudes":
-      await api.get(`tiquete?${filtroNivel}select=*`).then((response) => {
+      await services.getTiquetes(`${filtroNivel}`).then((response) => {
         tiquetes.value = response.data;
         visible.value = false;
       });
       break;
     case "Incidentes":
-      var solicitud = solicitudes.value.filter((v) => v.nombre == filtro)[0]
-        .orden;
-      await api
-        .get(`tiquete?${filtroNivel}solicitud=eq.${solicitud}&select=*`)
+      await services
+        .getTiquetes(`${filtroNivel}solicitud=eq.1&`)
         .then((response) => {
           tiquetes.value = response.data;
           visible.value = false;
         });
       break;
     case "Requerimiento":
-      var solicitud = solicitudes.value.filter((v) => v.nombre == filtro)[0]
-        .orden;
-      await api
-        .get(`tiquete?${filtroNivel}solicitud=eq.${solicitud}&select=*`)
+      await services
+        .getTiquetes(`${filtroNivel}solicitud=eq.2&`)
         .then((response) => {
           tiquetes.value = response.data;
           visible.value = false;
         });
       break;
     case "PQR":
-      var solicitud = solicitudes.value.filter((v) => v.nombre == filtro)[0]
-        .orden;
-      await api
-        .get(`tiquete?${filtroNivel}solicitud=eq.${solicitud}&select=*`)
+      await services
+        .getTiquetes(`${filtroNivel}solicitud=eq.3&`)
         .then((response) => {
           tiquetes.value = response.data;
           visible.value = false;
@@ -1921,11 +1956,10 @@ const LoadData = async () => {
       break;
   }
   visible.value = false;
+  await updateTiempoRegresivo();
 };
 
 const AccionTiquete = (key) => {
-  clearInterval(intervalo);
-  intervalo = null;
   accion.value = key;
   FilaDetalle.value = {};
   const ValidadorEstado = () => {
@@ -2003,58 +2037,17 @@ const AccionTiquete = (key) => {
       break;
   }
 };
-
 const DatosGenerales = async () => {
   visible.value = true;
-  await api.get("cliente?select=*").then((response) => {
+  await services.getCliente("").then((response) => {
     cliente.value = response.data;
   });
 
-  await api.get("concesion?select=*").then((response) => {
-    concesion.value = response.data;
-  });
-
-  await api.get("peaje?select=*").then((response) => {
-    peajes.value = response.data;
-  });
-
-  await api.get("tipo?select=*").then((response) => {
-    Tipos.value = response.data;
-  });
-
-  await api.get("subtipo?select=*").then((response) => {
-    Subtipos.value = response.data;
-  });
-
-  await api.get("prioridad?select=*").then((response) => {
-    Prioridades.value = response.data;
-  });
-
-  await api.get("estado?select=*").then((response) => {
-    Estados.value = response.data;
-  });
-
-  await api.get("proceso?select=*").then((response) => {
-    Procesos.value = response.data;
-  });
-
-  await api.get("usuarios?select=*").then((response) => {
+  await services.getUsuarios("").then((response) => {
     users.value = response.data;
   });
 
-  await api.get("solicitud?select=*").then((response) => {
-    solicitudes.value = response.data;
-  });
-
-  await api.get("metodoconsulta?select=*").then((response) => {
-    metodoconsulta.value = response.data;
-  });
-
-  await api.get("equipo?select=*").then((response) => {
-    Equipos.value = response.data;
-  });
-
-  await api.get("enviocorreos?select=idtiquete").then((response) => {
+  await services.getEnvioCorreos("").then((response) => {
     for (const iterator of response.data) {
       Correos.value.push(iterator.idtiquete);
     }
@@ -2075,13 +2068,13 @@ const addPersonConsulta = async () => {
   if (FilaContacto.telefono != null) {
     FilaContacto.telefono = parseInt(FilaContacto.telefono);
   }
-  await api.post("contactos", FilaContacto.value).then((response) => {});
+  await services.postContactos(FilaContacto.value);
   await CargarContactos();
 };
 const CargarContactos = async () => {
   FilaContacto.value = {};
   FilaContacto.telefono = null;
-  await api.get("contactos?select=*").then((response) => {
+  await services.getContactos("").then((response) => {
     contactos.value = response.data;
   });
 };
@@ -2130,7 +2123,7 @@ const mensajeAviso = async (row) => {
       asunto: `Recordatorio para solucionar ticket`,
     };
 
-    await api.post("enviocorreos", dataControlCorreo).then((response) => {});
+    services.postEnvioCorreos(dataControlCorreo);
     await enviarCorreo(data2);
   }
 };
@@ -2204,75 +2197,81 @@ const VerEvidencias = (row) => {
   imagen.value = row.evidencia;
   mostrarImagen.value = true;
 };
-let intervalo;
 const calcularTiempoTiquete = (row) => {
   let diferenciaSegundos = 0;
   let tiempo = "";
-  intervalo = setInterval(() => {
-    const fechaActual = new Date(); // Obtener la fecha actual
-    const fechaString = row.created_at; // Tu fecha en formato 'yyyy-mm-ddThh'
-    const fechaEspecifica = new Date(fechaString); // Convertir la cadena en un objeto Date
-    const diferenciaEnMilisegundos = Math.abs(fechaEspecifica - fechaActual); // Restar las fechas
-    //se pasa el tiempo de milisegundos a segundos
-    diferenciaSegundos = diferenciaEnMilisegundos / 1000;
-    switch (row.solicitud) {
-      case 1:
-        switch (row.prioridad) {
-          case 1:
-            row.tiempo = 60 * 60 * 2 - diferenciaSegundos;
-            tiempo = "2 horas";
-            break;
-          case 2:
-            row.tiempo = 60 * 60 * 8 - diferenciaSegundos;
-            tiempo = "8 horas";
-            break;
-          case 3:
-            row.tiempo = 60 * 60 * 48 - diferenciaSegundos;
-            tiempo = "48 horas";
-            break;
-        }
-        break;
-      case 2:
-        switch (row.prioridad) {
-          case 1:
-            row.tiempo = 60 * 60 * 8 - diferenciaSegundos;
-            tiempo = "8 horas";
-            break;
-          case 2:
-            row.tiempo = 60 * 60 * 24 - diferenciaSegundos;
-            tiempo = "24 horas";
-            break;
-          case 3:
-            row.tiempo = 60 * 60 * 72 - diferenciaSegundos;
-            tiempo = "72 horas";
-            break;
-        }
-        break;
-      case 3:
-        row.tiempo = 60 * 60 * 24 * 8 - diferenciaSegundos;
-        tiempo = "8 Dias";
-        break;
-    }
-    //se calculan los segunos, minutos y horas para luego pasarlos al formato de fecha
-    const segundos = Math.floor(row.tiempo) % 60;
-    const minutos = Math.floor(row.tiempo / 60) % 60;
-    const horas = Math.floor(row.tiempo / 60 / 60);
-    const dias = Math.floor(row.tiempo / 86400);
-    // row.ordenTiempo = diferenciaSegundos;
-    let formatoDiferencia;
-    if (horas > 24) {
-      formatoDiferencia = `${dias} dias - ${
-        horas - dias * (24).toString().padStart(2, "0")
-      }:${minutos.toString().padStart(2, "0")}:${segundos
-        .toString()
-        .padStart(2, "0")}`;
-    } else {
-      formatoDiferencia = `${horas.toString().padStart(2, "0")}:${minutos
-        .toString()
-        .padStart(2, "0")}:${segundos.toString().padStart(2, "0")}`;
-    }
-    row.contador = formatoDiferencia;
-  }, 1000);
+  const fechaActual = new Date(); // Obtener la fecha actual
+  const fechaString = row.created_at; // Tu fecha en formato 'yyyy-mm-ddThh'
+  const fechaEspecifica = new Date(fechaString); // Convertir la cadena en un objeto Date
+  const diferenciaEnMilisegundos = Math.abs(fechaEspecifica - fechaActual); // Restar las fechas
+  //se pasa el tiempo de milisegundos a segundos
+  diferenciaSegundos = diferenciaEnMilisegundos / 1000;
+  switch (row.solicitud) {
+    case 1:
+      switch (row.prioridad) {
+        case 1:
+          row.tiempo = 60 * 60 * 2 - diferenciaSegundos;
+          // row.tiempo = 2460 - diferenciaSegundos;
+          tiempo = "2 horas";
+          break;
+        case 2:
+          row.tiempo = 60 * 60 * 8 - diferenciaSegundos;
+          tiempo = "8 horas";
+          break;
+        case 3:
+          row.tiempo = 60 * 60 * 48 - diferenciaSegundos;
+          tiempo = "48 horas";
+          break;
+      }
+      break;
+    case 2:
+      switch (row.prioridad) {
+        case 1:
+          row.tiempo = 60 * 60 * 8 - diferenciaSegundos;
+          tiempo = "8 horas";
+          break;
+        case 2:
+          row.tiempo = 60 * 60 * 24 - diferenciaSegundos;
+          tiempo = "24 horas";
+          break;
+        case 3:
+          row.tiempo = 60 * 60 * 72 - diferenciaSegundos;
+          tiempo = "72 horas";
+          break;
+      }
+      break;
+    case 3:
+      row.tiempo = 60 * 60 * 24 * 8 - diferenciaSegundos;
+      tiempo = "8 Dias";
+      break;
+  }
+  //se calculan los segunos, minutos y horas para luego pasarlos al formato de fecha
+  const segundos = Math.floor(Math.abs(row.tiempo)) % 60;
+  const minutos = Math.floor(Math.abs(row.tiempo) / 60) % 60;
+  const horas = Math.floor(Math.abs(row.tiempo) / 60 / 60);
+  const dias = Math.floor(Math.abs(row.tiempo) / 86400);
+  // row.ordenTiempo = diferenciaSegundos;
+  let formatoDiferencia;
+  if (horas > 24) {
+    formatoDiferencia = `${dias} dias - ${
+      horas - dias * (24).toString().padStart(2, "0")
+    }:${minutos.toString().padStart(2, "0")}:${segundos
+      .toString()
+      .padStart(2, "0")}`;
+  } else {
+    formatoDiferencia = `${horas.toString().padStart(2, "0")}:${minutos
+      .toString()
+      .padStart(2, "0")}:${segundos.toString().padStart(2, "0")}`;
+  }
+  return { contador: formatoDiferencia, tiempo: row.tiempo };
+};
+
+const updateTiempoRegresivo = () => {
+  tiquetes.value.forEach((row) => {
+    const { contador, tiempo } = calcularTiempoTiquete(row);
+    row.contador = contador;
+    row.tiempo = tiempo; // Actualiza el valor de row.tiempo
+  });
 };
 
 const labelComentario = ref("Ver más");
@@ -2331,12 +2330,24 @@ function customSort() {
   });
 }
 customSort();
+
+let interval; // Variable para almacenar el intervalo
 onMounted(async () => {
   await DatosGenerales();
-  LoadData();
+  loadData();
+  // Calcular el tiempo restante para cada fila cuando se crea el componente o cuando los datos cambian
+
+  // Actualiza la cuenta regresiva cada segundo
+  setInterval(updateTiempoRegresivo, 5000);
 });
+
+onBeforeUnmount(() => {
+  // Limpia el intervalo cuando el componente se destruye para evitar fugas de memoria
+  clearInterval(interval);
+});
+
 onUnmounted(() => {
-  clearInterval(intervalo);
+  // clearInterval(intervalo);
 });
 defineComponent({
   name: "MainTable",

@@ -3,8 +3,11 @@
 </template>
 
 <script setup>
-import { defineComponent } from "vue";
+import { defineComponent, onMounted, ref } from "vue";
 import GestionarTiquete from "src/pages/GestionarTiquete.vue";
+import { LocalStorage } from "quasar";
+import { api } from "boot/axios";
+
 const showMaintable = {
   showGraficas: true,
   showColums: [
@@ -19,12 +22,15 @@ const showMaintable = {
     "prioridad",
     "tipo",
     "subtipo",
+    "equipo",
     "finalizar",
     "devuelto",
     "eliminar",
     "tiempo",
   ],
 };
+LocalStorage.set("origen", "tiq");
+
 defineComponent({
   name: "TiquetesPage",
   components: {

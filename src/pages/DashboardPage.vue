@@ -84,7 +84,11 @@
           </div>
         </div>
         <div class="col-12">
-          <BackOffice :key="countArrayEstado" :showMaintable="showMaintable" />
+          <BackOffice
+            :key="countArrayEstado"
+            :showMaintable="showMaintable"
+            :dataTiquetes="tiquetes"
+          />
         </div>
       </div>
     </div>
@@ -93,7 +97,9 @@
         <ApexBarra
           heightDonut="height: 160px;"
           :Series="countArrayEstado"
-          :cliente="cliente"
+          :tiquetes="tiquetes"
+          :usuarios="users"
+          :Solicitudes="Solicitudes"
           :prioridades="Prioridades"
           title="Estados"
           width="250"
@@ -101,7 +107,6 @@
       </q-card>
     </div>
   </div>
-
   <q-inner-loading
     :showing="visible"
     label="Cargando..."
@@ -130,22 +135,17 @@ import SolicitudesTiempo from "src/components/Charts/SolicitudesTiempo.vue";
 import { api } from "boot/axios";
 import { supabase } from "src/supabase";
 import BackOffice from "src/pages/GestionarTiquete.vue";
+import * as services from "../services/services.js";
+LocalStorage.set("origen", "dash");
+const store = useMainStore();
 let $q = useQuasar();
 LocalStorage.set("filtro", "Solicitudes");
 const idusuario = LocalStorage.getItem("IdUsuario");
 const tiquetes = ref([]);
-const concesion = ref([]);
-const peajes = ref([]);
 const cliente = ref([]);
-const Tipos = ref([]);
-const Subtipos = ref([]);
-const Equipos = ref([]);
-const Prioridades = ref([]);
-const Estados = ref([]);
-const Procesos = ref([]);
-const Solicitudes = ref([]);
+const Prioridades = ref(store.prioridad);
+const Solicitudes = ref(store.solicitud);
 const users = ref([]);
-const metodoconsulta = ref([]);
 const cardsValue = ref({
   incidentes: 0,
   requerimientos: 0,
@@ -265,14 +265,12 @@ watchEffect(() => {
 const loadData = async () => {
   visible.value = true;
   if (users.value.filter((p) => p.id == idusuario)[0].nivel === 3) {
-    await api
-      .get(`tiquete?asignado=eq.${idusuario}&select=*`)
-      .then((response) => {
-        tiquetes.value = response.data;
-        visible.value = false;
-      });
+    await services.getTiquetes(`asignado=eq.${idusuario}&`).then((response) => {
+      tiquetes.value = response.data;
+      visible.value = false;
+    });
   } else if (users.value.filter((p) => p.id == idusuario)[0].nivel === 1) {
-    await api.get("tiquete?select=*").then((response) => {
+    await services.getTiquetes("").then((response) => {
       tiquetes.value = response.data;
       visible.value = false;
     });
@@ -290,74 +288,22 @@ const loadData = async () => {
 
 const conteoPorParametro = () => {
   cardsValue.value.incidentes = tiquetes.value.filter(
-    (p) =>
-      p.solicitud ==
-      Solicitudes.value.filter((v) => v.nombre == "Incidentes")[0].orden
+    (p) => p.solicitud == 1
   ).length;
   cardsValue.value.requerimientos = tiquetes.value.filter(
-    (p) =>
-      p.solicitud ==
-      Solicitudes.value.filter((v) => v.nombre == "Requerimiento")[0].orden
+    (p) => p.solicitud == 2
   ).length;
-  cardsValue.value.pqr = tiquetes.value.filter(
-    (p) =>
-      p.solicitud == Solicitudes.value.filter((v) => v.nombre == "PQR")[0].orden
-  ).length;
+  cardsValue.value.pqr = tiquetes.value.filter((p) => p.solicitud == 3).length;
 };
 
 const DatosGenerales = async () => {
-  visible.value = true;
-  await api.get("cliente?select=*").then((response) => {
+  await services.getCliente("").then((response) => {
     cliente.value = response.data;
   });
 
-  await api.get("concesion?select=*").then((response) => {
-    concesion.value = response.data;
-  });
-
-  await api.get("peaje?select=*").then((response) => {
-    peajes.value = response.data;
-  });
-
-  await api.get("tipo?select=*").then((response) => {
-    Tipos.value = response.data;
-  });
-
-  await api.get("subtipo?select=*").then((response) => {
-    Subtipos.value = response.data;
-  });
-
-  await api.get("prioridad?select=*").then((response) => {
-    Prioridades.value = response.data;
-  });
-
-  await api.get("estado?select=*").then((response) => {
-    Estados.value = response.data;
-  });
-
-  await api.get("proceso?select=*").then((response) => {
-    Procesos.value = response.data;
-  });
-
-  await api.get("usuarios?select=*").then((response) => {
+  await services.getUsuarios("").then((response) => {
     users.value = response.data;
   });
-
-  await api.get("solicitud?select=*").then((response) => {
-    Solicitudes.value = response.data;
-  });
-
-  await api.get("metodoconsulta?select=*").then((response) => {
-    metodoconsulta.value = response.data;
-  });
-
-  await api.get("equipo?select=*").then((response) => {
-    Equipos.value = response.data;
-  });
-
-  // Fila.value.asignado = "4ca6c4d3-c2f9-4c1f-9411-de9271b9519f";
-  // Fila.value.privado = null;
-  visible.value = false;
 };
 
 const solicitudesTiempo = () => {
@@ -390,13 +336,9 @@ const solicitudesTiempo = () => {
   // Imprime el nuevo array
   dataSolicitudesTiempo.value = arrayCantidadPorMes;
 };
-
 onMounted(async () => {
   await DatosGenerales();
   await loadData();
-  await conteoPorParametro();
-  // var chart = new ApexCharts(document.querySelector("#chart"), options);
-  // chart.render();
 });
 //----------------Subscripcion a la tabla tiquetes--------------------------
 supabase

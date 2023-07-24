@@ -100,7 +100,7 @@
               </div>
             </div>
 
-            <div class="row q-pt-md">
+            <div class="row">
               <div class="col-12">
                 <q-btn
                   style="width: 100%"
@@ -117,6 +117,12 @@
       </div>
     </div>
   </div>
+  <q-inner-loading
+    :showing="visible"
+    label="Cargando..."
+    label-class="text-teal"
+    label-style="font-size: 1.1em"
+  />
 </template>
 <script setup>
 import { defineComponent, ref } from "vue";
@@ -128,11 +134,13 @@ import { useRouter, useRoute } from "vue-router";
 import { mostrarMensajes, getSelectedString } from "boot/global";
 import { useQuasar } from "quasar";
 const configJson = require("/public/config.json");
+import * as services from "../services/services.js";
 // import { supabase } from "../supabase";
 // stores
 const store = useMainStore();
 const config = useConfigStore().config;
 let $q = useQuasar();
+const visible = ref(false);
 const isPwd = ref(true);
 // supabase
 const datos = ref(null);
@@ -149,6 +157,8 @@ const IniciarSesion = async () => {
     email: username.value,
     password: password.value,
   };
+  visible.value = true;
+
   await api
     .post(
       `${store.supabase_Url}/auth/v1/token?grant_type=password`,
@@ -164,9 +174,12 @@ const IniciarSesion = async () => {
         .then((response2) => {
           if (response2.data.length > 0) {
             store.inicio(response.data);
+            store.loadGeneralData("");
             const toPath = `/`;
             router.push(toPath);
           } else {
+            visible.value = false;
+
             $q.notify({
               type: "negative",
               message:
@@ -176,6 +189,8 @@ const IniciarSesion = async () => {
           }
         })
         .catch((error) => {
+          visible.value = false;
+
           $q.notify({
             type: "negative",
             message:
@@ -183,8 +198,11 @@ const IniciarSesion = async () => {
             timeout: 4000,
           });
         });
+      visible.value = false;
     })
     .catch((error) => {
+      visible.value = false;
+
       mostrarMensajes({
         tipomensaje: 4,
         mensaje:

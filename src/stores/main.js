@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { LocalStorage } from 'quasar'
 import { api } from 'src/boot/axios'
+import * as services from "../services/services.js"
 const configJson = require("/public/config.json");
 const API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6b3ZrbmprZGZ5a3Z4aW1wZ3hoIiwicm9sZSI6ImFub24iLCJpYXQiOjE2ODMzMjI2NjQsImV4cCI6MTk5ODg5ODY2NH0.T8e5NRSrWYRvKs0qBrOBqAxm0mNS5yOu9Oei-sCtkMk"
 const API_KEY_ADMI = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6b3ZrbmprZGZ5a3Z4aW1wZ3hoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY4MzMyMjY2NCwiZXhwIjoxOTk4ODk4NjY0fQ.Vm7vlm4xnk5FxXwTR66_GcFw8iF5SISvo8U9JRwXvh0"
@@ -20,6 +21,7 @@ export const useMainStore = defineStore('main', {
     supabase_Url: API_URL,
     url_bak: configJson.API_URL_BAK,
     url_cus: configJson.API_URL_CUS,
+    generalData: {},
   }),
 
   getters: {
@@ -41,12 +43,12 @@ export const useMainStore = defineStore('main', {
       LocalStorage.set("email", data.user.email);
 
     },
-
     borrar () {
       LocalStorage.clear()
     },
 
     init () {
+      console.log('init')
       const token = LocalStorage.getItem('token')
       if (token) {
         this.token = token
@@ -54,10 +56,51 @@ export const useMainStore = defineStore('main', {
         LocalStorage.set('token', token)
         api.defaults.headers.common.apikey = this.supabase_Key
         api.defaults.headers.common.Authorization = 'Bearer ' + this.token
-        // LocalStorage.set("Verificador", []);
+        this.loadGeneralData('')
       } else {
         this.borrar()
       }
-    }
+    },
+
+
+    loadGeneralData  (filtro) {
+      services.getConcesion(filtro).then((response) => {
+        this.generalData.concesion = response.data
+      })
+      services.getPeaje(filtro).then((response) => {
+        this.generalData.peaje = response.data
+      })
+      services.getTipo(filtro).then((response) => {
+        this.generalData.tipo = response.data
+      })
+      services.getSubtipo(filtro).then((response) => {
+        this.generalData.subtipo = response.data
+      })
+      services.getPrioridad(filtro).then((response) => {
+        this.generalData.prioridad = response.data
+      })
+      services.getEstado(filtro).then((response) => {
+        this.generalData.estado = response.data
+      })
+      services.getSolicitud(filtro).then((response) => {
+        this.generalData.solicitud = response.data
+      })
+      services.getProceso(filtro).then((response) => {
+        this.generalData.proceso = response.data
+      })
+      services.getEquipo(filtro).then((response) => {
+        this.generalData.equipo = response.data
+      })
+      services.getMetodoConsulta(filtro).then((response) => {
+        this.generalData.metodoconsulta = response.data
+      })
+
+      services.getUsuarios(filtro).then((response) => {
+        this.generalData.usuarios = response.data
+      })
+      services.getCliente(filtro).then((response) => {
+        this.generalData.cliente = response.data
+      })
+    },
   }
 })
