@@ -90,7 +90,7 @@
               </div>
 
               <div v-else-if="col.name == 'created_at'">
-                {{ formatDate(col.value) }}
+                {{ col.value }}
               </div>
               <div v-else-if="col.name == 'concesion'">
                 {{ concesion.filter((p) => p.id == col.value)[0].nombre }}
@@ -246,16 +246,10 @@
 import { defineComponent, ref, onMounted } from "vue";
 import { LocalStorage, useQuasar } from "quasar";
 import { api } from "boot/axios";
-import { mostrarMensajes, getSelectedString } from "boot/global";
 import { supabase } from "src/supabase";
-import { useMainStore } from "src/stores/main";
-import { useConfigStore } from "src/stores/config";
 //supabase
 let $q = useQuasar();
-const idusuario = LocalStorage.getItem("IdUsuario");
 const selected = ref([]);
-const store = useMainStore();
-const configStore = useConfigStore();
 const tiquetes = ref([]);
 const concesion = ref({});
 const peajes = ref([]);
@@ -296,6 +290,7 @@ const columns = [
     label: "Creacion",
     field: "created_at",
     sortable: true,
+    format: (val) => `${formatDate(val)}`,
   },
   {
     name: "concesion",

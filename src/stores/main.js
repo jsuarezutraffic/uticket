@@ -30,6 +30,7 @@ export const useMainStore = defineStore('main', {
   },
   actions: {
     inicio (data) {
+      LocalStorage.set("selectFiltro", false);
       this.token = data.access_token
       this.isAuthenticated = true
       api.defaults.headers.common = {
@@ -49,6 +50,7 @@ export const useMainStore = defineStore('main', {
 
     init () {
       console.log('init')
+
       const token = LocalStorage.getItem('token')
       if (token) {
         this.token = token
@@ -64,6 +66,7 @@ export const useMainStore = defineStore('main', {
 
 
     loadGeneralData  (filtro) {
+      console.log("carga data general")
       services.getConcesion(filtro).then((response) => {
         this.generalData.concesion = response.data
       })

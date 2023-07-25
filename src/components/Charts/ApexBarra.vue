@@ -6,7 +6,7 @@
         width="100%"
         :options="optionsCalcUser"
         :series="seriesCalcUser"
-        :key="Series"
+        :key="seriesCalcUser"
         @click="selectTurno"
       ></apexchart>
     </div>
@@ -40,8 +40,8 @@ import { computed, toRefs, ref, watchEffect, onMounted } from "vue";
 import { api } from "boot/axios";
 
 // Convertir props a variable
-const props = defineProps(["Series", "tiquetes", "usuarios", "Solicitudes"]);
-let { Series, tiquetes, usuarios, Solicitudes } = toRefs(props);
+const props = defineProps(["Series", "tiquetes", "usuarios"]);
+let { Series, tiquetes, usuarios } = toRefs(props);
 const visible = ref(true);
 const active = ref(false);
 
@@ -249,6 +249,9 @@ const optionsCalcUser = computed(() => {
 });
 
 onMounted(() => {
+  dataUser.value = [];
+  serieUser.value = [];
+  categoriesUser.value = [];
   active.value = false;
 });
 </script>

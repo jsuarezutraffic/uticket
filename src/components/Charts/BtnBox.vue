@@ -1,5 +1,5 @@
 <template>
-  <q-btn :color="color" @click="filtroTiquetes()" to="/tiquetes">
+  <q-btn :color="color" @click="filtroTiquetes()">
     <div
       class="row center-vertical"
       style="width: 200px"

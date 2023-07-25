@@ -1,11 +1,12 @@
 <template>
-  <div class="row bg-accent">
+  <div class="row bg-accent" v-if="!selectFiltro">
     <div class="col-sm-12 col-xs-12 col-md-6 col-lg-6 bg-white">
       <div class="row text-primary">
         <div class="col-12 q-py-lg q-px-sm">
           <div class="row justify-between">
             <div class="col-6 text-center">
               <BtnBox
+                @click="clickBotonFiltro('Solicitudes')"
                 title="Solicitudes"
                 color="primary"
                 :valor="tiquetes.length"
@@ -13,6 +14,7 @@
             </div>
             <div class="col-6 text-center">
               <BtnBox
+                @click="clickBotonFiltro('Requerimiento')"
                 title="Requerimiento"
                 color="primary"
                 :valor="cardsValue.requerimientos"
@@ -67,6 +69,7 @@
           <div class="row justify-between">
             <div class="col-6 text-center">
               <BtnBox
+                @click="clickBotonFiltro('Incidentes')"
                 title="Incidentes"
                 color="white"
                 :valor="cardsValue.incidentes"
@@ -75,6 +78,7 @@
             </div>
             <div class="col-6 text-center">
               <BtnBox
+                @click="clickBotonFiltro('PQR')"
                 title="PQR"
                 color="white"
                 :valor="cardsValue.pqr"
@@ -88,6 +92,8 @@
             :key="countArrayEstado"
             :showMaintable="showMaintable"
             :dataTiquetes="tiquetes"
+            :datosGenerales="datosGenerales"
+            @cambiarEstadoTabla="cambiarEstadoTabla"
           />
         </div>
       </div>
@@ -106,6 +112,15 @@
         />
       </q-card>
     </div>
+  </div>
+  <div v-if="selectFiltro">
+    <BackOffice
+      :key="countArrayEstado"
+      :showMaintable="showMaintable"
+      :dataTiquetes="tiquetes"
+      :datosGenerales="datosGenerales"
+      @cambiarEstadoTabla="cambiarEstadoTabla"
+    />
   </div>
   <q-inner-loading
     :showing="visible"
@@ -132,35 +147,37 @@ import BtnBox from "src/components/Charts/BtnBox.vue";
 import ApexDonut from "src/components/Charts/ApexDonut.vue";
 import ApexBarra from "src/components/Charts/ApexBarra.vue";
 import SolicitudesTiempo from "src/components/Charts/SolicitudesTiempo.vue";
-import { api } from "boot/axios";
 import { supabase } from "src/supabase";
 import BackOffice from "src/pages/GestionarTiquete.vue";
 import * as services from "../services/services.js";
-LocalStorage.set("origen", "dash");
+
+LocalStorage.set("filtro", "Dash");
 const store = useMainStore();
 let $q = useQuasar();
-LocalStorage.set("filtro", "Solicitudes");
 const idusuario = LocalStorage.getItem("IdUsuario");
+const selectFiltro = ref(false);
+const visible = ref(false);
 const tiquetes = ref([]);
-const cliente = ref([]);
 const Prioridades = ref(store.prioridad);
 const Solicitudes = ref(store.solicitud);
+const cliente = ref([]);
 const users = ref([]);
+const datosGenerales = ref({});
+const dataSolicitudesTiempo = ref([]);
+const countArrayEstado = ref([]);
+const countArrayPrioridad = ref([]);
+const countArrayTipo = ref([]);
+const showMaintable = ref({
+  showFilter: "Solicitudes",
+  showGraficas: false,
+  showColums: ["id", "estado", "prioridad", "tiempo"],
+});
 const cardsValue = ref({
   incidentes: 0,
   requerimientos: 0,
   pqr: 0,
 });
-const visible = ref(false);
-const dataSolicitudesTiempo = ref([]);
-const countArrayEstado = ref([]);
-const countArrayPrioridad = ref([]);
-const countArrayTipo = ref([]);
-const showMaintable = {
-  showGraficas: false,
-  showColums: ["id", "estado", "prioridad", "tiempo"],
-};
-const filtro = ref("all");
+
 watchEffect(() => {
   {
     const countByEstado = {};
@@ -262,6 +279,46 @@ watchEffect(() => {
   }
 });
 
+//Metodos
+const clickBotonFiltro = (seleccion) => {
+  showMaintable.value = {
+    showFilter: seleccion,
+    showGraficas: true,
+    showColums: [
+      "id",
+      "created_at",
+      "cliente",
+      "concesion",
+      "peaje",
+      "solicitud",
+      // 'observaciones',
+      "estado",
+      "prioridad",
+      "tipo",
+      "subtipo",
+      "equipo",
+      "finalizar",
+      "devuelto",
+      "eliminar",
+      "tiempo",
+    ],
+  };
+  selectFiltro.value = true;
+};
+const cambiarEstadoTabla = (newValue) => {
+  if (newValue == "dashboard") {
+    showMaintable.value = {
+      showFilter: "Solicitudes",
+      showGraficas: false,
+      showColums: ["id", "estado", "prioridad", "tiempo"],
+    };
+    selectFiltro.value = false;
+  } else {
+    clickBotonFiltro("Solicitudes");
+  }
+};
+
+//Carga de data
 const loadData = async () => {
   visible.value = true;
   if (users.value.filter((p) => p.id == idusuario)[0].nivel === 3) {
@@ -285,7 +342,27 @@ const loadData = async () => {
   solicitudesTiempo();
   conteoPorParametro();
 };
+const DatosGenerales = async () => {
+  await services.getCliente("").then((response) => {
+    cliente.value = response.data;
+    datosGenerales.value.cliente = cliente.value;
+  });
 
+  await services.getUsuarios("").then((response) => {
+    users.value = response.data;
+    datosGenerales.value.users = users.value;
+  });
+
+  await services.getEnvioCorreos("").then((response) => {
+    let correos = [];
+    for (const iterator of response.data) {
+      correos.push(iterator.idtiquete);
+    }
+    datosGenerales.value.correos = correos;
+  });
+};
+
+//Procesamiento de data para graficas
 const conteoPorParametro = () => {
   cardsValue.value.incidentes = tiquetes.value.filter(
     (p) => p.solicitud == 1
@@ -295,17 +372,6 @@ const conteoPorParametro = () => {
   ).length;
   cardsValue.value.pqr = tiquetes.value.filter((p) => p.solicitud == 3).length;
 };
-
-const DatosGenerales = async () => {
-  await services.getCliente("").then((response) => {
-    cliente.value = response.data;
-  });
-
-  await services.getUsuarios("").then((response) => {
-    users.value = response.data;
-  });
-};
-
 const solicitudesTiempo = () => {
   // Array original con objetos JSON
   const arrayOriginal = tiquetes.value;
@@ -336,6 +402,7 @@ const solicitudesTiempo = () => {
   // Imprime el nuevo array
   dataSolicitudesTiempo.value = arrayCantidadPorMes;
 };
+
 onMounted(async () => {
   await DatosGenerales();
   await loadData();

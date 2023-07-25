@@ -6,7 +6,6 @@
 import { defineComponent, onMounted, ref } from "vue";
 import GestionarTiquete from "src/pages/GestionarTiquete.vue";
 import { LocalStorage } from "quasar";
-import { api } from "boot/axios";
 
 const showMaintable = {
   showGraficas: true,

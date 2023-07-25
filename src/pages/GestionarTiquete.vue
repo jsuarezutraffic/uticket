@@ -32,6 +32,7 @@
           <q-space />
           <q-btn
             v-if="showMaintable.showGraficas"
+            @click="volverDashboard('dashboard')"
             outline
             to="/"
             class="q-ma-xs"
@@ -41,8 +42,8 @@
           </q-btn>
           <q-btn
             v-if="!showMaintable.showGraficas"
+            @click="volverDashboard('tabla')"
             outline
-            to="/tiquetes"
             class="q-ma-xs"
             color="tertiary"
             size="md"
@@ -1111,9 +1112,6 @@ import {
   defineComponent,
   ref,
   onMounted,
-  watch,
-  watchEffect,
-  computed,
   onBeforeUnmount,
   onUnmounted,
   toRefs,
@@ -1136,9 +1134,8 @@ let recorder;
 let progressInterval;
 const audioPlayer = ref(null);
 
-const props = defineProps(["showMaintable", "dataTiquetes"]);
-let { showMaintable, dataTiquetes } = toRefs(props);
-const filtro = LocalStorage.getItem("filtro");
+const props = defineProps(["showMaintable", "dataTiquetes", "datosGenerales"]);
+let { showMaintable, dataTiquetes, datosGenerales } = toRefs(props);
 
 //supabase
 const valorDatosExportado = ref("");
@@ -1159,11 +1156,12 @@ const configStore = useConfigStore();
 const tiquetesDetalles = ref([]);
 const EquiposOptions = ref([]);
 const SubtipoOptions = ref([]);
-const Correos = ref([]);
 const tiquetes = ref([]);
+const Correos = ref(datosGenerales.value.correos);
+const users = ref(datosGenerales.value.users);
+const cliente = ref(datosGenerales.value.cliente);
 const concesion = ref(store.generalData.concesion);
 const peajes = ref(store.generalData.peaje);
-const cliente = ref([]);
 const Tipos = ref(store.generalData.tipo);
 const Subtipos = ref(store.generalData.subtipo);
 const Equipos = ref(store.generalData.equipo);
@@ -1171,18 +1169,9 @@ const Prioridades = ref(store.generalData.prioridad);
 const Estados = ref(store.generalData.estado);
 const Procesos = ref(store.generalData.proceso);
 const solicitudes = ref(store.generalData.solicitud);
-const users = ref([]);
 const metodoconsulta = ref(store.generalData.metodoconsulta);
 const contactos = ref([]);
 const visible = ref(false);
-const next = ref({
-  nivel: null,
-  operador: null,
-  prioridad: null,
-});
-const pagination = ref({
-  rowsPerPage: 8,
-});
 const imagen = ref("");
 const disable = ref(false);
 const oldProridad = ref(null);
@@ -1202,6 +1191,14 @@ const tableRef = ref(null);
 const expanded = ref([]);
 const table = ref(true);
 const TablaDetalles = ref(false);
+const next = ref({
+  nivel: null,
+  operador: null,
+  prioridad: null,
+});
+const pagination = ref({
+  rowsPerPage: 8,
+});
 const selectRule = [(value) => !!value || "Este campo es obligatorio"];
 const inputRules = [
   (val) => (val && val.length > 0) || "Por favor llenar el campo",
@@ -1433,37 +1430,18 @@ const clickRow = (row) => {
 
   getDetalleTiquete();
 };
-
 const TipoSeleccion = (value) => {
   SubtipoOptions.value = Subtipos.value.filter((tipo) => tipo.tipo == value);
   Fila.value.subtipo = null;
 };
-
 const SubTipoSeleccion = (value) => {
   EquiposOptions.value = Equipos.value.filter(
     (equipo) => equipo.subtipo == value
   );
   Fila.value.equipo = null;
 };
-
 const clickRowDetalle = (row) => {};
 
-const getDetalleTiquete = async () => {
-  visible.value = true;
-  // Fila.value = row;
-  // oldProridad.value = row.prioridad;
-  // next.value.prioridad = Fila.value.prioridad;
-  next.value.nivel = null;
-  next.value.operador = null;
-  await api
-    .get(`detalletiquete?tiquete=eq.${Fila.value.id}&select=*`)
-    .then((response) => {
-      tiquetesDetalles.value = response.data;
-      TablaDetalles.value = true;
-      mostrarModal.value = true;
-      visible.value = false;
-    });
-};
 const GestionTiquete = async (accionValue) => {
   delete Fila.value["contador"];
   delete Fila.value["tiempo"];
@@ -1904,61 +1882,6 @@ const GestionTiquete = async (accionValue) => {
     }
   }
 };
-
-const loadData = async () => {
-  var filtroNivel = "";
-  visible.value = true;
-  let nivelUser = users.value.filter((p) => p.id == idusuario)[0].nivel;
-  if (nivelUser === 3) {
-    filtroNivel = `asignado=eq.${idusuario}&`;
-    LocalStorage.set("filtro", "Solicitudes");
-  } else if (nivelUser === 1) {
-    filtroNivel = ``;
-  } else {
-    $q.notify({
-      type: "negative",
-      message: `ESTED NO TIENE ACCESO A BACKOFFICE`,
-      timeout: 4000,
-    });
-    visible.value = false;
-  }
-
-  switch (filtro) {
-    case "Solicitudes":
-      await services.getTiquetes(`${filtroNivel}`).then((response) => {
-        tiquetes.value = response.data;
-        visible.value = false;
-      });
-      break;
-    case "Incidentes":
-      await services
-        .getTiquetes(`${filtroNivel}solicitud=eq.1&`)
-        .then((response) => {
-          tiquetes.value = response.data;
-          visible.value = false;
-        });
-      break;
-    case "Requerimiento":
-      await services
-        .getTiquetes(`${filtroNivel}solicitud=eq.2&`)
-        .then((response) => {
-          tiquetes.value = response.data;
-          visible.value = false;
-        });
-      break;
-    case "PQR":
-      await services
-        .getTiquetes(`${filtroNivel}solicitud=eq.3&`)
-        .then((response) => {
-          tiquetes.value = response.data;
-          visible.value = false;
-        });
-      break;
-  }
-  visible.value = false;
-  await updateTiempoRegresivo();
-};
-
 const AccionTiquete = (key) => {
   accion.value = key;
   FilaDetalle.value = {};
@@ -2037,39 +1960,82 @@ const AccionTiquete = (key) => {
       break;
   }
 };
-const DatosGenerales = async () => {
+//Manejo de data
+const loadData = async () => {
+  var filtroNivel = "";
   visible.value = true;
-  await services.getCliente("").then((response) => {
-    cliente.value = response.data;
-  });
-
-  await services.getUsuarios("").then((response) => {
-    users.value = response.data;
-  });
-
-  await services.getEnvioCorreos("").then((response) => {
-    for (const iterator of response.data) {
-      Correos.value.push(iterator.idtiquete);
-    }
-  });
-
-  await CargarContactos();
-  // Fila.value.asignado = "4ca6c4d3-c2f9-4c1f-9411-de9271b9519f";
-  // Fila.value.privado = null;
+  let nivelUser = users.value.filter((p) => p.id == idusuario)[0].nivel;
+  if (nivelUser === 3) {
+    filtroNivel = `asignado=eq.${idusuario}&`;
+  } else if (nivelUser === 1) {
+    filtroNivel = ``;
+  } else {
+    $q.notify({
+      type: "negative",
+      message: `ESTED NO TIENE ACCESO A BACKOFFICE`,
+      timeout: 4000,
+    });
+    visible.value = false;
+  }
+  switch (showMaintable.value.showFilter) {
+    case "Solicitudes":
+      tiquetes.value = dataTiquetes.value;
+      // await services.getTiquetes(`${filtroNivel}`).then((response) => {
+      //   tiquetes.value = response.data;
+      //   visible.value = false;
+      // });
+      break;
+    case "Incidentes":
+      tiquetes.value = dataTiquetes.value.filter((p) => p.solicitud == 1);
+      // await services
+      //   .getTiquetes(`${filtroNivel}solicitud=eq.1&`)
+      //   .then((response) => {
+      //     tiquetes.value = response.data;
+      //     visible.value = false;
+      //   });
+      break;
+    case "Requerimiento":
+      tiquetes.value = dataTiquetes.value.filter((p) => p.solicitud == 2);
+      // await services
+      //   .getTiquetes(`${filtroNivel}solicitud=eq.2&`)
+      //   .then((response) => {
+      //     tiquetes.value = response.data;
+      //     visible.value = false;
+      //   });
+      break;
+    case "PQR":
+      tiquetes.value = dataTiquetes.value.filter((p) => p.solicitud == 3);
+      // await services
+      //   .getTiquetes(`${filtroNivel}solicitud=eq.3&`)
+      //   .then((response) => {
+      //     tiquetes.value = response.data;
+      //     visible.value = false;
+      //   });
+      break;
+  }
   visible.value = false;
-  table.value = true;
+  await updateTiempoRegresivo();
 };
 
-// -------------------------------------------------------
-// Funciones generales
-//-------------------------------------------------------
-const addPersonConsulta = async () => {
-  mostrarAddPersonaContacto.value = false;
-  if (FilaContacto.telefono != null) {
-    FilaContacto.telefono = parseInt(FilaContacto.telefono);
-  }
-  await services.postContactos(FilaContacto.value);
+const getDetalleTiquete = async () => {
+  visible.value = true;
+  next.value.nivel = null;
+  next.value.operador = null;
+  await api
+    .get(`detalletiquete?tiquete=eq.${Fila.value.id}&select=*`)
+    .then((response) => {
+      tiquetesDetalles.value = response.data;
+      TablaDetalles.value = true;
+      mostrarModal.value = true;
+      visible.value = false;
+    });
+};
+
+const DatosGenerales = async () => {
+  visible.value = true;
   await CargarContactos();
+  visible.value = false;
+  table.value = true;
 };
 const CargarContactos = async () => {
   FilaContacto.value = {};
@@ -2078,8 +2044,18 @@ const CargarContactos = async () => {
     contactos.value = response.data;
   });
 };
+const addPersonConsulta = async () => {
+  mostrarAddPersonaContacto.value = false;
+  if (FilaContacto.telefono != null) {
+    FilaContacto.telefono = parseInt(FilaContacto.telefono);
+  }
+  await services.postContactos(FilaContacto.value);
+  await CargarContactos();
+};
+// -------------------------------------------------------
+// Funciones generales
+//-------------------------------------------------------
 let idTemporal = Correos.value;
-
 const mensajeAviso = async (row) => {
   const estaPresente1 = idTemporal.includes(row.id);
   if (
@@ -2187,6 +2163,7 @@ const enviarCorreo = async (data2) => {
       console.error("Error sending email:", error);
     });
 };
+
 const formatDate = (value) => {
   // return date.toLocaleDateString();  // solo la fecha DD/MM/YY
   const date = new Date(value);
@@ -2274,6 +2251,7 @@ const updateTiempoRegresivo = () => {
   });
 };
 
+//Procesamiento de componente comentario
 const labelComentario = ref("Ver más");
 const expanded2 = ref({});
 function verMasComentario(rowId) {
@@ -2284,6 +2262,13 @@ function verMasComentario(rowId) {
     labelComentario.value = "Ver Mas";
   }
 }
+
+//emitir cambio de vista al padre
+const emit = defineEmits(["cambiarEstadoTabla"]);
+const volverDashboard = (valor) => {
+  console.log(valor);
+  emit("cambiarEstadoTabla", valor);
+};
 
 //Ordenar tabla
 const sortBy = ref("prioridad");
@@ -2331,40 +2316,6 @@ function customSort() {
 }
 customSort();
 
-let interval; // Variable para almacenar el intervalo
-onMounted(async () => {
-  await DatosGenerales();
-  loadData();
-  // Calcular el tiempo restante para cada fila cuando se crea el componente o cuando los datos cambian
-
-  // Actualiza la cuenta regresiva cada segundo
-  setInterval(updateTiempoRegresivo, 5000);
-});
-
-onBeforeUnmount(() => {
-  // Limpia el intervalo cuando el componente se destruye para evitar fugas de memoria
-  clearInterval(interval);
-});
-
-onUnmounted(() => {
-  // clearInterval(intervalo);
-});
-defineComponent({
-  name: "MainTable",
-});
-
-supabase
-  .channel("custom-insert-channel")
-  .on(
-    "postgres_changes",
-    { event: "INSERT", schema: "public", table: "contactos" },
-    (payload) => {
-      DatosGenerales();
-    }
-  )
-  .subscribe();
-
-// ------------------------------------------
 // //funciones para el grabado de notas de voz
 function onPlay() {
   clearInterval(progressInterval);
@@ -2386,11 +2337,39 @@ function onPause() {
   clearInterval(progressInterval);
 }
 
-// Limpiar recursos al desmontar el componente
+///subscribe to table
+supabase
+  .channel("custom-insert-channel")
+  .on(
+    "postgres_changes",
+    { event: "INSERT", schema: "public", table: "contactos" },
+    (payload) => {
+      DatosGenerales();
+    }
+  )
+  .subscribe();
+
+// ------------------------------------------
+// Funciones de construccion
+let interval; // Variable para almacenar el intervalo
+onMounted(async () => {
+  await DatosGenerales();
+  loadData();
+  // Calcular el tiempo restante para cada fila cuando se crea el componente o cuando los datos cambian
+  // Actualiza la cuenta regresiva cada segundo
+  setInterval(updateTiempoRegresivo, 5000);
+});
+onBeforeUnmount(() => {
+  // Limpia el intervalo cuando el componente se destruye para evitar fugas de memoria
+  clearInterval(interval);
+});
 onUnmounted(() => {
   if (recorder && isRecording.value) {
     recorder.stop().catch(() => {});
   }
+});
+defineComponent({
+  name: "MainTable",
 });
 </script>
 

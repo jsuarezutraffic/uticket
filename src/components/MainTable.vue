@@ -489,7 +489,6 @@
       </TransitionGroup>
     </div>
     <div v-if="usuarios.filter((p) => p.id == idusuario)[0].nivel === 3">
-      <!-- <BackOffice /> -->
       <DashboardPage :showMaintable="showMaintable" />
     </div>
     <!-- Modal de imagen -->
@@ -613,7 +612,6 @@ import { LocalStorage, useQuasar } from "quasar";
 import FileInput from "src/components/FileImage.vue";
 import VerImagenArray from "src/components/VerImagenArray.vue";
 import InputTextJump from "src/components/InputTextSaltoLinea.vue";
-import BackOffice from "../pages/Tiquetes.vue";
 import DashboardPage from "src/pages/DashboardPage.vue";
 import { supabase } from "src/supabase";
 import Recorder from "recorder-js";
