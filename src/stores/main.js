@@ -68,9 +68,7 @@ export const useMainStore = defineStore('main', {
     },
     loadGeneralDataLocal (){
       const datosEncriptados = localStorage.getItem('generalData');
-      const bytesDesencriptados = CryptoJS.AES.decrypt(datosEncriptados, this.claveSecreta);
-      const datosDesencriptados = JSON.parse(bytesDesencriptados.toString(CryptoJS.enc.Utf8));
-      this.generalData = datosDesencriptados.secreto
+      this.generalData = this.descryptptData(datosEncriptados)
     },
 
     async loadGeneralData  (filtro) {
@@ -106,19 +104,28 @@ export const useMainStore = defineStore('main', {
         generalData.metodoconsulta = response.data
       })
 
-
-      const data = { key: 'generalData', secreto: generalData };
-      const dataString = JSON.stringify(data);
-      const datosEncriptados = CryptoJS.AES.encrypt(dataString, this.claveSecreta).toString();
-      localStorage.setItem('generalData', datosEncriptados);
-
+      localStorage.setItem('generalData', this.encryptptData(generalData));
       this.generalData = generalData
+
       // services.getUsuarios(filtro).then((response) => {
       //   this.generalData.usuarios = response.data
       // })
       // services.getCliente(filtro).then((response) => {
       //   this.generalData.cliente = response.data
       // })
+    },
+
+    encryptptData(indata){
+      const data = { key: 'encryptdata', secreto: indata };
+      const dataString = JSON.stringify(data);
+      const datosEncriptados = CryptoJS.AES.encrypt(dataString, this.claveSecreta).toString();
+      return datosEncriptados
+    },
+
+    descryptptData (indata){
+      const bytesDesencriptados = CryptoJS.AES.decrypt(indata, this.claveSecreta);
+      const datosDesencriptados = JSON.parse(bytesDesencriptados.toString(CryptoJS.enc.Utf8));
+      return datosDesencriptados.secreto
     },
   }
 })
