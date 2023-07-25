@@ -259,30 +259,23 @@
 <script setup>
 /*eslint-disable */
 import { defineComponent, ref, onMounted } from "vue";
-import { LocalStorage, useQuasar } from "quasar";
+import { useQuasar } from "quasar";
 import { api } from "boot/axios";
-import { mostrarMensajes, getSelectedString } from "boot/global";
 import { supabase } from "src/supabase";
 import { useMainStore } from "src/stores/main";
-import { useConfigStore } from "src/stores/config";
+import {
+  getUsuarios,
+  postUsuarios,
+  putUsuarios,
+} from "../services/services.js";
 //supabase
 let $q = useQuasar();
-const idusuario = LocalStorage.getItem("IdUsuario");
 const selected = ref([]);
 const store = useMainStore();
-const configStore = useConfigStore();
-const tiquetes = ref([]);
-const concesion = ref({});
-const peajes = ref([]);
-const cliente = ref([]);
 const users = ref([]);
-const Tipos = ref([]);
-const Subtipos = ref([]);
-const Prioridades = ref([]);
-const Estados = ref([]);
-const Procesos = ref([]);
-const solicitudes = ref([]);
-const metodoconsulta = ref([]);
+const Estados = ref(store.generalData.estado);
+const Procesos = ref(store.generalData.proceso);
+const tiquetes = ref([]);
 const visible = ref(false);
 const pagination = ref({
   rowsPerPage: 8,
@@ -293,7 +286,7 @@ const accion = ref("");
 const mensaje = ref("");
 const Fila = ref({});
 const tableRef = ref(null);
-const table = ref(false);
+const table = ref(true);
 const selectRule = [(value) => !!value || "Este campo es obligatorio"];
 const inputRules = [
   (val) => (val && val.length > 0) || "Por favor llenar el campo",
@@ -360,17 +353,15 @@ const addUpdateOperador = async () => {
   // visible.value = true;
   modalAddUpOperador.value = false;
   if (accion.value == "Modificar") {
-    await api
-      .put(`usuarios?id=eq.${Fila.value.id}`, Fila.value)
-      .then((response) => {
-        $q.notify({
-          type: "positive",
-          message: "Operador Actualizado Correctamente",
-        });
-        visible.value = false;
+    await putUsuarios(`id=eq.${Fila.value.id}`, Fila.value).then((response) => {
+      $q.notify({
+        type: "positive",
+        message: "Operador Actualizado Correctamente",
       });
+      visible.value = false;
+    });
   } else if (accion.value == "Agregar") {
-    await api.post(`usuarios`, Fila.value).then((response) => {
+    await postUsuarios(Fila.value).then((response) => {
       $q.notify({
         type: "positive",
         message: "Operador Agregado Correctamente",
@@ -381,54 +372,9 @@ const addUpdateOperador = async () => {
 };
 
 const LoadData = async () => {
-  await api.get("usuarios?select=*").then((response) => {
+  await getUsuarios("").then((response) => {
     users.value = response.data;
   });
-};
-const DatosGenerales = async () => {
-  visible.value = true;
-  await api.get("cliente?select=*").then((response) => {
-    cliente.value = response.data;
-  });
-
-  await api.get("concesion?select=*").then((response) => {
-    concesion.value = response.data;
-  });
-
-  await api.get("peaje?select=*").then((response) => {
-    peajes.value = response.data;
-  });
-
-  await api.get("tipo?select=*").then((response) => {
-    Tipos.value = response.data;
-  });
-
-  await api.get("subtipo?select=*").then((response) => {
-    Subtipos.value = response.data;
-  });
-
-  await api.get("prioridad?select=*").then((response) => {
-    Prioridades.value = response.data;
-  });
-
-  await api.get("estado?select=*").then((response) => {
-    Estados.value = response.data;
-  });
-
-  await api.get("proceso?select=*").then((response) => {
-    Procesos.value = response.data;
-  });
-
-  await api.get("solicitud?select=*").then((response) => {
-    solicitudes.value = response.data;
-  });
-
-  await api.get("metodoconsulta?select=*").then((response) => {
-    metodoconsulta.value = response.data;
-  });
-
-  visible.value = false;
-  table.value = true;
 };
 // -------------------------------------------------------
 // Funciones generales
@@ -457,7 +403,6 @@ function customSort() {
 customSort();
 
 onMounted(async () => {
-  await DatosGenerales();
   LoadData();
 });
 

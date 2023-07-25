@@ -135,6 +135,10 @@ const postContactos = (postData) => {
   return api.post(`contactos`,postData);
 };
 
+const postUsuarios = (postData) => {
+  return api.post(`usuarios`,postData);
+};
+
 const postEnvioCorreos = (postData) => {
   return api.post(`enviocorreos`,postData);
 };
@@ -190,6 +194,7 @@ export {
   postCorreo,
   postCliente,
   postContactos,
+  postUsuarios,
   postEnvioCorreos,
   putTiquetes,
   putCliente,

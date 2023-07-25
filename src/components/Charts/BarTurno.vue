@@ -26,12 +26,6 @@
 <script setup>
 /*eslint-disable */
 import { reactive, onMounted, ref, computed, toRefs, watchEffect } from "vue";
-// import { getCssVar, LocalStorage } from "quasar";
-import { api } from "boot/axios";
-import { useRouter, useRoute } from "vue-router";
-import { useMainStore } from "stores/main";
-import { useQuasar, date } from "quasar";
-// import { mostrarMensajes, getSelectedString } from "boot/global";
 
 const props = defineProps(["Series", "title", "width", "Detalles"]);
 let { Series, title, width, Detalles } = toRefs(props);

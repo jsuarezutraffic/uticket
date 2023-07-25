@@ -26,12 +26,10 @@ import {
   toRefs,
   watchEffect,
 } from "vue";
-import { getCssVar } from "quasar";
 // import { useMainStore } from "stores/main";
 import { useRouter, useRoute } from "vue-router";
 import { useQuasar, date } from "quasar";
 // import { mostrarMensajes } from "src/utils/global";
-import { api } from "boot/axios";
 
 const props = defineProps(["Series", "title", "width"]);
 let { Series, title, width } = toRefs(props);
@@ -144,30 +142,7 @@ const seriesCalc = computed(() => {
 
 const listado = ref([]);
 
-const loadData = () => {
-  api
-    .get(`/Dashboard/NegacionesPorIntermediador`)
-    .then((response) => {
-      for (const iterator of response.data) {
-        ex.value.push(iterator.intermediadornombre);
-        ey.value.push(iterator.number);
-      }
-    })
-    .catch((error) => {
-      if (error.response == undefined) {
-      } else if (error.response.status == 401) {
-        store.borrar();
-        const toPath = "/Login";
-        router.push(toPath);
-        $q.notify({
-          type: "negative",
-          message: "Tiempo expirado, inicie sesión nuevamente",
-        });
-      } else {
-        mostrarMensajes(error.response.data);
-      }
-    });
-};
+const loadData = () => {};
 
 setInterval(() => {
   ex.value = [];

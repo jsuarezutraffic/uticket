@@ -37,7 +37,6 @@
 <script setup>
 /*eslint-disable */
 import { computed, toRefs, ref, watchEffect, onMounted } from "vue";
-import { api } from "boot/axios";
 
 // Convertir props a variable
 const props = defineProps(["Series", "tiquetes", "usuarios"]);

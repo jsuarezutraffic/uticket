@@ -94,17 +94,15 @@
 import { defineComponent, ref, onMounted } from "vue";
 import MenuBar from "src/components/MenuBar.vue";
 import { useMainStore } from "stores/main";
-import { useConfigStore } from "src/stores/config";
 import { useRouter, useRoute } from "vue-router";
 import { LocalStorage, useQuasar } from "quasar";
-import { api } from "boot/axios";
+import { getUsuarios } from "../services/services.js";
 const configJson = require("/public/config.json");
 const idusuario = LocalStorage.getItem("IdUsuario");
 const router = useRouter();
 const user = ref([]);
 
 const store = useMainStore();
-const config = useConfigStore().config;
 
 const leftDrawerOpen = ref(false);
 defineComponent({
@@ -122,7 +120,7 @@ function toggleLeftDrawer() {
 }
 
 const getUsers = async () => {
-  await api.get(`usuarios?id=eq.${idusuario}&select=*`).then((response) => {
+  await getUsuarios(`id=eq.${idusuario}&`).then((response) => {
     user.value = response.data[0];
   });
 };

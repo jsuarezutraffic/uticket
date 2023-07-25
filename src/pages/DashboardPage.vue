@@ -29,7 +29,6 @@
                 heightDonut="height: 160px;"
                 :Series="countArrayEstado"
                 :cliente="cliente"
-                :prioridades="Prioridades"
                 title="Estados"
                 width="250"
               />
@@ -39,7 +38,6 @@
                 heightDonut="height: 160px;"
                 :Series="countArrayPrioridad"
                 :cliente="cliente"
-                :prioridades="Prioridades"
                 title="Prioridad"
                 width="250"
               />
@@ -49,7 +47,6 @@
                 heightDonut="height: 160px;"
                 :Series="countArrayTipo"
                 :cliente="cliente"
-                :prioridades="Prioridades"
                 title="Tipo"
                 width="250"
               />
@@ -105,8 +102,6 @@
           :Series="countArrayEstado"
           :tiquetes="tiquetes"
           :usuarios="users"
-          :Solicitudes="Solicitudes"
-          :prioridades="Prioridades"
           title="Estados"
           width="250"
         />
@@ -131,17 +126,8 @@
 </template>
 
 <script setup>
-import {
-  ref,
-  onBeforeMount,
-  onMounted,
-  watch,
-  defineComponent,
-  getCurrentInstance,
-  watchEffect,
-} from "vue";
+import { ref, onMounted, watchEffect } from "vue";
 import { useQuasar } from "quasar";
-import { useMainStore } from "../stores/main";
 import { LocalStorage } from "quasar";
 import BtnBox from "src/components/Charts/BtnBox.vue";
 import ApexDonut from "src/components/Charts/ApexDonut.vue";
@@ -152,14 +138,11 @@ import BackOffice from "src/pages/GestionarTiquete.vue";
 import * as services from "../services/services.js";
 
 LocalStorage.set("filtro", "Dash");
-const store = useMainStore();
 let $q = useQuasar();
 const idusuario = LocalStorage.getItem("IdUsuario");
 const selectFiltro = ref(false);
 const visible = ref(false);
 const tiquetes = ref([]);
-const Prioridades = ref(store.prioridad);
-const Solicitudes = ref(store.solicitud);
 const cliente = ref([]);
 const users = ref([]);
 const datosGenerales = ref({});

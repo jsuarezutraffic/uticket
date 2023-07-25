@@ -246,19 +246,16 @@
 import { defineComponent, ref, onMounted } from "vue";
 import { LocalStorage, useQuasar } from "quasar";
 import { api } from "boot/axios";
+import { useMainStore } from "../stores/main";
 import { supabase } from "src/supabase";
+import { getCliente } from "../services/services.js";
 //supabase
 let $q = useQuasar();
+const store = useMainStore();
 const selected = ref([]);
 const tiquetes = ref([]);
-const concesion = ref({});
-const peajes = ref([]);
 const cliente = ref([]);
-const Tipos = ref([]);
-const Subtipos = ref([]);
-const Prioridades = ref([]);
-const solicitudes = ref([]);
-const metodoconsulta = ref([]);
+const concesion = ref(store.generalData.concesion);
 const visible = ref(false);
 const pagination = ref({
   rowsPerPage: 8,
@@ -299,6 +296,7 @@ const columns = [
     field: "concesion",
     sortable: true,
   },
+
   {
     name: "nombres",
     align: "left",
@@ -357,37 +355,9 @@ const updateCliente = async () => {
 
 const loadData = async () => {
   visible.value = true;
-  await api.get("cliente?select=*").then((response) => {
+  await getCliente("").then((response) => {
     cliente.value = response.data;
   });
-
-  await api.get("concesion?select=*").then((response) => {
-    concesion.value = response.data;
-  });
-
-  await api.get("peaje?select=*").then((response) => {
-    peajes.value = response.data;
-  });
-
-  await api.get("tipo?select=*").then((response) => {
-    Tipos.value = response.data;
-  });
-
-  await api.get("subtipo?select=*").then((response) => {
-    Subtipos.value = response.data;
-  });
-
-  await api.get("prioridad?select=*").then((response) => {
-    Prioridades.value = response.data;
-  });
-  await api.get("solicitud?select=*").then((response) => {
-    solicitudes.value = response.data;
-  });
-
-  await api.get("metodoconsulta?select=*").then((response) => {
-    metodoconsulta.value = response.data;
-  });
-
   visible.value = false;
   table.value = true;
 };
