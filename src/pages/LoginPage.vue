@@ -126,15 +126,13 @@
 </template>
 <script setup>
 import { defineComponent, ref } from "vue";
-import { createClient } from "@supabase/supabase-js";
 import { useMainStore } from "src/stores/main";
 import { useConfigStore } from "src/stores/config";
 import { api } from "boot/axios";
-import { useRouter, useRoute } from "vue-router";
-import { mostrarMensajes, getSelectedString } from "boot/global";
+import { useRouter } from "vue-router";
+import { mostrarMensajes } from "boot/global";
 import { useQuasar } from "quasar";
 const configJson = require("/public/config.json");
-import * as services from "../services/services.js";
 // import { supabase } from "../supabase";
 // stores
 const store = useMainStore();

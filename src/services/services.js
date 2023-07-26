@@ -154,6 +154,10 @@ const putUsuarios = (filtro, postData) => {
   return api.put(`usuarios?${filtro}`, postData);
 };
 
+const patchTiquetes = (filtro, postData) => {
+  return api.patch(`tiquete?${filtro}`, postData);
+};
+
 const postCorreo = async (data2) => {
   const apiKey =
     "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";
@@ -199,6 +203,7 @@ export {
   putTiquetes,
   putCliente,
   putUsuarios,
+  patchTiquetes,
   getContactos,
 };
 

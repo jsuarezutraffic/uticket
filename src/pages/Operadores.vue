@@ -260,7 +260,6 @@
 /*eslint-disable */
 import { defineComponent, ref, onMounted } from "vue";
 import { useQuasar } from "quasar";
-import { api } from "boot/axios";
 import { supabase } from "src/supabase";
 import { useMainStore } from "src/stores/main";
 import {

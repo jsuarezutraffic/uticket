@@ -1117,7 +1117,6 @@ import {
   toRefs,
 } from "vue";
 import { LocalStorage, useQuasar } from "quasar";
-import { api } from "boot/axios";
 import { mostrarMensajes } from "boot/global";
 import { supabase } from "src/supabase";
 import { useMainStore } from "src/stores/main";
@@ -1536,11 +1535,13 @@ const GestionTiquete = async (accionValue) => {
     FilaDetalle.value.comentarios = textSaltoLinea.value;
     FilaDetalle.value.evidencia = valorDatosExportado.value;
     // post a la tabla de detalles tiquetes------------------
-    await api
-      .post("detalletiquete", FilaDetalle.value)
+    await services
+      .postDetallesTiquetes(FilaDetalle.value)
       .then((response) => {
-        api
-          .patch(`tiquete?id=eq.${Fila.value.id}`, Fila.value)
+        delete Fila.value["contador"];
+        delete Fila.value["tiempo"];
+        services
+          .patchTiquetes(`id=eq.${Fila.value.id}`, Fila.value)
           .then((response) => {
             mostrarMensajes({
               tipomensaje: 1,
@@ -1557,6 +1558,7 @@ const GestionTiquete = async (accionValue) => {
       });
     await getDetalleTiquete();
   } else if (accion.value == "AsignarTicket") {
+    console.log();
     mostrarAsignarTiquetes.value = false;
     if (oldProridad.value != next.value.prioridad) {
       if (FilaTemporal.value.tipo != Fila.value.tipo) {
@@ -1812,11 +1814,13 @@ const GestionTiquete = async (accionValue) => {
     FilaDetalle.value.comentarios = textSaltoLinea.value;
     FilaDetalle.value.evidencia = valorDatosExportado.value;
 
-    await api
-      .post("detalletiquete", FilaDetalle.value)
+    await services
+      .postDetallesTiquetes(FilaDetalle.value)
       .then((response) => {
-        api
-          .patch(`tiquete?id=eq.${Fila.value.id}`, Fila.value)
+        delete Fila.value["contador"];
+        delete Fila.value["tiempo"];
+        services
+          .patchTiquetes(`id=eq.${Fila.value.id}`, Fila.value)
           .then((response) => {
             mostrarMensajes({
               tipomensaje: 1,
@@ -1856,11 +1860,13 @@ const GestionTiquete = async (accionValue) => {
       )[0].id;
       // agregar saltos de linea al campo Comentarios
       FilaDetalle.value.comentarios = textSaltoLinea.value;
-      await api
-        .post("detalletiquete", FilaDetalle.value)
+      await services
+        .postDetallesTiquetes(FilaDetalle.value)
         .then((response) => {
-          api
-            .patch(`tiquete?id=eq.${Fila.value.id}`, Fila.value)
+          delete Fila.value["contador"];
+          delete Fila.value["tiempo"];
+          services
+            .patchTiquetes(`id=eq.${Fila.value.id}`, Fila.value)
             .then((response) => {
               mostrarSolucionarTiquetes.value = false;
               mostrarMensajes({
@@ -1980,37 +1986,16 @@ const loadData = async () => {
   switch (showMaintable.value.showFilter) {
     case "Solicitudes":
       tiquetes.value = dataTiquetes.value;
-      // await services.getTiquetes(`${filtroNivel}`).then((response) => {
-      //   tiquetes.value = response.data;
-      //   visible.value = false;
-      // });
       break;
     case "Incidentes":
       tiquetes.value = dataTiquetes.value.filter((p) => p.solicitud == 1);
-      // await services
-      //   .getTiquetes(`${filtroNivel}solicitud=eq.1&`)
-      //   .then((response) => {
-      //     tiquetes.value = response.data;
-      //     visible.value = false;
-      //   });
       break;
     case "Requerimiento":
       tiquetes.value = dataTiquetes.value.filter((p) => p.solicitud == 2);
-      // await services
-      //   .getTiquetes(`${filtroNivel}solicitud=eq.2&`)
-      //   .then((response) => {
-      //     tiquetes.value = response.data;
-      //     visible.value = false;
-      //   });
       break;
     case "PQR":
       tiquetes.value = dataTiquetes.value.filter((p) => p.solicitud == 3);
-      // await services
-      //   .getTiquetes(`${filtroNivel}solicitud=eq.3&`)
-      //   .then((response) => {
-      //     tiquetes.value = response.data;
-      //     visible.value = false;
-      //   });
+
       break;
   }
   visible.value = false;
@@ -2021,8 +2006,8 @@ const getDetalleTiquete = async () => {
   visible.value = true;
   next.value.nivel = null;
   next.value.operador = null;
-  await api
-    .get(`detalletiquete?tiquete=eq.${Fila.value.id}&select=*`)
+  await services
+    .getDetalleTiquete(`tiquete=eq.${Fila.value.id}&`)
     .then((response) => {
       tiquetesDetalles.value = response.data;
       TablaDetalles.value = true;

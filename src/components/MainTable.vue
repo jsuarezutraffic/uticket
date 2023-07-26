@@ -1,10 +1,4 @@
 <template>
-  <q-inner-loading
-    :showing="visible"
-    label="Cargando..."
-    label-class="text-dark"
-    label-style="font-size: 1.2em"
-  />
   <div v-if="table">
     <div
       class="q-pa-md flex"
@@ -100,11 +94,6 @@
                 <div v-else-if="col.name == 'subtipo'">
                   {{ subtipo.filter((p) => p.id == col.value)[0].descripcion }}
                 </div>
-
-                <div v-else-if="col.name == 'creacion'">
-                  {{ creacion.filter((p) => p.id == col.value)[0].created_at }}
-                </div>
-
                 <div v-else>
                   {{ col.value }}
                 </div>
@@ -120,7 +109,7 @@
         >
           <div class="q-pa-sm q-mt-xs box-order">
             <span
-              class="text-h5 q-pa-md text-bold text-center text-uppercase title-card-style"
+              class="text-h5 q-pa-md text-bold text-center text-uppercase title-card-style text-white"
               >Detalles de ticket</span
             >
             <div class="row-class-state">
@@ -231,7 +220,10 @@
                   </div>
                 </template>
                 <template v-slot:header="props">
-                  <q-tr :props="props" class="bg-primary head-styles">
+                  <q-tr
+                    :props="props"
+                    class="bg-primary head-styles text-white"
+                  >
                     <q-th
                       auto-width
                       v-for="col in props.cols"
@@ -323,17 +315,6 @@
                           color="primary"
                           @click="VerEvidencias(props.row)"
                         />
-                        <!-- <q-dialog v-model="dialog3" persistent>
-                        <q-card style="min-width: 700px; height: 600px;">
-                          <q-card-section class="row items-center">
-                            <q-img :src="Fila.evidencia" spinner-color="white" class="q-pa-md" style="min-width: 600px; height: 500px;"/>
-                          </q-card-section> -->
-                        <!-- Notice v-close-popup -->
-                        <!-- <q-card-actions align="right">
-                            <q-btn flat label="Salir" color="primary" v-close-popup />
-                          </q-card-actions>
-                        </q-card>
-                      </q-dialog> -->
                       </div>
 
                       <div v-else>{{ col.value }}</div>
@@ -603,18 +584,24 @@
       </q-card>
     </q-dialog>
   </div>
+  <q-inner-loading
+    :showing="visible"
+    label="Cargando..."
+    label-class="text-dark"
+    label-style="font-size: 1.2em"
+  />
 </template>
 
 <script setup>
 import { defineComponent, ref, onMounted, onUnmounted } from "vue";
-import { api } from "boot/axios";
 import { LocalStorage, useQuasar } from "quasar";
 import FileInput from "src/components/FileImage.vue";
 import VerImagenArray from "src/components/VerImagenArray.vue";
 import InputTextJump from "src/components/InputTextSaltoLinea.vue";
 import DashboardPage from "src/pages/DashboardPage.vue";
+import { useMainStore } from "src/stores/main";
 import { supabase } from "src/supabase";
-import Recorder from "recorder-js";
+import * as services from "../services/services.js";
 const showMaintable = {
   showGraficas: true,
   showColums: [
@@ -638,10 +625,9 @@ const progressValue = ref(0);
 let recorder;
 let progressInterval;
 const audioPlayer = ref(null);
-
+const store = useMainStore();
 const $q = useQuasar();
 const imagen = ref("");
-const metodoconsulta = ref([]);
 const methodState = ref(null);
 const dialog2 = ref(false);
 const dialog = ref(false);
@@ -650,21 +636,20 @@ const detalleTiquete = ref([]);
 const tableRef = ref(null);
 const expanded = ref([]);
 const tiquete = ref([]);
-const tipo = ref([]);
-const concesion = ref([]);
 const tipoDisplay = ref("");
 const colorTipo = ref("");
-const cliente = ref([]);
-const prioridad = ref([]);
-const solicitud = ref([]);
+const metodoconsulta = ref(store.generalData.metodoconsulta);
+const prioridad = ref(store.generalData.prioridad);
+const solicitud = ref(store.generalData.solicitud);
+const estado = ref(store.generalData.estado);
+const peaje = ref(store.generalData.peaje);
+const tipo = ref(store.generalData.tipo);
+const subtipo = ref(store.generalData.subtipo);
+const concesion = ref(store.generalData.concesion);
 const prioridadDisplay = ref("");
 const colorPrioridad = ref("");
-const estado = ref([]);
 const colorEstado = ref("");
 const estadoDisplay = ref("");
-const peaje = ref([]);
-const subtipo = ref([]);
-const creacion = ref([]);
 const usuarios = ref([]);
 const tablaDetalle = ref(false);
 const idusuario = LocalStorage.getItem("IdUsuario");
@@ -679,7 +664,7 @@ const FilaDetalle = ref({});
 const FilaContacto = ref({});
 const mostrarAddPersonaContacto = ref(false);
 const contactos = ref([]);
-
+const cliente = ref([]);
 const columns = [
   {
     name: "id",
@@ -828,53 +813,15 @@ function actualizarTextExport(nuevoValor) {
 }
 async function getData() {
   visible.value = true;
-  await api
-    .get(`tiquete?asignado=eq.${idusuario}&select=*`)
-    .then((response) => {
-      tiquete.value = response.data;
-    });
-
-  await api.get("tipo?select=*").then((response) => {
-    tipo.value = response.data;
+  await services.getTiquetes(`asignado=eq.${idusuario}&`).then((response) => {
+    tiquete.value = response.data;
   });
 
-  await api.get("prioridad?select=*").then((response) => {
-    prioridad.value = response.data;
-  });
-
-  await api.get("estado?select=*").then((response) => {
-    estado.value = response.data;
-  });
-
-  await api.get("cliente?select=*").then((response) => {
+  await services.getCliente("").then((response) => {
     cliente.value = response.data;
   });
 
-  await api.get("concesion?select=*").then((response) => {
-    concesion.value = response.data;
-  });
-
-  await api.get("solicitud?select=*").then((response) => {
-    solicitud.value = response.data;
-  });
-
-  await api.get("peaje?select=*").then((response) => {
-    peaje.value = response.data;
-  });
-
-  await api.get("subtipo?select=*").then((response) => {
-    subtipo.value = response.data;
-  });
-
-  await api.get("metodoconsulta?select=*").then((response) => {
-    metodoconsulta.value = response.data;
-  });
-
-  await api.get("tiquete?select=created_at").then((response) => {
-    creacion.value = response.data;
-  });
-
-  await api.get("usuarios?select=*").then((response) => {
+  await services.getUsuarios("").then((response) => {
     usuarios.value = response.data;
   });
   await CargarContactos();
@@ -890,8 +837,8 @@ async function clickRow(row) {
     (p) => p.descripcion === "Escalado" || p.descripcion === "Solucionado"
   );
 
-  await api
-    .get(`detalletiquete?tiquete=eq.${Fila.value.id}&select=*`)
+  await services
+    .getDetalleTiquete(`tiquete=eq.${Fila.value.id}&`)
     .then((response) => {
       detalleTiquete.value = response.data;
       tablaDetalle.value = true;
@@ -930,23 +877,6 @@ async function clickRow(row) {
     colorPrioridad.value = "red";
   }
 }
-
-// function counterLabelFn ({ totalSize, filesNumber, maxFiles }) {
-//   return `${filesNumber} files of ${maxFiles} | ${totalSize}`
-// }
-
-const agregarSaltosDeLinea = (text) => {
-  const words = text.split(" ");
-  const result = [];
-  for (let i = 0; i < words.length; i++) {
-    result.push(words[i]);
-    if ((i + 1) % 5 === 0) {
-      result.push("\n");
-    }
-  }
-  return result.join(" ");
-};
-
 const VerEvidencias = (row) => {
   imagen.value = row.evidencia;
   mostrarImagen.value = true;
@@ -962,10 +892,12 @@ async function gestionarTicket() {
   FilaDetalle.value.operador = idusuario;
   FilaDetalle.value.comentarios = textSaltoLinea.value;
   FilaDetalle.value.evidencia = valorDatosExportado.value;
-  api.post("detalletiquete", FilaDetalle.value).then((response) => {
-    api.put(`tiquete?id=eq.${Fila.value.id}`, Fila.value).then((response) => {
-      clickRow(selected.value[0]);
-    });
+  services.postDetallesTiquetes(FilaDetalle.value).then((response) => {
+    services
+      .putTiquetes(`id=eq.${Fila.value.id}`, Fila.value)
+      .then((response) => {
+        clickRow(selected.value[0]);
+      });
   });
 }
 
@@ -980,13 +912,13 @@ const addPersonConsulta = async () => {
   if (FilaContacto.value.telefono != null) {
     FilaContacto.value.telefono = parseInt(FilaContacto.value.telefono);
   }
-  await api.post("contactos", FilaContacto.value).then((response) => {});
+  await services.postContactos(FilaContacto.value).then((response) => {});
   await CargarContactos();
 };
 const CargarContactos = async () => {
   FilaContacto.value = {};
   FilaContacto.value.telefono = null;
-  await api.get("contactos?select=*").then((response) => {
+  await services.getContactos("").then((response) => {
     contactos.value = response.data;
   });
 };

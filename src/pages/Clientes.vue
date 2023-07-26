@@ -245,10 +245,9 @@
 /*eslint-disable */
 import { defineComponent, ref, onMounted } from "vue";
 import { LocalStorage, useQuasar } from "quasar";
-import { api } from "boot/axios";
 import { useMainStore } from "../stores/main";
 import { supabase } from "src/supabase";
-import { getCliente } from "../services/services.js";
+import { getCliente, putCliente } from "../services/services.js";
 //supabase
 let $q = useQuasar();
 const store = useMainStore();
@@ -342,15 +341,13 @@ const clickRow = (row) => {
 const updateCliente = async () => {
   visible.value = true;
   modalAddUpOperador.value = false;
-  await api
-    .put(`cliente?id=eq.${Fila.value.id}`, Fila.value)
-    .then((response) => {
-      $q.notify({
-        type: "positive",
-        message: "Cliente Actualizado Correctamente",
-      });
-      visible.value = false;
+  await putCliente(`id=eq.${Fila.value.id}`, Fila.value).then((response) => {
+    $q.notify({
+      type: "positive",
+      message: "Cliente Actualizado Correctamente",
     });
+    visible.value = false;
+  });
 };
 
 const loadData = async () => {
