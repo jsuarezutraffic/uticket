@@ -1746,10 +1746,6 @@ onMounted(async () => {
   await DatosGenerales();
   loadData();
 });
-
-setInterval(() => {
-  loadData();
-}, 60000);
 const labelComentario = ref("Ver más");
 const expanded2 = ref({});
 

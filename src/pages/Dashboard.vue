@@ -154,12 +154,92 @@ const showMaintable = {
     "eliminar",
   ],
 };
+
+const loadData = async () => {
+  if (!admi) {
+    await getTiquetes(`cliente=eq.${cliente.value[0].id}&estado=neq.8&`).then(
+      (response) => {
+        tiquetes.value = response.data;
+        solicitudesTiempo();
+      }
+    );
+  } else {
+    await getTiquetes(
+      `concesion=eq.${cliente.value[0].concesion}&estado=neq.8&`
+    ).then((response) => {
+      tiquetes.value = response.data;
+      solicitudesTiempo();
+    });
+  }
+  visible.value = false;
+  conteoPorParametro();
+};
+
+const conteoPorParametro = () => {
+  cardsValue.value.incidentes = tiquetes.value.filter(
+    (p) => p.solicitud == 1
+  ).length;
+  cardsValue.value.requerimientos = tiquetes.value.filter(
+    (p) => p.solicitud == 2
+  ).length;
+  cardsValue.value.pqr = tiquetes.value.filter((p) => p.solicitud == 3).length;
+};
+
+const DatosGenerales = async () => {
+  visible.value = true;
+  await getDatosGenerales(idusuario).then((response) => {
+    cliente.value = response.cliente;
+    concesion.value = response.concesion;
+    peajes.value = response.peajes;
+    Tipos.value = response.Tipos;
+    Subtipos.value = response.Subtipos;
+    Equipos.value = response.Equipos;
+    Prioridades.value = response.Prioridades;
+    Estados.value = response.Estados;
+    Solicitudes.value = response.Solicitudes;
+    Procesos.value = response.Procesos;
+    Usuarios.value = response.Usuarios;
+    visible.value = false;
+  });
+};
+
+const solicitudesTiempo = () => {
+  // Array original con objetos JSON
+  const arrayOriginal = tiquetes.value;
+
+  // Objeto para realizar el seguimiento del recuento de elementos por mes
+  const countByMonth = {};
+
+  // Itera sobre cada elemento del array original
+  arrayOriginal.forEach((obj) => {
+    const createdAt = new Date(obj.created_at);
+    const month = createdAt.getMonth();
+
+    // Incrementa el recuento correspondiente al mes actual
+    if (countByMonth[month]) {
+      countByMonth[month]++;
+    } else {
+      countByMonth[month] = 1;
+    }
+  });
+
+  // Crea un nuevo array con la cantidad de elementos por mes
+  const arrayCantidadPorMes = [];
+  for (let i = 0; i < 12; i++) {
+    const cantidad = countByMonth[i] || 0;
+    arrayCantidadPorMes.push(cantidad);
+  }
+
+  // Imprime el nuevo array  Object.values(countByTipo);
+  dataSolicitudesTiempo.value = arrayCantidadPorMes;
+};
+
+//////---- Graficas de tiquetes por cliente
 watchEffect(() => {
   {
     const countByEstado = {};
     const countByPrioridad = {};
     const countByTipo = {};
-    const countBySolicitud = {};
 
     // Contar la cantidad de objetos por estado
     tiquetes.value.forEach((obj) => {
@@ -252,98 +332,15 @@ watchEffect(() => {
       }
     });
 
-    // const filteredArray = computed(() => {
-    //   return tiquetes.value.filter((item1) =>
-    //     Prioridades.value.some((item2) => item2.id === item1.prioridad)
-    //   );
-    // });
     countArrayEstado.value = Object.values(countByEstado);
     countArrayPrioridad.value = Object.values(countByPrioridad);
     countArrayTipo.value = Object.values(countByTipo);
   }
 });
-const loadData = async () => {
-  if (!admi) {
-    await getTiquetes(`cliente=eq.${cliente.value[0].id}&estado=neq.8&`).then(
-      (response) => {
-        tiquetes.value = response.data;
-        solicitudesTiempo();
-      }
-    );
-  } else {
-    await getTiquetes(
-      `concesion=eq.${cliente.value[0].concesion}&estado=neq.8&`
-    ).then((response) => {
-      tiquetes.value = response.data;
-      solicitudesTiempo();
-    });
-  }
-  visible.value = false;
-};
-
-const conteoPorParametro = () => {
-  cardsValue.value.incidentes = tiquetes.value.filter(
-    (p) => p.solicitud == 1
-  ).length;
-  cardsValue.value.requerimientos = tiquetes.value.filter(
-    (p) => p.solicitud == 2
-  ).length;
-  cardsValue.value.pqr = tiquetes.value.filter((p) => p.solicitud == 3).length;
-};
-
-const DatosGenerales = async () => {
-  visible.value = true;
-  await getDatosGenerales(idusuario).then((response) => {
-    cliente.value = response.cliente;
-    concesion.value = response.concesion;
-    peajes.value = response.peajes;
-    Tipos.value = response.Tipos;
-    Subtipos.value = response.Subtipos;
-    Equipos.value = response.Equipos;
-    Prioridades.value = response.Prioridades;
-    Estados.value = response.Estados;
-    Solicitudes.value = response.Solicitudes;
-    Procesos.value = response.Procesos;
-    Usuarios.value = response.Usuarios;
-    visible.value = false;
-  });
-};
-
-const solicitudesTiempo = () => {
-  // Array original con objetos JSON
-  const arrayOriginal = tiquetes.value;
-
-  // Objeto para realizar el seguimiento del recuento de elementos por mes
-  const countByMonth = {};
-
-  // Itera sobre cada elemento del array original
-  arrayOriginal.forEach((obj) => {
-    const createdAt = new Date(obj.created_at);
-    const month = createdAt.getMonth();
-
-    // Incrementa el recuento correspondiente al mes actual
-    if (countByMonth[month]) {
-      countByMonth[month]++;
-    } else {
-      countByMonth[month] = 1;
-    }
-  });
-
-  // Crea un nuevo array con la cantidad de elementos por mes
-  const arrayCantidadPorMes = [];
-  for (let i = 0; i < 12; i++) {
-    const cantidad = countByMonth[i] || 0;
-    arrayCantidadPorMes.push(cantidad);
-  }
-
-  // Imprime el nuevo array  Object.values(countByTipo);
-  dataSolicitudesTiempo.value = arrayCantidadPorMes;
-};
 
 onMounted(async () => {
   await DatosGenerales();
   await loadData();
-  await conteoPorParametro();
   // var chart = new ApexCharts(document.querySelector("#chart"), options);
   // chart.render();
 });
@@ -354,7 +351,6 @@ const tiquete = supabase
     "postgres_changes",
     { event: "*", schema: "public", table: "tiquete" },
     (payload) => {
-      // location.reload();
       loadData();
     }
   )

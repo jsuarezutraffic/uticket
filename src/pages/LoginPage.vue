@@ -6,8 +6,7 @@
       <div class="div-redondo text-center shadow-5">
         <q-img
           class="q-pa-xs"
-          fit="fill"
-          width="13rem"
+          fit="scale-down"
           height="21rem"
           src="../assets/img/LogoUticket.png"
         />
@@ -192,7 +191,6 @@ const login = async () => {
           }
         })
         .catch((error) => {
-          console.log(error);
           $q.notify({
             type: "negative",
             message: "No se encuentra registrado en el sistema como un cliente",
@@ -201,15 +199,23 @@ const login = async () => {
         });
     })
     .catch((error) => {
-      if (error.response.data.error == "invalid_grant") {
+      if (error.response.data.error_description == "Email not confirmed") {
+        $q.notify({
+          type: "negative",
+          message:
+            "Correo no confirmado, por favor revise su correo electronico",
+          timeout: 4000,
+        });
+      }
+      if (
+        error.response.data.error_description == "Invalid login credentials"
+      ) {
         $q.notify({
           type: "negative",
           message:
             "Credensiales invalidas, por favor verificar correo y contraseña",
           timeout: 4000,
         });
-      } else {
-        console.log(error.response.data);
       }
     });
 };

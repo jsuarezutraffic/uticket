@@ -120,6 +120,9 @@ const postDetallesTiquetes = (postData) => {
   return api.post(`detalletiquete`, postData);
 };
 
+const postCliente = (postData) => {
+  return api.post(`cliente`, postData);
+};
 //Put
 const putTiquetes = (filtro, postData) => {
   return api.put(`tiquete?${filtro}`, postData);
@@ -166,6 +169,7 @@ export {
   postDetallesTiquetes,
   postTiquetes,
   postCorreo,
+  postCliente,
   putTiquetes,
   putCliente,
 };

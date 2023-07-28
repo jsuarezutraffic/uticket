@@ -121,7 +121,7 @@
       <q-form autofocus @submit.prevent="updateCliente()">
         <q-card-section>
           <div style="font-size: 18px; font-weight: bold; align-self: center">
-            Modificar Cliente - {{ Fila.nombres }}
+            Modificar Usuario - {{ Fila.nombres }}
           </div>
         </q-card-section>
         <q-card-section>

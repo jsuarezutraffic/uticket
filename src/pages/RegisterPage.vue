@@ -164,11 +164,15 @@ import { supabase } from "../supabase";
 import { useQuasar } from "quasar";
 import { LocalStorage, date, SessionStorage } from "quasar";
 import { useRouter, useRoute } from "vue-router";
+import { useMainStore } from "stores/main";
+import { api } from "src/boot/axios";
+import { postCliente } from "../services/services";
 const router = useRouter();
 defineComponent({
   name: "RegisterPage",
 });
 
+const store = useMainStore();
 let $q = useQuasar();
 const email = ref("");
 const confirmEmail = ref("");
@@ -217,32 +221,148 @@ const CreateAccount = async () => {
       timeout: 3000,
     });
   } else {
-    const { data, error } = await supabase.auth.signUp({
-      email: object.value.email,
-      password: object.value.password,
-    });
+    // const { data, error } = await supabase.auth.signUp({
+    //   email: object.value.email,
+    //   password: object.value.password,
+    // });
+    // const headers = {
+    //   apikey: store.supabase_Key_Admi,
+    //   "Content-Type": "application/json",
+    // };
+    // api
+    //   .post(
+    //     `${store.supabase_Url}/auth/v1/signup`,
+    //     { email: object.value.email, password: object.value.password },
+    //     { headers }
+    //   )
+    //   .then((response) => {
+    //     console.log(response);
+    //   })
+    //   .catch((error) => {
+    //     console.log(error);
+    //     $q.notify({
+    //       type: "negative",
+    //       message: "error",
+    //       timeout: 4000,
+    //     });
+    //   });
+    // object.value.estado = true;
 
-    object.value.estado = true;
-    object.value.usuario = data.user.id;
-    const { datacliente, errorcliente } = await supabase
-      .from("cliente")
-      .insert([
-        {
-          correo: object.value.email,
-          nombres: object.value.name + " " + object.value.lastName,
-          concesion: object.value.concesion,
-          estado: true,
-          usuario: data.user.id,
-          telefono: object.value.phoneNumber,
-        },
-      ]);
-    const toPath = "/";
-    router.push(toPath);
-    $q.notify({
-      type: "info",
-      message: "Por favor Verifique su correo Electrónico",
-      timeout: 5000,
-    });
+    const headers = {
+      apikey: store.supabase_Key_Admi,
+      "Content-Type": "application/json",
+      Authorization: "Bearer " + store.supabase_Key_Admi,
+    };
+    api
+      .get(
+        `${store.supabase_Url}/rest/v1/cliente?correo=eq.${object.value.email}&select=*`,
+        { headers }
+      )
+      .then((response2) => {
+        if (response2.data.length > 0) {
+          $q.notify({
+            type: "negative",
+            message: "El correo ya se encuentra registrado en el sistema",
+            timeout: 4000,
+          });
+        } else {
+          api
+            .post(
+              `${store.supabase_Url}/auth/v1/signup`,
+              { email: object.value.email, password: object.value.password },
+              { headers }
+            )
+            .then((response) => {
+              object.value.usuario = response.data.id;
+              api
+                .post(
+                  `${store.supabase_Url}/rest/v1/cliente`,
+                  {
+                    correo: object.value.email,
+                    nombres: object.value.name + " " + object.value.lastName,
+                    concesion: object.value.concesion,
+                    estado: false,
+                    usuario: object.value.usuario,
+                    telefono: object.value.phoneNumber,
+                  },
+                  { headers }
+                )
+                .then((response3) => {
+                  const toPath = "/";
+                  router.push(toPath);
+                  $q.notify({
+                    type: "info",
+                    message:
+                      "Registro exitoso, por favor revise su correo electrónico",
+                    timeout: 4000,
+                  });
+                });
+            });
+        }
+      });
+
+    // api
+    //   .post(
+    //     `${store.supabase_Url}/rest/v1/cliente`,
+    //     {
+    //       correo: object.value.email,
+    //       nombres: object.value.name + " " + object.value.lastName,
+    //       concesion: object.value.concesion,
+    //       estado: false,
+    //       usuario: object.value.usuario,
+    //       telefono: object.value.phoneNumber,
+    //     },
+    //     { headers }
+    //   )
+    //   .then((response) => {
+    //     console.log(response.data);
+    //     api.defaults.headers.common.Authorization =
+    //       "Bearer " + response.data.access_token;
+    //     api.defaults.headers.common.apikey = store.supabase_Key_Admi;
+
+    //     // object.value.usuario = response.data.id;
+    //   });
+
+    // const { datacliente, errorcliente } = await supabase
+    //   .from("cliente")
+    //   .insert([
+    //     {
+    //       correo: object.value.email,
+    //       nombres: object.value.name + " " + object.value.lastName,
+    //       concesion: object.value.concesion,
+    //       estado: false,
+    //       usuario: object.value.usuario,
+    //       telefono: object.value.phoneNumber,
+    //     },
+    //   ]);
+    // console.log(datacliente);
+    // console.log(errorcliente);
+    // await postCliente({
+    //   correo: object.value.email,
+    //   nombres: object.value.name + " " + object.value.lastName,
+    //   concesion: object.value.concesion,
+    //   estado: false,
+    //   usuario: data.user.id,
+    //   telefono: object.value.phoneNumber,
+    // })
+    //   .then((response) => {
+    //     console.log(response);
+    //     const toPath = "/";
+    //     router.push(toPath);
+    //     $q.notify({
+    //       type: "info",
+    //       message: "Por favor Verifique su correo Electrónico",
+    //       timeout: 5000,
+    //     });
+    //   })
+    //   .catch((error) => {
+    //     console.log(error);
+    //     $q.notify({
+    //       type: "negative",
+    //       message: "No se encuentra registrado en el sistema como un cliente",
+    //       timeout: 4000,
+    //     });
+    //   });
   }
 };
 

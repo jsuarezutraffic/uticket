@@ -39,8 +39,8 @@ import { computed, toRefs, ref, watchEffect, onMounted } from "vue";
 import * as services from "../../services/services";
 
 // Convertir props a variable
-const props = defineProps(["Series", "title", "width"]);
-let { Series, title, width } = toRefs(props);
+const props = defineProps(["Series"]);
+let { Series } = toRefs(props);
 
 //variables
 const visible = ref(true);
@@ -64,14 +64,14 @@ const procesarDataTiquetes = async () => {
   dataUser.value = [];
   serieUser.value = [];
   categoriesUser.value = [];
-  //tiquete?cliente=eq.${cliente.value[0].id}&estado=neq.8&select=*
   await services.getTiquetes(`&estado=neq.8&`).then((response) => {
     tiquetes.value = response.data;
   });
   await services.getUsuarios("").then((response) => {
     usuarios.value = response.data;
   });
-  await services.getCliente("").then((response) => {
+  //selecciona los usuarios que estan activos
+  await services.getCliente("&estado=eq.TRUE&").then((response) => {
     clientes.value = response.data;
   });
   await services.getSolicitud("").then((response) => {
@@ -205,13 +205,9 @@ const optionsCalcTipo = computed(() => {
 });
 
 watchEffect(() => {
-  console.log(Series.value[0]);
   procesarDataTiquetes();
   if (Series.value[0]) {
     visible.value = false;
-  }
-  if (!Series.value[0]) {
-    visible.value = true;
   }
 });
 
@@ -266,12 +262,6 @@ const optionsCalcUser = computed(() => {
     },
     colors: ["#47ad9e"],
   };
-
-  let labels = [];
-  Series.value.forEach((item) => {
-    labels.push(`${item.label}`);
-  });
-  options.labels = labels;
 
   return options;
 });
