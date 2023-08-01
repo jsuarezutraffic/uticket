@@ -169,10 +169,14 @@ const login = async () => {
         .then((response2) => {
           if (response2.data.length > 0) {
             if (response2.data[0].estado) {
-              const toPath = "/";
-              router.push(toPath);
-              store.inicio(response.data);
-              store.inicioCliente(response2.data[0]);
+              async function iniciar(params) {
+                await store.inicio(response.data);
+                await store.inicioCliente(response2.data[0]);
+                await store.loadGeneralData(response2.data[0]);
+                const toPath = "/";
+                router.push(toPath);
+              }
+              iniciar();
             } else {
               $q.notify({
                 type: "negative",

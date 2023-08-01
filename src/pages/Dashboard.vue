@@ -118,6 +118,8 @@ import SolicitudesTiempo from "src/components/Charts/SolicitudesTiempo.vue";
 import MainTable from "src/components/MainTable.vue";
 import { supabase } from "src/supabase";
 import { getTiquetes, getDatosGenerales } from "../services/services";
+import { useMainStore } from "src/stores/main"; // Asegúrate de que la ruta sea correcta según la ubicación de tu almacén
+const store = useMainStore();
 LocalStorage.set("filtro", "Solicitudes");
 const idusuario = LocalStorage.getItem("IdUsuario");
 const admi = LocalStorage.getItem("admi");
@@ -186,21 +188,34 @@ const conteoPorParametro = () => {
 };
 
 const DatosGenerales = async () => {
+  console.log(store.generalData);
   visible.value = true;
-  await getDatosGenerales(idusuario).then((response) => {
-    cliente.value = response.cliente;
-    concesion.value = response.concesion;
-    peajes.value = response.peajes;
-    Tipos.value = response.Tipos;
-    Subtipos.value = response.Subtipos;
-    Equipos.value = response.Equipos;
-    Prioridades.value = response.Prioridades;
-    Estados.value = response.Estados;
-    Solicitudes.value = response.Solicitudes;
-    Procesos.value = response.Procesos;
-    Usuarios.value = response.Usuarios;
-    visible.value = false;
-  });
+  cliente.value = store.generalData.cliente;
+  concesion.value = store.generalData.concesion;
+  peajes.value = store.generalData.peajes;
+  Tipos.value = store.generalData.Tipos;
+  Subtipos.value = store.generalData.Subtipos;
+  Equipos.value = store.generalData.Equipos;
+  Prioridades.value = store.generalData.Prioridades;
+  Estados.value = store.generalData.Estados;
+  Solicitudes.value = store.generalData.Solicitudes;
+  Procesos.value = store.generalData.Procesos;
+  Usuarios.value = store.generalData.Usuarios;
+  visible.value = false;
+  // await getDatosGenerales(idusuario).then((response) => {
+  //   cliente.value = response.cliente;
+  //   concesion.value = response.concesion;
+  //   peajes.value = response.peajes;
+  //   Tipos.value = response.Tipos;
+  //   Subtipos.value = response.Subtipos;
+  //   Equipos.value = response.Equipos;
+  //   Prioridades.value = response.Prioridades;
+  //   Estados.value = response.Estados;
+  //   Solicitudes.value = response.Solicitudes;
+  //   Procesos.value = response.Procesos;
+  //   Usuarios.value = response.Usuarios;
+  //   visible.value = false;
+  // });
 };
 
 const solicitudesTiempo = () => {

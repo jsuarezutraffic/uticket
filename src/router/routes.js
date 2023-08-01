@@ -42,7 +42,7 @@ const routes = [
       {
         path: "/prueba",
         meta: { requireLogin: true },
-        component: () => import("pages/pruebaPage.vue"),
+        component: () => import("pages/Prueba.vue"),
       },
     ],
   },

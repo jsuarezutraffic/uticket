@@ -127,7 +127,7 @@
                 {{ peajes.filter((p) => p.id == col.value)[0].nombre }}
               </div>
               <div v-else-if="col.name == 'solicitud'">
-                {{ Solicitudes.filter((p) => p.orden == col.value)[0].nombre }}
+                <!-- {{ Solicitudes.filter((p) => p.orden == col.value)[0].nombre }} -->
               </div>
               <div v-else-if="col.name == 'estado'">
                 <div
@@ -162,7 +162,10 @@
                 {{ Tipos.filter((p) => p.id == col.value)[0].descripcion }}
               </div>
               <div v-else-if="col.name == 'subtipo'">
-                {{ Subtipos.filter((p) => p.id == col.value)[0].descripcion }}
+                {{
+                  store.generalData.subtipo.filter((p) => p.id == col.value)[0]
+                    .descripcion
+                }}
               </div>
               <div v-else-if="col.name == 'finalizar'">
                 <q-btn
@@ -280,8 +283,9 @@
     transition-hide="scale"
   >
     <q-card style="max-width: 100%; width: 70%">
-      <q-form autofocus @submit.prevent="AgregarTicket()">
-        <q-card-section>
+      <!-- <q-form autofocus @submit.prevent="AgregarTicket()">AgregarTicketStore -->
+      <q-form autofocus @submit.prevent="AgregarTicketStore()">
+        <!-- <q-card-section>
           <div style="font-size: 18px; font-weight: bold; align-self: center">
             Agregar Nuevo Tiquete
           </div>
@@ -521,7 +525,8 @@
             text-color="dark"
             no-caps
           />
-        </q-card-actions>
+        </q-card-actions>-->
+        <ChatBotSimple></ChatBotSimple>
       </q-form>
     </q-card>
   </q-dialog>
@@ -543,7 +548,25 @@
       </div>
     </q-card>
   </q-dialog>
-
+  <q-dialog v-model="chatStore.confirModal">
+    <q-card style="width: 35em">
+      <div class="column" style="margin: 20px">
+        <div class="col-4" style="margin: auto; padding: 10px">
+          <q-icon name="error_outline" size="6em" />
+        </div>
+        <div class="col-4" style="margin: auto; padding: 10px">
+          <span style="font-size: 18px">
+            Confirmar para agregar nuevo ticket</span
+          >
+        </div>
+        <div class="col-2" style="margin: auto; padding: 10px">
+          <q-btn label="No" v-close-popup color="negative" />
+          <span style="padding-right: 40px"></span>
+          <q-btn label="Si" color="primary" @click="AgregarTicketStore()" />
+        </div>
+      </div>
+    </q-card>
+  </q-dialog>
   <!-- Modal Principal de accion de tiquete -->
   <q-dialog
     v-model="modalDetalles"
@@ -955,9 +978,13 @@ import ApexDonut from "src/components/Charts/ApexDonut.vue";
 import FileInput from "src/components/FileImage.vue";
 import InputTextJump from "src/components/InputTextSaltoLinea.vue";
 import VerImagenArray from "src/components/VerImagenArray.vue";
+import ChatBotSimple from "src/pages/Prueba.vue";
 import Recorder from "recorder-js";
 import * as services from "../services/services";
-
+import { useChatStore } from "src/stores/chat"; // Asegúrate de que la ruta sea correcta según la ubicación de tu almacén
+import { useMainStore } from "src/stores/main"; // Asegúrate de que la ruta sea correcta según la ubicación de tu almacén
+const chatStore = useChatStore();
+const store = useMainStore();
 const admi = LocalStorage.getItem("admi");
 
 //props
@@ -1336,22 +1363,20 @@ const getDataTiquetes = async (filtro) => {
 
 const DatosGenerales = async () => {
   visible.value = true;
-  await services.getDatosGenerales(idusuario).then((response) => {
-    cliente.value = response.cliente;
-    clientes.value = response.clientes;
-    concesion.value = response.concesion;
-    peajes.value = response.peajes;
-    Tipos.value = response.Tipos;
-    Subtipos.value = response.Subtipos;
-    Equipos.value = response.Equipos;
-    Prioridades.value = response.Prioridades;
-    Estados.value = response.Estados;
-    Solicitudes.value = response.Solicitudes;
-    Procesos.value = response.Procesos;
-    Usuarios.value = response.Usuarios;
-    table.value = true;
-    visible.value = false;
-  });
+  cliente.value = store.generalData.cliente;
+  clientes.value = store.generalData.clientes;
+  concesion.value = store.generalData.concesion;
+  peajes.value = store.generalData.peaje;
+  Tipos.value = store.generalData.tipo;
+  Subtipos.value = store.generalData.subtipo;
+  Equipos.value = store.generalData.equipo;
+  Prioridades.value = store.generalData.prioridad;
+  Estados.value = store.generalData.estado;
+  Solicitudes.value = store.generalData.solicitud;
+  Procesos.value = store.generalData.proceso;
+  Usuarios.value = store.generalData.usuario;
+  visible.value = false;
+  table.value = true;
 };
 
 const DevolverTiquete = async () => {
@@ -1552,6 +1577,68 @@ const AgregarTicket = async () => {
   loadData();
 };
 
+const AgregarTicketStore = async () => {
+  chatStore.confirModal = false;
+  chatStore.indicePreguntaActual = 0;
+  modalNuevoTicket.value = false;
+  visible.value = true;
+  // Fila.value.id = 0;
+  delete Fila.value.id;
+  delete Fila.value.created_at;
+  delete Fila.value.numero;
+
+  Fila.value.cliente = cliente.value[0].id;
+  Fila.value.concesion = concesion.value[0].id;
+  Fila.value.asignado = Usuarios.value.filter(
+    (p) => p.nivel == 1 && p.estado == true
+  )[0].id;
+  Fila.value.privado = null;
+  Fila.value.proceso = 1;
+  Fila.value.estado = 1;
+  Fila.value.peaje = chatStore.preguntas[0].respuesta.id;
+  Fila.value.tipo = chatStore.preguntas[1].respuesta.id;
+  Fila.value.subtipo = chatStore.preguntas[2].respuesta.id;
+  Fila.value.observaciones = chatStore.preguntas[3].respuesta;
+  Fila.value.evidencia = chatStore.preguntas[4].respuesta;
+  Fila.value.audio = chatStore.preguntas[5].respuesta;
+  Fila.value.solicitud = 2;
+  Fila.value.prioridad = 2;
+  await services
+    .postTiquetes(Fila.value)
+    .then((response) => {
+      if (response.status == 201 || response.status == 200) {
+        $q.notify({
+          type: "positive",
+          message: "Ticket Creado exitosamente",
+          timeout: 4000,
+        });
+        dataMessage = {};
+        dataMessage.estado = "Creado";
+        dataMessage.mensaje1 =
+          "La solicitud sera atendida por el equipo de soporte de";
+        dataMessage.mensaje2 =
+          "Sera informado por este medio y el aplicativo cuando se solucione la problematica.";
+        enviarCorreo(dataMessage);
+        valorDatosExportado.value = "";
+      }
+    })
+    .catch((error) => {
+      // Capturar el error y mostrarlo al usuario
+      if (error.response) {
+        // Error de respuesta HTTP (por ejemplo, 404, 500, etc.)
+        console.error("Error de respuesta:", error.response.status);
+        console.error("Mensaje de error:", error.response.data);
+      } else if (error.request) {
+        // Error de solicitud sin respuesta (por ejemplo, timeout)
+        console.error("Error de solicitud:", error.request);
+      } else {
+        // Error de configuración u otro tipo de error
+        console.error("Error:", error.message);
+      }
+    });
+
+  loadData();
+};
 const enviarCorreo = async (data) => {
   const dominio = "https://uticket.cus.utraffic.co/";
   var accion = `Ticket ${data.estado} Exitosamente!`;
