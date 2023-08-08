@@ -1,20 +1,23 @@
 <template>
   <div class="chart-wrap row" v-if="tiquetes.length > 0">
-    <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6 q-pa-lg">
+    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 q-pa-lg">
       <apexchart
+        height="350"
         type="bar"
         width="100%"
         :options="optionsCalcUser"
         :series="seriesCalcUser"
+        :key="seriesCalcUser"
         @click="selectTurno"
       ></apexchart>
     </div>
     <div
-      class="col-xs-12 col-sm-12 col-md-6 col-lg-6 q-pa-lg"
+      class="col-xs-12 col-sm-12 col-md-12 col-lg-12 q-pa-lg"
       id="chart"
       v-if="active"
     >
       <apexchart
+        height="300"
         width="100%"
         type="bar"
         :options="optionsCalcTipo"
@@ -37,17 +40,16 @@
 /*eslint-disable */
 import { computed, toRefs, ref, watchEffect, onMounted } from "vue";
 import * as services from "../../services/services";
+import { useMainStore } from "src/stores/main"; // Asegúrate de que la ruta sea correcta según la ubicación de tu almacén
 
 // Convertir props a variable
-const props = defineProps(["Series"]);
-let { Series } = toRefs(props);
+const props = defineProps(["Series", "tiquetes"]);
+let { Series, tiquetes } = toRefs(props);
+const store = useMainStore();
 
 //variables
 const visible = ref(true);
-const tiquetes = ref([]);
-const usuarios = ref([]);
 const clientes = ref([]);
-const Solicitudes = ref([]);
 const active = ref(false);
 
 const serieUser = ref([]);
@@ -64,19 +66,12 @@ const procesarDataTiquetes = async () => {
   dataUser.value = [];
   serieUser.value = [];
   categoriesUser.value = [];
-  await services.getTiquetes(`&estado=neq.8&`).then((response) => {
-    tiquetes.value = response.data;
-  });
-  await services.getUsuarios("").then((response) => {
-    usuarios.value = response.data;
-  });
+  // await services.getTiquetes(`&estado=neq.8&`).then((response) => {
+  //   tiquetes.value = response.data;
+  // });
   //selecciona los usuarios que estan activos
   await services.getCliente("&estado=eq.TRUE&").then((response) => {
     clientes.value = response.data;
-  });
-  await services.getSolicitud("").then((response) => {
-    Solicitudes.value = response.data;
-    visible.value = false;
   });
 
   for (const iterator of clientes.value) {
@@ -260,7 +255,7 @@ const optionsCalcUser = computed(() => {
         color: "#263238",
       },
     },
-    colors: ["#47ad9e"],
+    // colors: ["#002c3e"],
   };
 
   return options;

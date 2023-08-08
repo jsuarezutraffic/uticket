@@ -32,6 +32,7 @@ export const useMainStore = defineStore("main", {
       this.isAuthenticated = true;
       LocalStorage.set("IdUsuario", data.user.id);
       LocalStorage.set("email", data.user.email);
+      LocalStorage.set("filtro", "Solicitudes");
     },
     inicioCliente(data) {
       LocalStorage.set("admi", data.admi);

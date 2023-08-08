@@ -4,35 +4,35 @@
       <div class="row text-primary">
         <div class="col-12 q-py-lg q-px-sm">
           <div class="row justify-between">
-            <div class="col-6 text-center">
+            <div class="col-4 text-left q-mx-lg">
               <BtnBox
                 title="Solicitudes"
                 color="primary"
                 :valor="tiquetes.length"
               ></BtnBox>
             </div>
-            <div class="col-6 text-center">
+            <!-- <div class="col-6 text-center">
               <BtnBox
                 title="Requerimiento"
                 color="primary"
                 :valor="cardsValue.requerimientos"
               ></BtnBox>
-            </div>
+            </div> -->
           </div>
         </div>
         <div class="col-12 q-pa-lg">
           <div class="row">
-            <div class="col-xs-12 col-sm-4 col-md-4 center-vertical">
+            <div class="col-xs-12 col-sm-6 col-md-6 center-vertical">
               <apex-donut
                 heightDonut="height: 160px;"
                 :Series="countArrayEstado"
                 :cliente="cliente"
                 :prioridades="Prioridades"
                 title="Estados"
-                width="250"
+                width="290"
               />
             </div>
-            <div class="col-xs-12 col-sm-4 col-md-4 center-vertical">
+            <!-- <div class="col-xs-12 col-sm-4 col-md-4 center-vertical">
               <apex-donut
                 heightDonut="height: 160px;"
                 :Series="countArrayPrioridad"
@@ -41,15 +41,15 @@
                 title="Prioridad"
                 width="250"
               />
-            </div>
-            <div class="col-xs-12 col-sm-4 col-md-4 center-vertical">
+            </div> -->
+            <div class="col-xs-12 col-sm-6 col-md-6 center-vertical">
               <apex-donut
                 heightDonut="height: 160px;"
                 :Series="countArrayTipo"
                 :cliente="cliente"
                 :prioridades="Prioridades"
                 title="Tipo"
-                width="250"
+                width="290"
               />
             </div>
           </div>
@@ -63,7 +63,7 @@
     </div>
     <div class="col-sm-12 col-xs-12 col-md-6 col-lg-6 bg-primary">
       <div class="row text-primary">
-        <div class="col-12 q-py-lg q-px-sm">
+        <!-- <div class="col-12 q-py-lg q-px-sm">
           <div class="row justify-between">
             <div class="col-6 text-center">
               <BtnBox
@@ -82,21 +82,32 @@
               ></BtnBox>
             </div>
           </div>
-        </div>
-        <div class="col-12">
+        </div> -->
+        <!-- <div class="col-12">
           <MainTable :showMaintable="showMaintable" />
-        </div>
+        </div> -->
       </div>
-    </div>
-    <div class="col-12 q-pa-md" v-if="LocalStorage.getItem('admi')">
       <q-card>
+        <ApexBarra
+          heightDonut="height: 100px;"
+          :Series="countArrayEstado"
+          title="Estados"
+          width="250"
+          :tiquetes="tiquetes"
+        />
+      </q-card>
+    </div>
+
+    <div class="col-12 q-pa-md" v-if="LocalStorage.getItem('admi')">
+      <!-- <q-card>
         <ApexBarra
           heightDonut="height: 160px;"
           :Series="countArrayEstado"
           title="Estados"
           width="250"
+          :tiquetes="tiquetes"
         />
-      </q-card>
+      </q-card> -->
     </div>
   </div>
 

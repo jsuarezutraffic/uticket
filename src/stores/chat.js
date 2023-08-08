@@ -25,12 +25,6 @@ export const useChatStore = defineStore("chat", {
         respuesta: null,
       },
       {
-        key: "comentario",
-        pregunta: "Por favor agregar un comentario",
-        opciones: null, // No hay opciones para la primera pregunta
-        respuesta: null,
-      },
-      {
         key: "evidencia",
         pregunta: "Por favor subir evidencias",
         opciones: null, // No hay opciones para la primera pregunta
@@ -42,6 +36,13 @@ export const useChatStore = defineStore("chat", {
         opciones: null, // No hay opciones para la primera pregunta
         respuesta: null,
       },
+      {
+        key: "comentario",
+        pregunta: "Por favor agregar un comentario",
+        opciones: null, // No hay opciones para la primera pregunta
+        respuesta: null,
+      },
+
       // Agrega más preguntas aquí...
     ],
     indicePreguntaActual: 0,

@@ -26,7 +26,9 @@
           />
         </q-toolbar-title>
         <q-space />
-
+        <div class="btns-header q-px-md">
+          <q-btn size="15px" no-caps color="accent" label="Dashboard" to="/" />
+        </div>
         <!-- Header Right-side -->
         <div class="q-gutter-sm row items-center no-wrap">
           <!-- <q-btn
@@ -127,13 +129,8 @@ function logout() {
   router.push(toPath);
 }
 function inicio() {
-  // if (configstore.config.nivel == 2) {
-  const toPath = "/";
+  const toPath = "/tiquetes";
   router.push(toPath);
-  // } else if (configstore.config.nivel == 2) {
-  //   const toPath = "/";
-  //   router.push(toPath);
-  // }
 }
 onMounted(async () => {
   await getUsers();

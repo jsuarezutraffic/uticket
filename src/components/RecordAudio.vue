@@ -47,17 +47,12 @@
 </template>
 
 <script setup>
-import { useChatStore } from "src/stores/chat"; // Asegúrate de que la ruta sea correcta según la ubicación de tu almacén
-import {
-  defineComponent,
-  ref,
-  onMounted,
-  onUnmounted,
-  onBeforeUnmount,
-  watch,
-} from "vue";
-import FileInput from "src/components/FileImage.vue";
+import { ref, onUnmounted, watch } from "vue";
 import Recorder from "recorder-js";
+import { LocalStorage } from "quasar";
+import { useMainStore } from "src/stores/main"; // Asegúrate de que la ruta sea correcta según la ubicación de tu almacén
+
+const store = useMainStore();
 
 //variables para el grabado de notas de voz
 const isRecording = ref(false);
@@ -221,6 +216,7 @@ const emit = defineEmits(["export-audio"]);
 
 // Emitir evento cuando DatosExportado cambia
 watch(transcript, (currentValue) => {
+  LocalStorage.set("transcript", store.encryptptData(transcript.value));
   emit("export-audio", {
     transcript: transcript.value,
     base64Audio: base64Audio.value,

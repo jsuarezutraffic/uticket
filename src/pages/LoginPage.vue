@@ -125,6 +125,12 @@
         </div>
       </div>
     </div>
+    <q-inner-loading
+      :showing="visible"
+      label="Cargando..."
+      label-class="text-teal"
+      label-style="font-size: 1.1em"
+    />
   </div>
 </template>
 <script setup>
@@ -142,6 +148,7 @@ let $q = useQuasar();
 const store = useMainStore();
 const router = useRouter();
 const isPwd = ref(true);
+const visible = ref(false);
 
 const supabaseKey = store.supabase_Key_Admi;
 const headers = {
@@ -153,6 +160,7 @@ const username = ref("");
 const password = ref("");
 
 const login = async () => {
+  visible.value = true;
   api
     .post(
       `${store.supabase_Url}/auth/v1/token?grant_type=password`,
@@ -173,11 +181,13 @@ const login = async () => {
                 await store.inicio(response.data);
                 await store.inicioCliente(response2.data[0]);
                 await store.loadGeneralData(response2.data[0]);
-                const toPath = "/";
+                // const toPath = "/";
+                const toPath = "/tiquetes";
                 router.push(toPath);
               }
               iniciar();
             } else {
+              visible.value = false;
               $q.notify({
                 type: "negative",
                 message:
@@ -186,6 +196,7 @@ const login = async () => {
               });
             }
           } else {
+            visible.value = false;
             $q.notify({
               type: "negative",
               message:
@@ -195,6 +206,7 @@ const login = async () => {
           }
         })
         .catch((error) => {
+          visible.value = false;
           $q.notify({
             type: "negative",
             message: "No se encuentra registrado en el sistema como un cliente",
@@ -203,6 +215,7 @@ const login = async () => {
         });
     })
     .catch((error) => {
+      visible.value = false;
       if (error.response.data.error_description == "Email not confirmed") {
         $q.notify({
           type: "negative",

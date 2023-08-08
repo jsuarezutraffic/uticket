@@ -15,23 +15,23 @@
             width="320"
           />
 
-          <apex-donut
+          <!-- <apex-donut
             heightDonut="height: 260px;"
             :Series="countArrayPrioridad"
             :cliente="cliente"
             :prioridades="Prioridades"
             title="Prioridades"
             width="320"
-          />
+          /> -->
 
-          <apex-donut
+          <!-- <apex-donut
             heightDonut="height: 260px;"
             :Series="countArraySolicitud"
             :cliente="cliente"
             :prioridades="Prioridades"
             title="Solicitudes"
             width="320"
-          />
+          /> -->
 
           <apex-donut
             heightDonut="height: 260px;"
@@ -80,7 +80,7 @@
             "
             >Nuevo Ticket
           </q-btn>
-          <q-btn
+          <!-- <q-btn
             v-if="showMaintable.showGraficas"
             outline=""
             to="/"
@@ -88,7 +88,7 @@
             color="tertiary"
             size="md"
             >Volver
-          </q-btn>
+          </q-btn> -->
           <q-btn
             v-if="!showMaintable.showGraficas"
             outline=""
@@ -282,250 +282,9 @@
     transition-show="scale"
     transition-hide="scale"
   >
-    <q-card style="max-width: 100%; width: 70%">
+    <q-card style="max-width: 100%; width: 50%">
       <!-- <q-form autofocus @submit.prevent="AgregarTicket()">AgregarTicketStore -->
       <q-form autofocus @submit.prevent="AgregarTicketStore()">
-        <!-- <q-card-section>
-          <div style="font-size: 18px; font-weight: bold; align-self: center">
-            Agregar Nuevo Tiquete
-          </div>
-        </q-card-section>
-        <q-card-section>
-          <div class="row">
-            <div class="col-12">
-              <div class="row" style="background: #ffffff">
-                <div class="col-md-4 col-sm-6 col-xs-12">
-                  <q-input
-                    outlined
-                    v-model="concesion[0].nombre"
-                    dense
-                    label="Concesion"
-                    class="q-pa-md"
-                    readonly
-                  />
-                </div>
-                <div class="col-md-4 col-sm-6 col-xs-12">
-                  <q-select
-                    outlined
-                    v-model="Fila.peaje"
-                    :options="peajes"
-                    option-label="nombre"
-                    option-value="id"
-                    label="Peaje"
-                    dense
-                    class="q-pa-md"
-                    emit-value
-                    :rules="rules"
-                    lazy-rules
-                    map-options
-                  ></q-select>
-                </div>
-                <div class="col-md-4 col-sm-4 col-xs-12">
-                  <q-select
-                    label="Solicitud"
-                    transition-show="scale"
-                    transition-hide="scale"
-                    outlined
-                    v-model="Fila.solicitud"
-                    dense
-                    :options="Solicitudes"
-                    option-label="nombre"
-                    option-value="orden"
-                    class="q-pa-md"
-                    emit-value
-                    map-options
-                    :rules="rules"
-                    lazy-rules
-                  />
-                </div>
-                <div class="col-md-3 col-sm-4 col-xs-12">
-                  <q-select
-                    label="Tipo"
-                    transition-show="scale"
-                    transition-hide="scale"
-                    outlined
-                    v-model="Fila.tipo"
-                    dense
-                    :options="Tipos"
-                    option-label="descripcion"
-                    option-value="id"
-                    emit-value
-                    map-options
-                    class="q-pa-md"
-                    @update:model-value="TipoSeleccion"
-                    :rules="rules"
-                    lazy-rules
-                  />
-                </div>
-                <div class="col-md-3 col-sm-4 col-xs-12">
-                  <q-select
-                    label="SubTipo"
-                    transition-show="scale"
-                    transition-hide="scale"
-                    outlined
-                    v-model="Fila.subtipo"
-                    dense
-                    :options="SubtipoOptions"
-                    option-label="descripcion"
-                    option-value="id"
-                    class="q-pa-md"
-                    emit-value
-                    map-options
-                    hint="Debe seleccionar un Tipo"
-                    @update:model-value="SubTipoSeleccion"
-                    :rules="rules"
-                    lazy-rules
-                  />
-                </div>
-                <div
-                  v-if="EquiposOptions.length > 0"
-                  class="col-md-3 col-sm-4 col-xs-12"
-                >
-                  <q-select
-                    label="Equipo"
-                    transition-show="scale"
-                    transition-hide="scale"
-                    outlined
-                    v-model="Fila.equipo"
-                    dense
-                    :options="EquiposOptions"
-                    option-label="descripcion"
-                    option-value="id"
-                    class="q-pa-md"
-                    emit-value
-                    map-options
-                  />
-                </div>
-                <div v-if="false" class="col-md-4 col-sm-6 col-xs-12">
-                  <q-select
-                    label="Prioridad"
-                    transition-show="scale"
-                    transition-hide="scale"
-                    outlined
-                    v-model="Fila.prioridad"
-                    dense
-                    :options="Prioridades"
-                    option-label="descripcion"
-                    option-value="id"
-                    class="q-pa-md"
-                    emit-value
-                    map-options
-                    :rules="rules"
-                    lazy-rules
-                  />
-                </div>
-
-                <div v-if="false" class="col-md-4 col-sm-6 col-xs-12">
-                  <q-select
-                    label="Estado"
-                    transition-show="scale"
-                    transition-hide="scale"
-                    outlined
-                    v-model="Fila.estado"
-                    dense
-                    :options="Estados"
-                    option-label="descripcion"
-                    option-value="orden"
-                    class="q-pa-md"
-                    emit-value
-                    map-options
-                    :rules="rules"
-                    lazy-rules
-                  />
-                </div>
-                <div class="col-md-3 col-sm-12 col-xs-12">
-                  <q-circular-progress
-                    show-value
-                    class="text-white q-ma-md"
-                    :value="progressValue"
-                    size="60px"
-                    :thickness="0.2"
-                    color="orange"
-                    track-color="transparent"
-                  >
-                    <q-btn
-                      v-if="accion == 'play'"
-                      @click="startAudio"
-                      outline
-                      round
-                      color="green"
-                      icon="play_arrow"
-                    />
-                    <q-btn
-                      v-if="accion != 'play'"
-                      @click="startStopRecording"
-                      outline
-                      round
-                      :color="color"
-                      icon="mic"
-                    />
-                  </q-circular-progress>
-                  <div v-if="isRecording">
-                    Duración de la grabación: {{ recordingDuration }}
-                  </div>
-                  <q-btn
-                    v-if="accion == 'play'"
-                    @click="clearAudio"
-                    outline
-                    round
-                    color="red"
-                    icon="delete"
-                  />
-                  <audio
-                    ref="audioPlayer"
-                    :src="recordedAudio"
-                    @play="onPlay"
-                    @pause="onPause"
-                  ></audio>
-                </div>
-                <div class="col-md-12 col-sm-12 col-xs-12">
-                  <FileInput
-                    @datos-exportado-cambiado="actualizarValorDatosExportado"
-                  ></FileInput>
-                  <InputTextJump
-                    @text-con-salto-linea="actualizarTextExport"
-                    :texto="transcript"
-                  ></InputTextJump>
-                </div>
-
-                <div v-if="false" class="col-md-6 col-sm-6 col-xs-12">
-                  <q-select
-                    label="Proceso"
-                    transition-show="scale"
-                    transition-hide="scale"
-                    outlined
-                    v-model="Fila.proceso"
-                    dense
-                    :options="Procesos"
-                    option-label="descripcion"
-                    option-value="orden"
-                    class="q-pa-md"
-                    emit-value
-                    map-options
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        </q-card-section>
-
-        <q-card-actions align="right" class="bg-white text-teal q-pr-md">
-          <q-btn
-            flat
-            color="primary"
-            :label="'Aceptar'"
-            type="submit"
-            text-color="dark"
-            no-caps
-          />
-          <q-btn
-            flat
-            :label="'Cerrar'"
-            v-close-popup
-            text-color="dark"
-            no-caps
-          />
-        </q-card-actions>-->
         <ChatBotSimple></ChatBotSimple>
       </q-form>
     </q-card>
@@ -696,7 +455,7 @@
                             class="q-pa-md"
                           />
                         </div>
-                        <div class="col-md-3 col-sm-3 col-xs-12">
+                        <!-- <div class="col-md-3 col-sm-3 col-xs-12">
                           <q-select
                             readonly
                             label="Equipo"
@@ -712,7 +471,7 @@
                             map-options
                             class="q-pa-md"
                           />
-                        </div>
+                        </div> -->
                         <div class="col-md-3 col-sm-3 col-xs-12">
                           <q-select
                             readonly
@@ -978,7 +737,7 @@ import ApexDonut from "src/components/Charts/ApexDonut.vue";
 import FileInput from "src/components/FileImage.vue";
 import InputTextJump from "src/components/InputTextSaltoLinea.vue";
 import VerImagenArray from "src/components/VerImagenArray.vue";
-import ChatBotSimple from "src/pages/Prueba.vue";
+import ChatBotSimple from "src/components/ChatComponent.vue";
 import Recorder from "recorder-js";
 import * as services from "../services/services";
 import { useChatStore } from "src/stores/chat"; // Asegúrate de que la ruta sea correcta según la ubicación de tu almacén
@@ -1598,9 +1357,12 @@ const AgregarTicketStore = async () => {
   Fila.value.peaje = chatStore.preguntas[0].respuesta.id;
   Fila.value.tipo = chatStore.preguntas[1].respuesta.id;
   Fila.value.subtipo = chatStore.preguntas[2].respuesta.id;
-  Fila.value.observaciones = chatStore.preguntas[3].respuesta;
-  Fila.value.evidencia = chatStore.preguntas[4].respuesta;
-  Fila.value.audio = chatStore.preguntas[5].respuesta;
+  Fila.value.evidencia = chatStore.preguntas[3].respuesta;
+  Fila.value.audio = chatStore.preguntas[4].respuesta;
+  // Fila.value.observaciones = chatStore.preguntas[5].respuesta;store.descryptptData(LocalStorage.getItem("transcript"))
+  Fila.value.observaciones = store.descryptptData(
+    LocalStorage.getItem("transcript")
+  );
   Fila.value.solicitud = 2;
   Fila.value.prioridad = 2;
   await services

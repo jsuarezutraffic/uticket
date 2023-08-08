@@ -12,11 +12,15 @@
 
 <script setup>
 /*eslint-disable */
+import { LocalStorage } from "quasar";
 import { computed, toRefs, ref, watchEffect, watch } from "vue";
+import { useMainStore } from "src/stores/main"; // Asegúrate de que la ruta sea correcta según la ubicación de tu almacén
+const store = useMainStore();
 // Convertir props a variable
 const props = defineProps(["texto"]);
 let { texto } = toRefs(props);
-const text = ref("");
+// const text = ref("");
+const text = ref(store.descryptptData(LocalStorage.getItem("transcript")));
 const ExportText = ref("");
 const inputRules = [
   (val) => (val && val.length > 0) || "Por favor llenar el campo",
@@ -40,6 +44,7 @@ const emit = defineEmits(["text-con-salto-linea"]);
 // Emitir evento cuando DatosExportado cambia
 watch(text, (currentValue) => {
   ExportText.value = agregarSaltosDeLinea(currentValue);
+  LocalStorage.set("transcript", store.encryptptData(ExportText.value));
   emit("text-con-salto-linea", ExportText.value);
 });
 watch(texto, (currentValue) => {

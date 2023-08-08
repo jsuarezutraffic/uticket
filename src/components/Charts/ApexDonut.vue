@@ -75,9 +75,9 @@ const optionsCalc = computed(() => {
         },
       },
     },
-    fill: {
-      type: "gradient",
-    },
+    // fill: {
+    //   type: "gradient",
+    // },
     title: {
       text: `${titleDefault.value}`,
       align: "center",
