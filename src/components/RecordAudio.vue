@@ -72,7 +72,7 @@ const isRecording2 = ref(false);
 const transcript = ref("");
 let recognition;
 let silenceTimeout;
-
+LocalStorage.set("transcript", store.encryptptData(""));
 // //funciones para el grabado de notas de voz
 function startStopRecording() {
   clearInterval(progressInterval);

@@ -32,7 +32,7 @@ export const useChatStore = defineStore("chat", {
       },
       {
         key: "audio",
-        pregunta: "Por grabe el audio",
+        pregunta: "Por favor grabe el audio",
         opciones: null, // No hay opciones para la primera pregunta
         respuesta: null,
       },
@@ -64,6 +64,8 @@ export const useChatStore = defineStore("chat", {
       // Método para avanzar a la siguiente pregunta
     },
     avanzarSiguientePregunta() {
+      console.log("entro en el if");
+
       this.indicePreguntaActual++;
     },
     devolverAnteriorPregunta() {

@@ -74,6 +74,7 @@
             color="tertiary"
             size="md"
             @click="
+              chatStore.indicePreguntaActual = 0;
               Fila = {};
               modalNuevoTicket = true;
               clearAudio();

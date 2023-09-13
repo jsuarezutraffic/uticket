@@ -79,6 +79,10 @@
       <q-btn
         v-if="validateBtnSiguente()"
         @click="enviarRespuestaInput('siguiente')"
+        :disable="
+          input == null &&
+          chatStore.preguntas[chatStore.indicePreguntaActual].key == 'evidencia'
+        "
       >
         Siguiente
       </q-btn>
