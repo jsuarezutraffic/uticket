@@ -61,7 +61,6 @@ if (imagenes.value[0] == "") {
 } else {
 }
 const clickImag = () => {
-  console.log(carrusel.value[0].imgSrc);
   var newWindow = window.open("", "_blank");
   newWindow.document.write(
     '<html><head><title>Imagen en nueva ventana</title></head><body style="margin: 0; padding: 0; height: 100vh; display: flex; justify-content: center; align-items: center;">'

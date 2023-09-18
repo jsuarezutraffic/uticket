@@ -199,7 +199,6 @@ const conteoPorParametro = () => {
 };
 
 const DatosGenerales = async () => {
-  console.log(store.generalData);
   visible.value = true;
   cliente.value = store.generalData.cliente;
   concesion.value = store.generalData.concesion;
