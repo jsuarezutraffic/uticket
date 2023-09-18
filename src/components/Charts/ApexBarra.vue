@@ -41,11 +41,14 @@
 import { computed, toRefs, ref, watchEffect, onMounted } from "vue";
 import * as services from "../../services/services";
 import { useMainStore } from "src/stores/main"; // Asegúrate de que la ruta sea correcta según la ubicación de tu almacén
+import { LocalStorage } from "quasar";
 
 // Convertir props a variable
 const props = defineProps(["Series", "tiquetes"]);
 let { Series, tiquetes } = toRefs(props);
 const store = useMainStore();
+const admi = LocalStorage.getItem("admi");
+const IdUsuario = LocalStorage.getItem("IdUsuario");
 
 //variables
 const visible = ref(true);
@@ -55,7 +58,6 @@ const active = ref(false);
 const serieUser = ref([]);
 const dataUser = ref([]);
 const categoriesUser = ref([]);
-
 const cardsValue = ref({
   incidentes: 0,
   requerimientos: 0,
@@ -66,14 +68,13 @@ const procesarDataTiquetes = async () => {
   dataUser.value = [];
   serieUser.value = [];
   categoriesUser.value = [];
-  // await services.getTiquetes(`&estado=neq.8&`).then((response) => {
-  //   tiquetes.value = response.data;
-  // });
-  //selecciona los usuarios que estan activos
   await services.getCliente("&estado=eq.TRUE&").then((response) => {
     clientes.value = response.data;
   });
-
+  clientes.value =
+    admi == true
+      ? clientes.value
+      : clientes.value.filter((x) => x.usuario == IdUsuario);
   for (const iterator of clientes.value) {
     dataUser.value.push({
       id: iterator.id,
