@@ -24,7 +24,8 @@ export const useMainStore = defineStore('main', {
     url_bak: configJson.API_URL_BAK,
     url_cus: configJson.API_URL_CUS,
     generalData: {},
-    claveSecreta:'key_secret_uticket_backoffice_bak'
+    claveSecreta:'key_secret_uticket_backoffice_bak',
+    listUsersSelected:[],
   }),
 
   getters: {
@@ -103,13 +104,14 @@ export const useMainStore = defineStore('main', {
       await services.getMetodoConsulta(filtro).then((response) => {
         generalData.metodoconsulta = response.data
       })
+      await services.getUsuarios(filtro).then((response) => {
+        generalData.usuarios = response.data
+      })
 
       localStorage.setItem('generalData', this.encryptptData(generalData));
       this.generalData = generalData
 
-      // services.getUsuarios(filtro).then((response) => {
-      //   this.generalData.usuarios = response.data
-      // })
+
       // services.getCliente(filtro).then((response) => {
       //   this.generalData.cliente = response.data
       // })
@@ -126,6 +128,10 @@ export const useMainStore = defineStore('main', {
       const bytesDesencriptados = CryptoJS.AES.decrypt(indata, this.claveSecreta);
       const datosDesencriptados = JSON.parse(bytesDesencriptados.toString(CryptoJS.enc.Utf8));
       return datosDesencriptados.secreto
+    },
+    setListUsersSelected() {
+      console.log("entro en el set")
+      this.listUsersSelected = []
     },
   }
 })

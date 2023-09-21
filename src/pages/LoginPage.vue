@@ -171,10 +171,41 @@ const IniciarSesion = async () => {
         .get(`usuarios?id=eq.` + response.data.user.id + `&select=*`)
         .then((response2) => {
           if (response2.data.length > 0) {
-            store.inicio(response.data);
-            store.loadGeneralData("");
-            const toPath = `/`;
-            router.push(toPath);
+            async function iniciar(params) {
+              await store.inicio(response.data);
+              await store.loadGeneralData("");
+              const toPath = `/`;
+              router.push(toPath);
+            }
+            if (config.nivelSistema == 1) {
+              if (
+                response2.data[0].nivel == 1 ||
+                response2.data[0].nivel == 3
+              ) {
+                iniciar();
+              } else {
+                $q.notify({
+                  type: "negative",
+                  message: `ESTED NO TIENE ACCESO A BACKOFFICE`,
+                  timeout: 4000,
+                });
+                visible.value = false;
+              }
+            } else {
+              if (
+                response2.data[0].nivel == 2 ||
+                response2.data[0].nivel == 4
+              ) {
+                iniciar();
+              } else {
+                $q.notify({
+                  type: "negative",
+                  message: `ESTED NO TIENE ACCESO A OPERADOR`,
+                  timeout: 4000,
+                });
+                visible.value = false;
+              }
+            }
           } else {
             visible.value = false;
 
@@ -196,7 +227,6 @@ const IniciarSesion = async () => {
             timeout: 4000,
           });
         });
-      visible.value = false;
     })
     .catch((error) => {
       visible.value = false;

@@ -6,6 +6,7 @@ export const useConfigStore = defineStore('config', {
       // Operation: 1
       // BackOffice: 2
       // nivel: configJson.nivel,
+      nivelSistema:configJson.nivel,
       UrlApp: 'http://localhost:8080/#'
     }
   }),

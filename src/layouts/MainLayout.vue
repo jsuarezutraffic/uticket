@@ -8,7 +8,14 @@
     >
       <!-- Header Left-side -->
       <q-toolbar>
-        <q-btn dense flat round icon="menu" @click="toggleLeftDrawer" />
+        <q-btn
+          dense
+          flat
+          round
+          icon="menu"
+          @click="toggleLeftDrawer"
+          v-if="configJson.nivel == 1"
+        />
 
         <!-- Logo Header -->
         <q-toolbar-title class="q-py-xs vertical-center">

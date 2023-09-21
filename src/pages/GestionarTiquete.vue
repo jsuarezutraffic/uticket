@@ -638,7 +638,17 @@
                                 props.row.comentarios.length <= 50
                               "
                             >
+                              <q-editor
+                                v-if="props.row.comentarios.length > 50"
+                                min-height="5rem"
+                                label="Observaciones"
+                                class="q-pa-md"
+                                v-model="col.value"
+                                :toolbar="false"
+                                readonly
+                              />
                               <div
+                                v-if="props.row.comentarios.length < 50"
                                 v-html="
                                   col.value.replace(/(?:\r\n|\r|\n)/g, '<br />')
                                 "
@@ -660,7 +670,7 @@
                           </div>
                         </div>
                         <div v-else-if="col.name == 'created_at'">
-                          {{ formatDate(col.value) }}
+                          {{ col.value }}
                         </div>
                         <div v-else-if="col.name == 'verevidencias'">
                           <q-btn
@@ -737,6 +747,7 @@
             Reasignar Tiquete
           </div>
         </q-card-section>
+
         <q-card-section>
           <div class="row">
             <div class="col-12">
@@ -823,6 +834,7 @@
                   ></FileInput>
                   <InputTextJump
                     @text-con-salto-linea="actualizarTextExport"
+                    :variable="variable"
                   ></InputTextJump>
                 </div>
               </div>
@@ -870,7 +882,7 @@
             <div class="col-12">
               <div class="row" style="background: #ffffff">
                 <div
-                  class="col-md-5 col-sm-5 col-xs-12"
+                  class="col-md-3 col-sm-3 col-xs-12"
                   v-if="accion == 'SolucionarTicket'"
                 >
                   <q-select
@@ -890,7 +902,7 @@
                   />
                 </div>
                 <div
-                  class="col-md-5 col-sm-5 col-xs-12"
+                  class="col-md-4 col-sm-4 col-xs-12"
                   v-if="accion == 'SolucionarTicket'"
                 >
                   <q-select
@@ -900,24 +912,37 @@
                     transition-hide="scale"
                     use-input
                     outlined
-                    v-model="FilaDetalle.consultado"
                     dense
+                    class="q-pa-md"
+                    v-model="FilaDetalle.consultado"
                     :options="contactos"
                     option-label="nombres"
                     option-value="id"
-                    class="q-pa-md"
                     input-debounce="0"
                     @filter="filterFn"
-                    style="width: 250px"
                   >
-                    <template v-slot:no-option>
-                      <q-item>
-                        <q-item-section class="text-grey">
-                          No results
-                        </q-item-section>
-                      </q-item>
-                    </template>
                   </q-select>
+                </div>
+                <div
+                  class="col-md-3 col-sm-3 col-xs-12"
+                  v-if="accion == 'SolucionarTicket'"
+                >
+                  <q-select
+                    readonly
+                    :rules="selectRule"
+                    label="Telefono Persona Consultada"
+                    transition-show="scale"
+                    transition-hide="scale"
+                    outlined
+                    v-model="FilaDetalle.consultado"
+                    dense
+                    :options="contactos"
+                    option-label="telefono"
+                    option-value="id"
+                    class="q-pa-md"
+                    emit-value
+                    map-options
+                  />
                 </div>
                 <div
                   class="col-md-2 col-sm-2 col-xs-12 container2"
@@ -931,7 +956,38 @@
                     @click="mostrarAddPersonaContacto = true"
                   />
                 </div>
-
+                <div
+                  class="col-md-6 col-sm-6 col-xs-12"
+                  v-if="accion == 'SolucionarTicket'"
+                >
+                  <q-input
+                    readonly
+                    outlined
+                    dense
+                    class="q-pa-md"
+                    v-model="
+                      cliente.filter((p) => p.id === Fila.cliente)[0].nombres
+                    "
+                    type="text"
+                    label="Nombre Cliente"
+                  />
+                </div>
+                <div
+                  class="col-md-6 col-sm-6 col-xs-12"
+                  v-if="accion == 'SolucionarTicket'"
+                >
+                  <q-input
+                    readonly
+                    outlined
+                    dense
+                    class="q-pa-md"
+                    v-model="
+                      cliente.filter((p) => p.id === Fila.cliente)[0].telefono
+                    "
+                    type="text"
+                    label="Telefono Cliente"
+                  />
+                </div>
                 <div class="col-md-12 col-sm-12 col-xs-12">
                   <FileInput
                     @datos-exportado-cambiado="actualizarValorDatosExportado"
@@ -976,6 +1032,7 @@
   </q-dialog>
 
   <!-- Modal de Add Persona de contacto -->
+
   <q-dialog
     v-model="mostrarAddPersonaContacto"
     transition-show="scale"
@@ -1126,7 +1183,11 @@ import InputTextJump from "src/components/InputTextSaltoLinea.vue";
 import VerImagenArray from "src/components/VerImagenArray.vue";
 import axios from "axios";
 import * as services from "../services/services.js";
+import * as servicesEmail from "../services/serviceEmail.js";
 //variables para el grabado de notas de voz
+const emit = defineEmits(["cambiarEstadoTabla"]);
+const variable = ref(false);
+
 const isRecording = ref(false);
 const progressValue = ref(0);
 let recorder;
@@ -1413,6 +1474,7 @@ const columnsDetalles = [
   },
 ];
 // Metodos
+
 const clickRow = (row) => {
   Fila.value = row;
   // Fila.value.equipo = null;
@@ -1543,9 +1605,11 @@ const GestionTiquete = async (accionValue) => {
         services
           .patchTiquetes(`id=eq.${Fila.value.id}`, Fila.value)
           .then((response) => {
+            servicesEmail.enviarNotify();
+            variable.value = !variable.value;
             mostrarMensajes({
               tipomensaje: 1,
-              mensaje: "El ticket se soliciono correctamente",
+              mensaje: "El ticket se solucionó correctamente",
             });
             valorDatosExportado.value = "";
           });
@@ -1558,7 +1622,6 @@ const GestionTiquete = async (accionValue) => {
       });
     await getDetalleTiquete();
   } else if (accion.value == "AsignarTicket") {
-    console.log();
     mostrarAsignarTiquetes.value = false;
     if (oldProridad.value != next.value.prioridad) {
       if (FilaTemporal.value.tipo != Fila.value.tipo) {
@@ -1822,10 +1885,13 @@ const GestionTiquete = async (accionValue) => {
         services
           .patchTiquetes(`id=eq.${Fila.value.id}`, Fila.value)
           .then((response) => {
+            servicesEmail.enviarNotify();
+            mensajeAsignacion();
             mostrarMensajes({
               tipomensaje: 1,
-              mensaje: "El ticket se asigno correctamente al siguiete nivel",
+              mensaje: "El ticket se asignó correctamente al siguiete nivel",
             });
+
             valorDatosExportado.value = "";
           });
       })
@@ -2051,33 +2117,38 @@ const mensajeAviso = async (row) => {
     const data = {};
     data.email = users.value.filter((p) => p.id == row.asignado)[0].correo;
     data.cliente = users.value.filter((p) => p.id == row.asignado)[0].nombre;
-    data.estado = "Pendiente";
-    data.mensaje1 = `La solicitud N° ${row.id} asignada a usted está próxima a vencer.`;
-    data.mensaje2 = "Por favor verificar y dar solución al ticket.";
-    let dominio = store.API_URL_BAK;
-    var accion = `Ticket N°${row.id} Pendiente Por Solución!`;
-    var mensaje = `${data.mensaje1}<br> ${data.mensaje2}`;
-    var plantilla = require("./PlantillaCorreo.html").default.toString();
-    plantilla = plantilla.replace("${accion}", accion);
-    plantilla = plantilla.replace("${mensaje}", mensaje);
-    plantilla = plantilla.replace("${dominio}", dominio);
 
-    //soporte@utraffic.co
-    //#Utraffic2022**
-    const data2 = {
-      sender: {
-        name: "Soporte Utraffic",
-        email: "soporte@utraffic.co",
-      },
-      to: [
-        {
-          email: data.email,
-          name: data.nombres,
-        },
-      ],
-      subject: `Ticket ${data.estado}`,
-      htmlContent: plantilla,
-    };
+    servicesEmail.correoAviso(data, Fila.value.id);
+
+    // data.estado = "Pendiente";
+    // data.mensaje1 = `La solicitud N° ${row.id} asignada a usted está próxima a vencer.`;
+    // data.mensaje2 = "Por favor verificar y dar solución al ticket.";
+    // let dominio = store.API_URL_BAK;
+    // var accion = `Ticket N°${row.id} Pendiente Por Solución!`;
+    // var mensaje = `${data.mensaje1}<br> ${data.mensaje2}`;
+    // var plantilla = require("./PlantillaCorreo.html").default.toString();
+    // plantilla = plantilla.replace("${accion}", accion);
+    // plantilla = plantilla.replace("${mensaje}", mensaje);
+    // plantilla = plantilla.replace("${dominio}", dominio);
+
+    // //soporte@utraffic.co
+    // //#Utraffic2022**
+    // const data2 = {
+    //   sender: {
+    //     name: "Soporte Utraffic",
+    //     email: "soporte@utraffic.co",
+    //   },
+    //   to: [
+    //     {
+    //       email: data.email,
+    //       name: data.nombres,
+    //     },
+    //   ],
+    //   subject: `Ticket ${data.estado}`,
+    //   htmlContent: plantilla,
+    // };
+    // await enviarCorreo(data2);
+
     var dataControlCorreo = {
       idtiquete: row.id,
       operador: row.asignado,
@@ -2085,8 +2156,17 @@ const mensajeAviso = async (row) => {
     };
 
     services.postEnvioCorreos(dataControlCorreo);
-    await enviarCorreo(data2);
   }
+};
+
+const mensajeAsignacion = async (row) => {
+  const data = {};
+  data.email = users.value.filter((p) => p.id == Fila.value.asignado)[0].correo;
+  data.cliente = users.value.filter(
+    (p) => p.id == Fila.value.asignado
+  )[0].nombre;
+
+  servicesEmail.correoAsignacion(data, Fila.value.id);
 };
 
 const mensajeCliente = async () => {
@@ -2097,36 +2177,7 @@ const mensajeCliente = async () => {
   data.cliente = cliente.value.filter(
     (p) => p.id == Fila.value.cliente
   )[0].nombres;
-  data.estado = "Cerrado";
-  data.mensaje1 =
-    "La solicitud fue revisada y cerrada por el equipo de soporte de";
-  data.mensaje2 = "Por favor verificar y dar por finalizado el ticket";
-
-  const dominio = "https://uticket.cus.utraffic.co/";
-  var accion = `Ticket ${data.estado} Exitosamente!`;
-  var mensaje = `${data.mensaje1} <strong>Utraffic SAS.</strong><br> ${data.mensaje2}`;
-  var plantilla = require("./PlantillaCorreo.html").default.toString();
-  plantilla = plantilla.replace("${accion}", accion);
-  plantilla = plantilla.replace("${mensaje}", mensaje);
-  plantilla = plantilla.replace("${dominio}", dominio);
-
-  //soporte@utraffic.co
-  //#Utraffic2022**
-  const data2 = {
-    sender: {
-      name: "Soporte Utraffic",
-      email: "soporte@utraffic.co",
-    },
-    to: [
-      {
-        email: data.email,
-        name: data.nombres,
-      },
-    ],
-    subject: `Ticket ${data.estado}`,
-    htmlContent: plantilla,
-  };
-  enviarCorreo(data2);
+  servicesEmail.correoCliente(data, Fila.value.id);
 };
 
 const enviarCorreo = async (data2) => {
@@ -2159,6 +2210,7 @@ const VerEvidencias = (row) => {
   imagen.value = row.evidencia;
   mostrarImagen.value = true;
 };
+
 const calcularTiempoTiquete = (row) => {
   let diferenciaSegundos = 0;
   let tiempo = "";
@@ -2249,7 +2301,6 @@ function verMasComentario(rowId) {
 }
 
 //emitir cambio de vista al padre
-const emit = defineEmits(["cambiarEstadoTabla"]);
 const volverDashboard = (valor) => {
   console.log(valor);
   emit("cambiarEstadoTabla", valor);
@@ -2270,6 +2321,7 @@ function customSort() {
     //   return sortDesc.value ? -1 : 1;
     // }
     // return 0;
+
     const tiempoA = a["tiempo"];
     const tiempoB = b["tiempo"];
 
@@ -2291,12 +2343,6 @@ function customSort() {
 
     // Ordenar por estado (ascendente)
     return statusA - statusB;
-
-    // const timeA = a["time"];
-    // const timeB = b["time"];
-
-    // // Ordenar por tiempo (ascendente)
-    // return timeA - timeB;
   });
 }
 customSort();

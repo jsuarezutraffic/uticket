@@ -179,6 +179,9 @@ import { useQuasar } from "quasar";
 import { api } from "boot/axios";
 import { useMainStore } from "../stores/main";
 import { LocalStorage } from "quasar";
+import { useRouter } from "vue-router";
+import * as services from "../services/services.js";
+const router = useRouter();
 const idusuario = LocalStorage.getItem("IdUsuario");
 
 const users = ref([]);
@@ -234,6 +237,8 @@ const actualizarPassword = async () => {
           message: "Contraseña Actualizada Correctamente",
         });
         visible.value = false;
+        const toPath = `/`;
+        router.push(toPath);
       })
       .catch((error) => {
         visible.value = false;

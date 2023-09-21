@@ -337,68 +337,102 @@
               "
             />
             <q-dialog v-model="dialog">
-              <q-card>
+              <q-card style="max-width: 100%; width: 70%">
                 <q-card-section>
-                  <div class="q-pa-md" style="max-width: 500px">
-                    <p class="text-subtitle2">Asignar estado:</p>
-                    <q-select
-                      square
-                      filled
-                      v-model="ticketState"
-                      :options="optionState"
-                      option-value="orden"
-                      option-label="descripcion"
-                      label="Estado"
-                      class="q-mb-xs"
-                      :rules="selectRule"
-                    />
-                    <div>
-                      <p class="text-subtitle2">Consulta realizada a:</p>
-                      <div style="display: flex">
+                  <div class="q-pa-md">
+                    <div class="row" style="background: #ffffff">
+                      <div class="col-md-12 col-sm-12 col-xs-12">
+                        <q-select
+                          square
+                          filled
+                          v-model="ticketState"
+                          :options="optionState"
+                          option-label="descripcion"
+                          option-value="orden"
+                          class="q-pa-md"
+                          label="Estado"
+                          :rules="selectRule"
+                        />
+                      </div>
+                      <div class="col-md-6 col-sm-6 col-xs-12">
+                        <q-input
+                          readonly
+                          square
+                          class="q-pa-md"
+                          filled
+                          v-model="
+                            cliente.filter((p) => p.id === Fila.cliente)[0]
+                              .nombres
+                          "
+                          type="text"
+                          label="Nombre Cliente"
+                        />
+                      </div>
+                      <div class="col-md-6 col-sm-6 col-xs-12">
+                        <q-input
+                          readonly
+                          square
+                          class="q-pa-md"
+                          filled
+                          v-model="
+                            cliente.filter((p) => p.id === Fila.cliente)[0]
+                              .telefono
+                          "
+                          type="text"
+                          label="Telefono Cliente"
+                        />
+                      </div>
+                      <div class="col-md-5 col-sm-5 col-xs-12">
                         <q-select
                           label="Persona Consultada"
+                          transition-show="scale"
+                          transition-hide="scale"
+                          filled
+                          square
+                          v-model="FilaDetalle.consultado"
+                          :options="contactos"
+                          option-label="nombres"
+                          option-value="id"
+                          input-debounce="0"
+                          class="q-pa-md"
+                        />
+                      </div>
+                      <div class="col-md-5 col-sm-5 col-xs-12">
+                        <q-select
+                          label="Telefono Persona Consultada"
                           transition-show="scale"
                           transition-hide="scale"
                           filled
                           v-model="FilaDetalle.consultado"
                           square
                           :options="contactos"
-                          option-label="nombres"
+                          option-label="telefono"
                           option-value="id"
                           input-debounce="0"
-                          class="q-mb-md"
-                          style="width: 250px"
+                          class="q-pa-md"
                         />
-                        <div
-                          style="
-                            display: flex;
-                            align-items: center;
-                            justify-items: center;
-                            height: fit-content;
-                          "
-                          class="q-pl-sm q-pt-sm"
-                        >
-                          <q-btn
-                            flat
-                            round
-                            color="primary"
-                            icon="person_add"
-                            @click="mostrarAddPersonaContacto = true"
-                          />
-                        </div>
                       </div>
-
-                      <p class="text-subtitle2">Método de consulta</p>
-                      <q-select
-                        square
-                        filled
-                        v-model="FilaDetalle.metodoconsulta"
-                        :options="metodoconsulta"
-                        option-value="id"
-                        option-label="descripcion"
-                        label="Método"
-                        class="q-mb-md"
-                      />
+                      <div class="col-md-2 col-sm-2 col-xs-12 container2">
+                        <q-btn
+                          flat
+                          round
+                          color="primary"
+                          icon="person_add"
+                          @click="mostrarAddPersonaContacto = true"
+                        />
+                      </div>
+                      <div class="col-md-6 col-sm-6 col-xs-12">
+                        <q-select
+                          square
+                          filled
+                          v-model="FilaDetalle.metodoconsulta"
+                          :options="metodoconsulta"
+                          option-value="id"
+                          option-label="descripcion"
+                          label="Método de consulta"
+                          class="q-pa-md"
+                        />
+                      </div>
                     </div>
                     <!-- <div class="text-subtitle2 q-mb-md">Observaciones:</div>
                     <q-input
@@ -417,19 +451,19 @@
                   ></FileInput>
                 </q-card-section>
 
-                <q-card-section class="second-card buttons no-padding">
+                <q-card-section align="right" class="buttons no-padding">
                   <q-btn
                     v-close-popup
                     label="Volver"
                     color="primary"
-                    class="q-mr-md close-buttons"
+                    class="q-ma-md close-buttons"
                     text-color="white"
                   />
                   <q-btn
                     v-popup
                     label="Enviar"
                     color="primary"
-                    class="q-mr-md"
+                    class="q-ma-md"
                     text-color="white"
                     @click="dialog2 = true"
                     :disable="ticketState === null"
@@ -1115,6 +1149,13 @@ defineComponent({
   position: absolute;
 }
 
+.container2 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  /* Ajusta la altura según tus necesidades */
+}
 @media only screen and (max-width: 600px) {
   .table-card {
     margin-right: 0px;
