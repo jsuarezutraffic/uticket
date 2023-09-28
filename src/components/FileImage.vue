@@ -120,7 +120,7 @@ const onRejected = (rejectedEntries) => {
   for (const iterator of rejectedEntries) {
     $q.notify({
       type: "negative",
-      message: `La imagen "${iterator.file.name}" supera el tamaño maximo de 400KB`,
+      message: `La imagen "${iterator.file.name}" supera el tamaño maximo de 400M`,
     });
   }
 };

@@ -175,13 +175,13 @@
                     class="q-pa-md"
                   />
                 </div>
-                <div class="col-md-6 col-sm-6 col-xs-6">
+                <!-- <div class="col-md-6 col-sm-6 col-xs-6">
                   <q-toggle
                     class="q-pa-md"
                     v-model="Fila.estado"
                     label="Estado"
                   />
-                </div>
+                </div> -->
                 <div class="col-md-6 col-sm-6 col-xs-6">
                   <q-toggle
                     class="q-pa-md"
@@ -247,8 +247,10 @@ import { defineComponent, ref, onMounted } from "vue";
 import { useQuasar } from "quasar";
 import { supabase } from "src/supabase";
 import * as services from "../services/services";
+import { useMainStore } from "../stores/main";
 //supabase
 let $q = useQuasar();
+const store = useMainStore();
 const selected = ref([]);
 const tiquetes = ref([]);
 const concesion = ref({});
@@ -353,10 +355,12 @@ const updateCliente = async () => {
 
 const loadData = async () => {
   visible.value = true;
-
-  await services.getCliente("").then((response) => {
-    cliente.value = response.data;
-  });
+  console.log(store.generalData.cliente[0].concesion);
+  await services
+    .getCliente(`concesion=eq.${store.generalData.concesion[0].id}&`)
+    .then((response) => {
+      cliente.value = response.data;
+    });
 
   await services.getConcesion("").then((response) => {
     concesion.value = response.data;

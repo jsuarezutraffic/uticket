@@ -76,13 +76,13 @@
       </div>
 
       <!-- Mostrar el botón de siguiente pregunta -->
+      <!--         :disable="
+          input == null &&
+          chatStore.preguntas[chatStore.indicePreguntaActual].key == 'evidencia'
+        " -->
       <q-btn
         v-if="validateBtnSiguente()"
         @click="enviarRespuestaInput('siguiente')"
-        :disable="
-          input == null &&
-          chatStore.preguntas[chatStore.indicePreguntaActual].key == 'evidencia'
-        "
       >
         Siguiente
       </q-btn>

@@ -68,9 +68,13 @@ const procesarDataTiquetes = async () => {
   dataUser.value = [];
   serieUser.value = [];
   categoriesUser.value = [];
-  await services.getCliente("&estado=eq.TRUE&").then((response) => {
-    clientes.value = response.data;
-  });
+  await services
+    .getCliente(
+      `&estado=eq.TRUE&concesion=eq.${store.generalData.concesion[0].id}&`
+    )
+    .then((response) => {
+      clientes.value = response.data;
+    });
   clientes.value =
     admi == true
       ? clientes.value

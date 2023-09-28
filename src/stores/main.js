@@ -70,6 +70,7 @@ export const useMainStore = defineStore("main", {
       let generalData = {};
       await services.getCliente(``).then((response) => {
         generalData.clientes = response.data;
+        console.log(response.data);
       });
       await services
         .getCliente(`usuario=eq.${LocalStorage.getItem("IdUsuario")}&`)

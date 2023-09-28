@@ -25,6 +25,12 @@ export const useChatStore = defineStore("chat", {
         respuesta: null,
       },
       {
+        key: "prioridad",
+        pregunta: "Seleccione la prioridad",
+        opciones: [], // No hay opciones para la primera pregunta
+        respuesta: null,
+      },
+      {
         key: "evidencia",
         pregunta: "Por favor subir evidencias",
         opciones: null, // No hay opciones para la primera pregunta
@@ -53,6 +59,7 @@ export const useChatStore = defineStore("chat", {
       this.preguntas[0].opciones = store.generalData.peaje;
       this.preguntas[1].opciones = store.generalData.tipo;
       this.preguntas[2].opciones = store.generalData.subtipo;
+      this.preguntas[3].opciones = store.generalData.prioridad;
     },
     // Método para actualizar la respuesta del usuario en el almacén
     responderPregunta(respuesta) {

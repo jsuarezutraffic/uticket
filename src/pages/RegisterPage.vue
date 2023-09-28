@@ -156,6 +156,12 @@
       </q-form>
     </q-card>
   </div>
+  <q-inner-loading
+    :showing="visible"
+    label="Cargando..."
+    label-class="text-teal"
+    label-style="font-size: 1.1em"
+  />
 </template>
 
 <script setup>
@@ -184,6 +190,7 @@ const phoneNumber = ref("");
 const object = ref({});
 const rules = ref([(val) => !!val || "Field is required"]);
 const Concesiones = ref([]);
+const visible = ref(false);
 
 const slide = ref("style");
 const padding = ref(false);
@@ -208,46 +215,23 @@ const loadData = async () => {
 };
 
 const CreateAccount = async () => {
+  visible.value = true;
+
   if (object.value.password != object.value.confirmPassword) {
+    visible.value = false;
     $q.notify({
       type: "negative",
       message: "Las contraseñas no coinciden, intente de nuevo.",
       timeout: 3000,
     });
   } else if (object.value.email != object.value.confirmEmail) {
+    visible.value = false;
     $q.notify({
       type: "negative",
       message: "La direccion de email no coinciden, intente de nuevo.",
       timeout: 3000,
     });
   } else {
-    // const { data, error } = await supabase.auth.signUp({
-    //   email: object.value.email,
-    //   password: object.value.password,
-    // });
-    // const headers = {
-    //   apikey: store.supabase_Key_Admi,
-    //   "Content-Type": "application/json",
-    // };
-    // api
-    //   .post(
-    //     `${store.supabase_Url}/auth/v1/signup`,
-    //     { email: object.value.email, password: object.value.password },
-    //     { headers }
-    //   )
-    //   .then((response) => {
-    //     console.log(response);
-    //   })
-    //   .catch((error) => {
-    //     console.log(error);
-    //     $q.notify({
-    //       type: "negative",
-    //       message: "error",
-    //       timeout: 4000,
-    //     });
-    //   });
-    // object.value.estado = true;
-
     const headers = {
       apikey: store.supabase_Key_Admi,
       "Content-Type": "application/json",
@@ -260,6 +244,7 @@ const CreateAccount = async () => {
       )
       .then((response2) => {
         if (response2.data.length > 0) {
+          visible.value = false;
           $q.notify({
             type: "negative",
             message: "El correo ya se encuentra registrado en el sistema",
@@ -297,6 +282,15 @@ const CreateAccount = async () => {
                     timeout: 4000,
                   });
                 });
+            })
+            .catch((error) => {
+              visible.value = false;
+              if (error.response.data.code == 422) {
+                $q.notify({
+                  type: "negative",
+                  message: "La contraseña debe tener mas de 5 caracteres",
+                });
+              }
             });
         }
       });

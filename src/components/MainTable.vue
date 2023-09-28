@@ -198,6 +198,7 @@
                     FilaFinalizar = props.row;
                     Fila = props.row;
                     modalDevolverTiquete = true;
+                    LocalStorage.set('transcript', store.encryptptData(''));
                   "
                   >Devolver
                 </q-btn>
@@ -232,30 +233,22 @@
                   ><span style="color: black">{{ col.value }}</span>
                 </q-btn>
               </div>
-              <div v-else-if="col.name == 'observaciones'">
-                <div v-if="col.value == null || col.value == ''">
-                  {{ col.value }}N/A
+              <div
+                v-else-if="
+                  col.name == 'comentarios' || col.name == 'observaciones'
+                "
+              >
+                <div v-if="col.value == null">
+                  {{ col.value }}
                 </div>
                 <div v-else>
-                  <div
-                    v-if="
-                      expanded2[props.row.id] ||
-                      props.row.observaciones.length <= 50
-                    "
-                  >
-                    <div v-html="col.value"></div>
-                  </div>
-                  <div v-if="props.row.observaciones.length > 50">
+                  <div>
                     <a
-                      v-if="
-                        props.row.observaciones.length > 50 &&
-                        !expanded[props.row.id]
-                      "
                       href="#"
                       class="q-link text-primary"
-                      @click="verMasComentario(props.row.id)"
+                      @click="verMasComentario(col.value)"
                     >
-                      {{ labelComentario }}
+                      Ver más
                     </a>
                   </div>
                 </div>
@@ -345,12 +338,12 @@
           </div>
           <!-- modalNuevoTicket -->
           <div class="col-2">
-            <q-btn
+            <!-- <q-btn
               flat
               label="Copiar Ticket"
               style="display: flex; margin-left: auto"
               @click="modalNuevoTicket = true"
-            />
+            /> -->
           </div>
           <div class="col-1">
             <q-btn
@@ -556,9 +549,12 @@
                   :rows="tiquetesDetalles"
                   :columns="columnsDetalles"
                   :table-colspan="6"
+                  :sort-method="ordenarPorFecha()"
+                  :sort-method-props="{ sortBy, sortDesc }"
                   row-key="id"
                   selection="single"
                   v-model:selected="selectedDetalle"
+                  v-model:pagination="pagination"
                   fixed-header
                   v-model:expanded="expanded"
                   :visible-columns="[
@@ -569,6 +565,7 @@
                     'valornuevo',
                     'observaciones',
                     'created_at',
+
                     // 'adjunto_url',
                     'verevidencias',
                   ]"
@@ -576,6 +573,26 @@
                   loading-label="Cargando..."
                   no-data-label="No existen datos para mostrar"
                 >
+                  <template v-slot:top>
+                    <div style="font-weight: bold" class="q-table__title">
+                      Detalles Tickets
+                    </div>
+                    <q-space />
+                    <q-btn
+                      :disable="Fila.estado == 6"
+                      @click="
+                        LocalStorage.set('transcript', store.encryptptData(''));
+                        textSaltoLinea = '';
+                        valorDatosExportado = '';
+                        mostrarSolucionarTiquetes = true;
+                      "
+                      outline
+                      class="q-ma-xs"
+                      color="tertiary"
+                      size="md"
+                      >Agregar Detalle
+                    </q-btn>
+                  </template>
                   <template v-slot:loading>
                     <q-inner-loading showing color="primary" />
                   </template>
@@ -606,25 +623,45 @@
                         <div v-if="col.name == 'operador'">
                           <div
                             v-if="
-                              Usuarios.filter((p) => p.id == col.value)
-                                .length == 0
+                              store.generalData.usuario.filter(
+                                (p) => p.id == col.value
+                              ).length > 0
+                            "
+                          >
+                            {{
+                              store.generalData.usuario.filter(
+                                (p) => p.id == col.value
+                              )[0].nombre
+                            }}
+                          </div>
+                          <div
+                            v-if="
+                              store.generalData.clientes.filter(
+                                (p) => p.usuario == col.value
+                              ).length > 0
+                            "
+                          >
+                            {{
+                              store.generalData.clientes.filter(
+                                (p) => p.usuario == col.value
+                              )[0].nombres
+                            }}
+                          </div>
+                          <div
+                            v-else-if="
+                              store.generalData.usuario.filter(
+                                (p) => p.id == col.value
+                              ).length == 0
                             "
                           >
                             {{ col.value }}
-                          </div>
-                          <div v-else>
-                            {{
-                              Usuarios.filter((p) => p.id == col.value)[0]
-                                .nombre
-                            }}
                           </div>
                         </div>
                         <div
                           v-else-if="
                             col.name == 'campomodificador' ||
                             col.name == 'valoranterior' ||
-                            col.name == 'valornuevo' ||
-                            col.name == 'comentarios'
+                            col.name == 'valornuevo'
                           "
                         >
                           <div v-if="col.value == null">{{ col.value }}</div>
@@ -634,6 +671,28 @@
                                 col.value.replace(/(?:\r\n|\r|\n)/g, '<br />')
                               "
                             ></div>
+                          </div>
+                        </div>
+                        <div
+                          v-else-if="
+                            col.name == 'comentarios' ||
+                            col.name == 'observaciones'
+                          "
+                        >
+                          <div v-if="col.value == null">
+                            {{ col.value }}
+                          </div>
+                          <div v-else>
+                            <div>
+                              <a
+                                v-if="props.row.comentarios.length > 0"
+                                href="#/tiquetes"
+                                class="q-link text-primary"
+                                @click="verMasComentario(col.value)"
+                              >
+                                Ver más
+                              </a>
+                            </div>
                           </div>
                         </div>
                         <div v-else-if="col.name == 'created_at'">
@@ -649,6 +708,9 @@
                             @click="VerEvidencias(props.row)"
                             >Ver Evidencias
                           </q-btn>
+                        </div>
+                        <div v-else-if="col.name == 'metodoconsulta'">
+                          {{ col.value }}
                         </div>
                         <div v-else>
                           {{ col.value }}
@@ -721,6 +783,96 @@
       </q-form>
     </q-card>
   </q-dialog>
+
+  <!-- Modal de Solucionar de tiquete -->
+  <q-dialog
+    v-model="mostrarSolucionarTiquetes"
+    transition-show="scale"
+    transition-hide="scale"
+  >
+    <q-card style="max-width: 100%; width: 70%">
+      <q-form autofocus @submit.prevent="mostrarConfirm = true">
+        <q-card-section>
+          <div style="font-size: 18px; font-weight: bold; align-self: center">
+            Agregar Comentario a Tiquete
+          </div>
+        </q-card-section>
+        <q-card-section>
+          <div class="row">
+            <div class="col-12">
+              <div class="row" style="background: #ffffff">
+                <div class="col-md-12 col-sm-12 col-xs-12">
+                  <FileInput
+                    @datos-exportado-cambiado="actualizarValorDatosExportado"
+                  ></FileInput>
+                  <InputTextJump
+                    @text-con-salto-linea="actualizarTextExport"
+                  ></InputTextJump>
+                </div>
+              </div>
+            </div>
+          </div>
+        </q-card-section>
+
+        <q-card-actions align="right" class="bg-white text-teal q-pr-md">
+          <q-btn
+            v-if="accion != 'CerrarTicket'"
+            :disable="textSaltoLinea == ''"
+            flat
+            color="primary"
+            :label="'Aceptar'"
+            type="submit"
+            text-color="dark"
+            no-caps
+          />
+          <q-btn
+            v-if="accion != 'CerrarTicket'"
+            flat
+            :label="'Cerrar'"
+            v-close-popup
+            text-color="dark"
+            no-caps
+          />
+        </q-card-actions>
+      </q-form>
+    </q-card>
+  </q-dialog>
+  <!-- Modal de confirmacion -->
+  <q-dialog v-model="mostrarConfirm">
+    <q-card style="width: 35em">
+      <div class="column" style="margin: 20px">
+        <div class="col-4" style="margin: auto; padding: 10px">
+          <q-icon name="error_outline" size="6em" />
+        </div>
+        <div class="col-4" style="margin: auto; padding: 10px">
+          <span style="font-size: 18px">
+            ¿Está seguro de agregar el detalle al ticket?</span
+          >
+        </div>
+        <div class="col-2" style="margin: auto; padding: 10px">
+          <q-btn class="q-mx-md" label="No" v-close-popup color="negative" />
+          <q-btn
+            class="q-mx-md"
+            label="Si"
+            color="primary"
+            @click="agregarComentario()"
+          />
+        </div>
+      </div>
+    </q-card>
+  </q-dialog>
+
+  <q-dialog v-model="modalComentario">
+    <q-editor
+      min-height="3rem"
+      min-weight="12rem"
+      label="Observaciones"
+      class="q-pa-md"
+      v-model="detalleComentario"
+      :toolbar="false"
+      readonly
+    />
+  </q-dialog>
 </template>
 
 <script setup>
@@ -741,8 +893,13 @@ import VerImagenArray from "src/components/VerImagenArray.vue";
 import ChatBotSimple from "src/components/ChatComponent.vue";
 import Recorder from "recorder-js";
 import * as services from "../services/services";
+import * as servicesEmail from "../services/serviceEmail";
 import { useChatStore } from "src/stores/chat"; // Asegúrate de que la ruta sea correcta según la ubicación de tu almacén
 import { useMainStore } from "src/stores/main"; // Asegúrate de que la ruta sea correcta según la ubicación de tu almacén
+import { mostrarMensajes } from "boot/global";
+const mostrarSolucionarTiquetes = ref(false);
+const mostrarConfirm = ref(false);
+
 const chatStore = useChatStore();
 const store = useMainStore();
 const admi = LocalStorage.getItem("admi");
@@ -1193,11 +1350,10 @@ const PostTiquete = async () => {
         "Sera informado por este medio y el aplicativo cuando se solucione la problematica.";
       FilaDetalle.value.valoranterior = "Cerrado";
       FilaDetalle.value.valornuevo = "Devuelto";
-
       FilaFinalizar.value.estado = Estados.value.filter(
         (p) => p.descripcion == "Devuelto"
       )[0].orden;
-
+      mensajeOperador();
       break;
     case "eliminar":
       dataMessage.estado = "Eliminado";
@@ -1217,7 +1373,7 @@ const PostTiquete = async () => {
 
   FilaDetalle.value.campomodificador = "Estado";
   FilaDetalle.value.tiquete = FilaFinalizar.value.id;
-  FilaDetalle.value.operador = FilaFinalizar.value.asignado;
+  FilaDetalle.value.operador = idusuario;
 
   // se actualiza el campo del tiquete que se esta modificando
   FilaDetalle.value.estado = Estados.value.filter(
@@ -1226,6 +1382,7 @@ const PostTiquete = async () => {
   // agregar saltos de linea al campo Comentarios
   FilaDetalle.value.comentarios = textSaltoLinea.value;
   FilaDetalle.value.evidencia = valorDatosExportado.value;
+  console.log(FilaDetalle.value);
   await services
     .putTiquetes(`id=eq.${FilaFinalizar.value.id}`, FilaFinalizar.value)
     .then((response) => {
@@ -1336,7 +1493,63 @@ const AgregarTicket = async () => {
 
   loadData();
 };
+const agregarComentario = async () => {
+  mostrarConfirm.value = false;
+  FilaDetalle.value.campomodificador = "--";
+  FilaDetalle.value.valoranterior = `--`;
+  FilaDetalle.value.valornuevo = "--";
+  FilaDetalle.value.tiquete = Fila.value.id;
+  FilaDetalle.value.operador = idusuario;
+  FilaDetalle.value.evidencia = valorDatosExportado.value;
+  FilaDetalle.value.estado = true;
+  // agregar saltos de linea al campo Comentarios
+  FilaDetalle.value.comentarios = textSaltoLinea.value;
+  await services
+    .postDetallesTiquetes(FilaDetalle.value)
+    .then((response) => {
+      mostrarSolucionarTiquetes.value = false;
+      $q.notify({
+        type: "positive",
+        message: "Se agregó el detalle correctamente",
+        timeout: 4000,
+      });
+      mensajeOperador();
+      textSaltoLinea.value = "";
+      valorDatosExportado.value = "";
+    })
+    .catch((error) => {
+      $q.notify({
+        type: "negative",
+        message: "Error, complete todos los campos",
+        timeout: 4000,
+      });
+    });
+  getDetalleTiquete();
+};
 
+const mensajeOperador = async (accion) => {
+  const data = {};
+  data.email = store.generalData.usuario.filter(
+    (p) => p.id == Fila.value.asignado
+  )[0].correo;
+  data.cliente = store.generalData.usuario.filter(
+    (p) => p.id == Fila.value.asignado
+  )[0].nombre;
+  servicesEmail.correoOperador(data, Fila.value.id);
+};
+const mensajeBack = async (accion) => {
+  const data = {};
+  const idback = Usuarios.value.filter(
+    (p) => p.nivel == 1 && p.estado == true
+  )[0].id;
+  data.email = store.generalData.usuario.filter(
+    (p) => p.id == idback
+  )[0].correo;
+  data.cliente = store.generalData.usuario.filter(
+    (p) => p.id == idback
+  )[0].nombre;
+  servicesEmail.correoBackoffice(data, Fila.value.id);
+};
 const AgregarTicketStore = async () => {
   chatStore.confirModal = false;
   chatStore.indicePreguntaActual = 0;
@@ -1358,14 +1571,13 @@ const AgregarTicketStore = async () => {
   Fila.value.peaje = chatStore.preguntas[0].respuesta.id;
   Fila.value.tipo = chatStore.preguntas[1].respuesta.id;
   Fila.value.subtipo = chatStore.preguntas[2].respuesta.id;
-  Fila.value.evidencia = chatStore.preguntas[3].respuesta;
-  Fila.value.audio = chatStore.preguntas[4].respuesta;
-  // Fila.value.observaciones = chatStore.preguntas[5].respuesta;store.descryptptData(LocalStorage.getItem("transcript"))
+  Fila.value.prioridad = chatStore.preguntas[3].respuesta.id;
+  Fila.value.evidencia = chatStore.preguntas[4].respuesta;
+  Fila.value.audio = chatStore.preguntas[5].respuesta;
   Fila.value.observaciones = store.descryptptData(
     LocalStorage.getItem("transcript")
   );
   Fila.value.solicitud = 2;
-  Fila.value.prioridad = 2;
   await services
     .postTiquetes(Fila.value)
     .then((response) => {
@@ -1382,6 +1594,7 @@ const AgregarTicketStore = async () => {
         dataMessage.mensaje2 =
           "Sera informado por este medio y el aplicativo cuando se solucione la problematica.";
         enviarCorreo(dataMessage);
+        mensajeBack();
         valorDatosExportado.value = "";
       }
     })
@@ -1596,16 +1809,13 @@ onMounted(async () => {
   await DatosGenerales();
   loadData();
 });
-const labelComentario = ref("Ver más");
-const expanded2 = ref({});
 
-function verMasComentario(rowId) {
-  expanded2.value[rowId] = !expanded2.value[rowId];
-  if (expanded2.value[rowId]) {
-    labelComentario.value = "Ver Menos";
-  } else {
-    labelComentario.value = "Ver Mas";
-  }
+//Procesamiento de componente comentario
+const modalComentario = ref(false);
+const detalleComentario = ref("");
+function verMasComentario(comentario) {
+  detalleComentario.value = comentario;
+  modalComentario.value = true;
 }
 
 // //funciones para el grabado de notas de voz
@@ -1748,6 +1958,23 @@ function stopRecording() {
     isRecording2.value = false;
   }
 }
+
+const ordenarPorFecha = (a, b) => {
+  tiquetesDetalles.value.sort((a, b) => {
+    // Función para convertir la cadena de fecha al formato adecuado para comparación
+    const parseFecha = (fechaStr) => new Date(fechaStr);
+
+    // Convierte las fechas a objetos Date para comparar
+    const fechaA = parseFecha(a.created_at);
+    const fechaB = parseFecha(b.created_at);
+
+    // Compara las fechas
+    if (fechaA < fechaB) return pagination.value.descending ? 1 : -1;
+    if (fechaA > fechaB) return pagination.value.descending ? -1 : 1;
+    return 0;
+  });
+};
+
 defineComponent({
   name: "MainTable",
 });

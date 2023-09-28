@@ -49,9 +49,9 @@ const props = defineProps({
     required: true,
   },
 });
-
+console.log(props.datoProp);
 const slide = ref(0);
-const imagenes = ref(props.datoProp.split("|"));
+const imagenes = ref(props.datoProp == null ? [] : props.datoProp.split("|"));
 const carrusel = ref();
 
 if (imagenes.value[0] == "") {
