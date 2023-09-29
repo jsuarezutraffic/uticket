@@ -40,7 +40,6 @@ q-list// src/components/Chat.vue
 </template>
 
 <script setup>
-import { useChatStore } from "src/stores/chat"; // Asegúrate de que la ruta sea correcta según la ubicación de tu almacén
 import {
   defineComponent,
   ref,

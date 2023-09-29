@@ -55,7 +55,7 @@ const props = defineProps({
 
 const slide = ref(0);
 const fullscreen = ref(false);
-const imagenes = ref(props.datoProp.split("|"));
+const imagenes = ref(props.datoProp == null ? [] : props.datoProp.split("|"));
 
 if (imagenes.value[0] == "") {
   imagenes.value.pop();

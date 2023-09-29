@@ -78,12 +78,17 @@ const correoAsignacion = async (data,idTiquete) => {
   enviarCorreo(data2);
 };
 
-const correoCliente = async (data,idTiquete) => {
-  data.estado = "Cerrado";
-  data.mensaje1 =
-    "La solicitud fue revisada y cerrada por el equipo de soporte de";
-  data.mensaje2 = "Por favor verificar y dar por finalizado el ticket";
-
+const correoCliente = async (data,idTiquete,accion) => {
+  if (accion == "cerrado") {
+    data.estado = "Cerrado";
+    data.mensaje1 =
+      "La solicitud fue revisada y cerrada por el equipo de soporte de";
+    data.mensaje2 = "Por favor verificar y dar por finalizado el ticket";
+  } else {
+    data.estado = "Actualizado";
+    data.mensaje1 = "El ticket fue actualizado";
+    data.mensaje2 = `Se ha añadido un comentario al ticket N° ${idTiquete}, por favor revisar`;
+  }
   const dominio = "https://uticket.cus.utraffic.co/";
   var accion = `Ticket ${data.estado} Exitosamente!`;
   var mensaje = `${data.mensaje1} <strong>Utraffic SAS.</strong><br> ${data.mensaje2}`;

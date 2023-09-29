@@ -26,6 +26,7 @@ export const useMainStore = defineStore('main', {
     generalData: {},
     claveSecreta:'key_secret_uticket_backoffice_bak',
     listUsersSelected:[],
+    listNotificaciones:[],
   }),
 
   getters: {
@@ -74,6 +75,9 @@ export const useMainStore = defineStore('main', {
 
     async loadGeneralData  (filtro) {
       let generalData = {}
+      await services.getCliente(``).then((response) => {
+        generalData.clientes = response.data;
+      });
       await services.getConcesion(filtro).then((response) => {
         generalData.concesion = response.data
       })
@@ -130,8 +134,22 @@ export const useMainStore = defineStore('main', {
       return datosDesencriptados.secreto
     },
     setListUsersSelected() {
-      console.log("entro en el set")
       this.listUsersSelected = []
+    },
+    setListNotificaciones(accion) {
+      if (accion=="INSERT") {
+      this.listNotificaciones.push({
+        icon:'priority_high',
+        mensaje: "Ticket Añadido"
+      })
+      } else if (accion=="UPDATE") {
+        this.listNotificaciones.push({
+          icon:'warning',
+          mensaje: "Ticket Actualizado"
+        })
+        } else if('clear'){
+        this.listNotificaciones = []
+      }
     },
   }
 })

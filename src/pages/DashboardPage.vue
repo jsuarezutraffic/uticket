@@ -91,7 +91,19 @@
             :dataTiquetes="tiquetes"
             :datosGenerales="datosGenerales"
             @cambiarEstadoTabla="cambiarEstadoTabla"
-          />
+          >
+            <template #reload>
+              <q-btn
+                @click="loadData()"
+                outline
+                round
+                class="q-ma-xs"
+                color="tertiary"
+                size="md"
+                icon="refresh"
+              >
+              </q-btn></template
+          ></BackOffice>
         </div>
       </div>
     </div>
@@ -115,7 +127,19 @@
       :dataTiquetes="tiquetes"
       :datosGenerales="datosGenerales"
       @cambiarEstadoTabla="cambiarEstadoTabla"
-    />
+    >
+      <template #reload>
+        <q-btn
+          @click="loadData()"
+          outline
+          round
+          class="q-ma-xs"
+          color="tertiary"
+          size="md"
+          icon="refresh"
+        >
+        </q-btn></template
+    ></BackOffice>
   </div>
   <q-inner-loading
     :showing="visible"
@@ -135,9 +159,11 @@ import ApexBarra from "src/components/Charts/ApexBarra.vue";
 import SolicitudesTiempo from "src/components/Charts/SolicitudesTiempo.vue";
 import { supabase } from "src/supabase";
 import BackOffice from "src/pages/GestionarTiquete.vue";
+import { useMainStore } from "src/stores/main";
 import * as services from "../services/services.js";
 
 LocalStorage.set("filtro", "Dash");
+const store = useMainStore();
 let $q = useQuasar();
 const idusuario = LocalStorage.getItem("IdUsuario");
 const selectFiltro = ref(false);
@@ -324,6 +350,7 @@ const loadData = async () => {
   }
   solicitudesTiempo();
   conteoPorParametro();
+  store.setListNotificaciones("clear");
 };
 const DatosGenerales = async () => {
   await services.getCliente("").then((response) => {
@@ -397,7 +424,20 @@ supabase
     "postgres_changes",
     { event: "*", schema: "public", table: "tiquete" },
     (payload) => {
-      loadData();
+      store.setListNotificaciones(payload.eventType);
+      if (payload.new.estado === 2) {
+        $q.notify({
+          type: "positive",
+          message: `Se ha agregado el ticket N° ${payload.old.id}`,
+          timeout: 4000,
+        });
+      } else {
+        $q.notify({
+          type: "warning",
+          message: `Se ha actualizado el ticket N° ${payload.old.id}`,
+          timeout: 4000,
+        });
+      }
     }
   )
   .subscribe();

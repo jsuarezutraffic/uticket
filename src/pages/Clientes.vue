@@ -366,6 +366,7 @@ const formatDate = (value) => {
   // return date.toLocaleDateString();  // solo la fecha DD/MM/YY
   return date.toLocaleString(); // DD/MM/YY, 00:00:00
 };
+
 const sortBy = ref("id");
 const sortDesc = ref(true);
 function customSort() {

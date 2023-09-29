@@ -32,6 +32,17 @@
         >
           <template v-slot:top>
             <div style="font-weight: bold" class="q-table__title">Tickets</div>
+            <q-space />
+            <q-btn
+              @click="getData()"
+              outline
+              round
+              class="q-ma-xs"
+              color="tertiary"
+              size="md"
+              icon="refresh"
+            >
+            </q-btn>
           </template>
           <template v-slot:header="props">
             <q-tr :props="props" class="head-styles">
@@ -208,7 +219,10 @@
                 :rows="detalleTiquete"
                 :columns="historial"
                 :table-colspan="6"
+                :sort-method="ordenarPorFecha()"
+                :sort-method-props="{ sortBy, sortDesc }"
                 row-key="id"
+                v-model:pagination="pagination"
                 v-model:expanded="expanded"
                 rows-per-page-label="Registro por página"
                 loading-label="Cargando..."
@@ -218,6 +232,15 @@
                   <div style="font-weight: bold" class="q-table__title">
                     Detalles Tickets
                   </div>
+                  <q-space />
+                  <q-btn
+                    @click="mostrarSolucionarTiquetes = true"
+                    outline
+                    class="q-ma-xs"
+                    color="tertiary"
+                    size="md"
+                    >Agregar Detalle
+                  </q-btn>
                 </template>
                 <template v-slot:header="props">
                   <q-tr
@@ -280,29 +303,14 @@
                           {{ col.value }}
                         </div>
                         <div v-else>
-                          <div
-                            v-if="
-                              expanded2[props.row.id] ||
-                              props.row.comentarios.length <= 50
-                            "
-                          >
-                            <div
-                              v-html="
-                                col.value.replace(/(?:\r\n|\r|\n)/g, '<br />')
-                              "
-                            ></div>
-                          </div>
-                          <div v-if="props.row.comentarios.length > 50">
+                          <div>
                             <a
-                              v-if="
-                                props.row.comentarios.length > 50 &&
-                                !expanded[props.row.id]
-                              "
+                              v-if="props.row.comentarios.length > 0"
                               href="#"
                               class="q-link text-primary"
-                              @click="verMasComentario(props.row.id)"
+                              @click="verMasComentario(col.value)"
                             >
-                              {{ labelComentario }}
+                              Ver más
                             </a>
                           </div>
                         </div>
@@ -310,11 +318,14 @@
 
                       <div v-else-if="col.name == 'verevidencia'">
                         <q-btn
-                          label="Ver"
-                          icon="image"
+                          class="q-px-sm"
                           color="primary"
+                          size="sm"
+                          no-caps
+                          dense
                           @click="VerEvidencias(props.row)"
-                        />
+                          >Ver Evidencias
+                        </q-btn>
                       </div>
 
                       <div v-else>{{ col.value }}</div>
@@ -330,7 +341,7 @@
               label="Gestionar"
               color="primary"
               text-color="white"
-              @click="dialog = true"
+              @click="clickGestionar()"
               :disable="
                 estado.filter((p) => p.orden == Fila.estado)[0].descripcion !==
                 'Asignado'
@@ -399,6 +410,7 @@
                       </div>
                       <div class="col-md-5 col-sm-5 col-xs-12">
                         <q-select
+                          readonly
                           label="Telefono Persona Consultada"
                           transition-show="scale"
                           transition-hide="scale"
@@ -454,7 +466,7 @@
                 <q-card-section align="right" class="buttons no-padding">
                   <q-btn
                     v-close-popup
-                    label="Volver"
+                    label="Cerrar"
                     color="primary"
                     class="q-ma-md close-buttons"
                     text-color="white"
@@ -617,6 +629,103 @@
         </q-form>
       </q-card>
     </q-dialog>
+    <!-- Modal de Solucionar de tiquete -->
+    <q-dialog
+      v-model="mostrarSolucionarTiquetes"
+      transition-show="scale"
+      transition-hide="scale"
+    >
+      <q-card style="max-width: 100%; width: 70%">
+        <q-form autofocus @submit.prevent="mostrarConfirm = true">
+          <q-card-section>
+            <div style="font-size: 18px; font-weight: bold; align-self: center">
+              Agregar Comentario a Tiquete
+            </div>
+          </q-card-section>
+          <q-card-section>
+            <div class="row">
+              <div class="col-12">
+                <div class="row" style="background: #ffffff">
+                  <div class="col-md-4 col-sm-4 col-xs-6">
+                    <q-toggle
+                      class="q-pa-md"
+                      v-model="verDetalleCliente"
+                      label="Ver Cliente"
+                    />
+                  </div>
+                  <div class="col-md-12 col-sm-12 col-xs-12">
+                    <FileInput
+                      @datos-exportado-cambiado="actualizarValorDatosExportado"
+                    ></FileInput>
+                    <InputTextJump
+                      @text-con-salto-linea="actualizarTextExport"
+                    ></InputTextJump>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </q-card-section>
+
+          <q-card-actions align="right" class="bg-white text-teal q-pr-md">
+            <q-btn
+              v-if="accion != 'CerrarTicket'"
+              :disable="textSaltoLinea == ''"
+              flat
+              color="primary"
+              :label="'Aceptar'"
+              type="submit"
+              text-color="dark"
+              no-caps
+            />
+            <q-btn
+              v-if="accion != 'CerrarTicket'"
+              flat
+              :label="'Cerrar'"
+              v-close-popup
+              text-color="dark"
+              no-caps
+            />
+          </q-card-actions>
+        </q-form>
+      </q-card>
+    </q-dialog>
+    <!-- Modal de confirmacion -->
+    <q-dialog v-model="mostrarConfirm">
+      <q-card style="width: 35em">
+        <div class="column" style="margin: 20px">
+          <div class="col-4" style="margin: auto; padding: 10px">
+            <q-icon name="error_outline" size="6em" />
+          </div>
+          <div class="col-4" style="margin: auto; padding: 10px">
+            <span style="font-size: 18px">
+              ¿Está seguro de agregar el detalle al ticket?</span
+            >
+          </div>
+          <div class="col-2" style="margin: auto; padding: 10px">
+            <q-btn class="q-mx-md" label="No" v-close-popup color="negative" />
+            <q-btn
+              class="q-mx-md"
+              label="Si"
+              color="primary"
+              @click="agregarComentario()"
+            />
+          </div>
+        </div>
+      </q-card>
+    </q-dialog>
+
+    <q-dialog v-model="modalComentario">
+      <q-card style="max-width: 100%; width: 70%"
+        ><q-editor
+          min-height="3rem"
+          min-weight="12rem"
+          label="Observaciones"
+          class="q-pa-md"
+          v-model="detalleComentario"
+          :toolbar="false"
+          readonly
+      /></q-card>
+    </q-dialog>
   </div>
   <q-inner-loading
     :showing="visible"
@@ -635,7 +744,9 @@ import InputTextJump from "src/components/InputTextSaltoLinea.vue";
 import DashboardPage from "src/pages/DashboardPage.vue";
 import { useMainStore } from "src/stores/main";
 import { supabase } from "src/supabase";
+import { mostrarMensajes } from "boot/global";
 import * as services from "../services/services.js";
+import * as servicesEmail from "../services/serviceEmail.js";
 const showMaintable = {
   showGraficas: true,
   showColums: [
@@ -693,12 +804,15 @@ const mostrarObservaciones = ref(false);
 const visible = ref(false);
 const ticketState = ref(null);
 const table = ref(false);
+const mostrarSolucionarTiquetes = ref(false);
+const mostrarConfirm = ref(false);
 const Fila = ref({});
 const FilaDetalle = ref({});
 const FilaContacto = ref({});
 const mostrarAddPersonaContacto = ref(false);
 const contactos = ref([]);
 const cliente = ref([]);
+const verDetalleCliente = ref(false);
 const columns = [
   {
     name: "id",
@@ -845,6 +959,13 @@ const textSaltoLinea = ref("");
 function actualizarTextExport(nuevoValor) {
   textSaltoLinea.value = nuevoValor;
 }
+
+const clickGestionar = () => {
+  dialog.value = true;
+  FilaDetalle.value.metodoconsulta = null;
+  FilaDetalle.value.consultado = null;
+};
+
 async function getData() {
   visible.value = true;
   await services.getTiquetes(`asignado=eq.${idusuario}&`).then((response) => {
@@ -861,6 +982,7 @@ async function getData() {
   await CargarContactos();
   table.value = true;
   visible.value = false;
+  store.setListNotificaciones("clear");
 }
 
 async function clickRow(row) {
@@ -871,12 +993,7 @@ async function clickRow(row) {
     (p) => p.descripcion === "Escalado" || p.descripcion === "Solucionado"
   );
 
-  await services
-    .getDetalleTiquete(`tiquete=eq.${Fila.value.id}&`)
-    .then((response) => {
-      detalleTiquete.value = response.data;
-      tablaDetalle.value = true;
-    });
+  await getDetalleTiquete();
 
   tipoDisplay.value = tipo.value.filter(
     (p) => p.id === row.tipo
@@ -911,6 +1028,15 @@ async function clickRow(row) {
     colorPrioridad.value = "red";
   }
 }
+const getDetalleTiquete = async () => {
+  await services
+    .getDetalleTiquete(`tiquete=eq.${Fila.value.id}&`)
+    .then((response) => {
+      detalleTiquete.value = response.data;
+      tablaDetalle.value = true;
+    });
+};
+
 const VerEvidencias = (row) => {
   imagen.value = row.evidencia;
   mostrarImagen.value = true;
@@ -954,19 +1080,60 @@ const CargarContactos = async () => {
   FilaContacto.value.telefono = null;
   await services.getContactos("").then((response) => {
     contactos.value = response.data;
+    console.log(contactos.value[0]);
   });
 };
 
-const labelComentario = ref("Ver más");
-const expanded2 = ref({});
-function verMasComentario(rowId) {
-  expanded2.value[rowId] = !expanded2.value[rowId];
-  if (expanded2.value[rowId]) {
-    labelComentario.value = "Ver Menos";
-  } else {
-    labelComentario.value = "Ver Mas";
-  }
+//Procesamiento de componente comentario
+const modalComentario = ref(false);
+const detalleComentario = ref("");
+function verMasComentario(comentario) {
+  detalleComentario.value = comentario;
+  modalComentario.value = true;
 }
+
+const agregarComentario = async () => {
+  mostrarConfirm.value = false;
+  FilaDetalle.value.campomodificador = "--";
+  FilaDetalle.value.valoranterior = `--`;
+  FilaDetalle.value.valornuevo = "--";
+  FilaDetalle.value.tiquete = Fila.value.id;
+  FilaDetalle.value.operador = idusuario;
+  FilaDetalle.value.evidencia = valorDatosExportado.value;
+  FilaDetalle.value.estado = verDetalleCliente.value;
+  // agregar saltos de linea al campo Comentarios
+  FilaDetalle.value.comentarios = textSaltoLinea.value;
+  await services
+    .postDetallesTiquetes(FilaDetalle.value)
+    .then((response) => {
+      mostrarSolucionarTiquetes.value = false;
+      mostrarMensajes({
+        tipomensaje: 1,
+        mensaje: "Se agregó el detalle correctamente",
+      });
+      if (verDetalleCliente.value) {
+        mensajeCliente("actualizacion");
+      }
+      valorDatosExportado.value = "";
+    })
+    .catch((error) => {
+      mostrarMensajes({
+        tipomensaje: 4,
+        mensaje: "Error, complete todos los campos",
+      });
+    });
+  getDetalleTiquete();
+};
+const mensajeCliente = async (accion) => {
+  const data = {};
+  data.email = cliente.value.filter(
+    (p) => p.id == Fila.value.cliente
+  )[0].correo;
+  data.cliente = cliente.value.filter(
+    (p) => p.id == Fila.value.cliente
+  )[0].nombres;
+  servicesEmail.correoCliente(data, Fila.value.id, accion);
+};
 // ----------------Subscripcion a la tabla tiquetes--------------------------
 supabase
   .channel("custom-update-channel")
@@ -975,6 +1142,7 @@ supabase
     { event: "UPDATE", schema: "public", table: "tiquete" },
     (payload) => {
       if (payload.new.asignado === idusuario) {
+        store.setListNotificaciones(payload.eventType);
         if (payload.new.estado === 2) {
           $q.notify({
             type: "positive",
@@ -988,12 +1156,15 @@ supabase
             timeout: 4000,
           });
         }
-        getData();
+        // getData();
       }
     }
   )
   .subscribe();
 // ------------------------------------------
+const pagination = ref({
+  rowsPerPage: 8,
+});
 const sortBy = ref("id");
 const sortDesc = ref(true);
 function customSort() {
@@ -1011,6 +1182,22 @@ function customSort() {
   });
 }
 customSort();
+
+const ordenarPorFecha = (a, b) => {
+  detalleTiquete.value.sort((a, b) => {
+    // Función para convertir la cadena de fecha al formato adecuado para comparación
+    const parseFecha = (fechaStr) => new Date(fechaStr);
+
+    // Convierte las fechas a objetos Date para comparar
+    const fechaA = parseFecha(a.created_at);
+    const fechaB = parseFecha(b.created_at);
+
+    // Compara las fechas
+    if (fechaA < fechaB) return pagination.value.descending ? 1 : -1;
+    if (fechaA > fechaB) return pagination.value.descending ? -1 : 1;
+    return 0;
+  });
+};
 // ------------------------------------------
 // //funciones para el grabado de notas de voz
 function onPlay() {

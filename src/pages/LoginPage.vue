@@ -194,6 +194,7 @@ const IniciarSesion = async () => {
             } else {
               if (
                 response2.data[0].nivel == 2 ||
+                response2.data[0].nivel == 3 ||
                 response2.data[0].nivel == 4
               ) {
                 iniciar();

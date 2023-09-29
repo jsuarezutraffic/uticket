@@ -38,17 +38,35 @@
 
         <!-- Header Right-side -->
         <div class="q-gutter-sm row items-center no-wrap">
-          <!-- <q-btn
-            round
-            dense
-            flat
-            color="white"
-            icon="message"
-            v-if="$q.screen.gt.sm"
-          >
-            <q-tooltip>Messages</q-tooltip>
-          </q-btn> -->
-
+          <q-btn dense round flat icon="notifications" class="q-mx-sm">
+            <q-badge
+              color="red"
+              floating
+              v-if="store.listNotificaciones.length > 0"
+            >
+              {{ store.listNotificaciones.length }}
+            </q-badge>
+            <q-menu transition-show="jump-down" transition-hide="jump-up">
+              <q-list style="min-width: 15em">
+                <q-item
+                  v-for="(item, index) in store.listNotificaciones"
+                  :key="index"
+                  clickable
+                  v-ripple
+                >
+                  <q-item-section avatar>
+                    <q-avatar rounded>
+                      <q-icon :name="item.icon" color="primary" />
+                      <!-- <img src="https://cdn.quasar.dev/img/boy-avatar.png" /> -->
+                    </q-avatar>
+                  </q-item-section>
+                  <q-item-section>
+                    {{ item.mensaje }}
+                  </q-item-section>
+                </q-item>
+              </q-list>
+            </q-menu>
+          </q-btn>
           <q-btn round flat>
             <q-avatar>
               <img src="https://cdn.quasar.dev/img/boy-avatar.png" />
