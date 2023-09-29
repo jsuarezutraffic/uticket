@@ -301,6 +301,7 @@
       </div>
     </q-card>
   </q-dialog>
+
   <q-dialog v-model="chatStore.confirModal">
     <q-card style="width: 35em">
       <div class="column" style="margin: 20px">
@@ -337,13 +338,17 @@
             >
           </div>
           <!-- modalNuevoTicket -->
-          <div class="col-2">
-            <!-- <q-btn
-              flat
-              label="Copiar Ticket"
-              style="display: flex; margin-left: auto"
-              @click="modalNuevoTicket = true"
-            /> -->
+          <div class="col-1">
+            <q-btn
+              v-if="false"
+              outline
+              round
+              color="tertiary"
+              size="md"
+              icon="mode"
+              @click="readonly = false"
+            >
+            </q-btn>
           </div>
           <div class="col-1">
             <q-btn
@@ -417,7 +422,7 @@
                         </div>
                         <div class="col-md-3 col-sm-3 col-xs-12">
                           <q-select
-                            readonly
+                            :readonly="readonly"
                             label="Tipo"
                             transition-show="scale"
                             transition-hide="scale"
@@ -434,7 +439,7 @@
                         </div>
                         <div class="col-md-3 col-sm-3 col-xs-12">
                           <q-select
-                            readonly
+                            :readonly="readonly"
                             label="Subtipo"
                             transition-show="scale"
                             transition-hide="scale"
@@ -451,7 +456,8 @@
                         </div>
                         <!-- <div class="col-md-3 col-sm-3 col-xs-12">
                           <q-select
-                            readonly
+                                                        :readonly="readonly"
+
                             label="Equipo"
                             transition-show="scale"
                             transition-hide="scale"
@@ -468,7 +474,7 @@
                         </div> -->
                         <div class="col-md-3 col-sm-3 col-xs-12">
                           <q-select
-                            readonly
+                            :readonly="readonly"
                             label="Prioridad"
                             transition-show="scale"
                             transition-hide="scale"
@@ -523,7 +529,7 @@
                             class="q-pa-md"
                             v-model="Fila.observaciones"
                             :toolbar="false"
-                            readonly
+                            :readonly="readonly"
                           />
                         </div>
                       </div>
@@ -724,6 +730,22 @@
           </div>
         </div>
       </q-card-section>
+      <q-separator />
+
+      <q-card-section v-show="!readonly">
+        <div class="row">
+          <div class="col-12" style="display: flex">
+            <q-btn
+              label="Actualizar"
+              style="margin-left: auto; margin-right: auto"
+              color="primary"
+              class="q-mx-md"
+              no-caps
+              @click="UpdateTiquete()"
+            />
+          </div>
+        </div>
+      </q-card-section>
     </q-card>
   </q-dialog>
 
@@ -870,7 +892,7 @@
       class="q-pa-md"
       v-model="detalleComentario"
       :toolbar="false"
-      readonly
+      readonly="true"
     />
   </q-dialog>
 </template>
@@ -920,6 +942,7 @@ const recordedAudio = ref(null);
 const recordingDuration = ref(0);
 const base64Audio = ref(null);
 const progressValue = ref(0);
+const readonly = ref(false);
 let recorder;
 let startTime;
 let progressInterval;
@@ -1205,6 +1228,7 @@ const columnsDetalles = [
 ];
 
 const clickRow = (row) => {
+  readonly.value = true;
   Fila.value = row;
   modalDetalles.value = true;
   getDetalleTiquete();
@@ -1417,6 +1441,30 @@ const PostTiquete = async () => {
   Fila.value.id = FilaFinalizar.value.id;
   await getDetalleTiquete();
 };
+
+const UpdateTiquete = async () => {
+  console.log(Fila.value);
+  await services
+    .putTiquetes(`id=eq.${Fila.value.id}`, Fila.value)
+    .then((response) => {
+      loadData();
+      modalDetalles.value = false;
+      // enviarCorreo(dataMessage);
+      if (
+        response.status == 201 ||
+        response.status == 200 ||
+        response.status == 204
+      ) {
+        $q.notify({
+          type: "positive",
+          message: "Cambio realizado exitosamente, revise su correo",
+          timeout: 4000,
+        });
+      }
+      valorDatosExportado.value = "";
+    });
+};
+
 const TipoSeleccion = (value) => {
   SubtipoOptions.value = Subtipos.value.filter((tipo) => tipo.tipo == value);
   Fila.value.subtipo = null;
