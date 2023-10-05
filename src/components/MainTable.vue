@@ -340,13 +340,13 @@
           <!-- modalNuevoTicket -->
           <div class="col-1">
             <q-btn
-              v-if="false"
+              :disable="!(Fila.estado == 1)"
               outline
               round
               color="tertiary"
               size="md"
               icon="mode"
-              @click="readonly = false"
+              @click="editMode = false"
             >
             </q-btn>
           </div>
@@ -422,7 +422,7 @@
                         </div>
                         <div class="col-md-3 col-sm-3 col-xs-12">
                           <q-select
-                            :readonly="readonly"
+                            :readonly="editMode"
                             label="Tipo"
                             transition-show="scale"
                             transition-hide="scale"
@@ -435,29 +435,30 @@
                             emit-value
                             map-options
                             class="q-pa-md"
+                            @update:model-value="TipoSeleccion"
                           />
                         </div>
                         <div class="col-md-3 col-sm-3 col-xs-12">
                           <q-select
-                            :readonly="readonly"
+                            :readonly="editMode"
                             label="Subtipo"
                             transition-show="scale"
                             transition-hide="scale"
                             outlined
                             v-model="Fila.subtipo"
                             dense
-                            :options="Subtipos"
+                            :options="SubtipoOptions"
                             option-label="descripcion"
                             option-value="id"
                             emit-value
                             map-options
                             class="q-pa-md"
+                            @update:model-value="SubTipoSeleccion"
                           />
                         </div>
-                        <!-- <div class="col-md-3 col-sm-3 col-xs-12">
+                        <div class="col-md-3 col-sm-3 col-xs-12">
                           <q-select
-                                                        :readonly="readonly"
-
+                            :readonly="editMode"
                             label="Equipo"
                             transition-show="scale"
                             transition-hide="scale"
@@ -471,10 +472,10 @@
                             map-options
                             class="q-pa-md"
                           />
-                        </div> -->
+                        </div>
                         <div class="col-md-3 col-sm-3 col-xs-12">
                           <q-select
-                            :readonly="readonly"
+                            :readonly="editMode"
                             label="Prioridad"
                             transition-show="scale"
                             transition-hide="scale"
@@ -495,6 +496,16 @@
                             color="grey"
                             @click="VerEvidencias(Fila)"
                           />
+                        </div>
+                        <div
+                          class="col-md-12 col-sm-12 col-xs-12"
+                          v-if="!editMode"
+                        >
+                          <FileInput
+                            @datos-exportado-cambiado="
+                              actualizarValorDatosExportado
+                            "
+                          ></FileInput>
                         </div>
                         <div class="col-md-3 col-sm-12 col-xs-12">
                           <q-circular-progress
@@ -529,7 +540,7 @@
                             class="q-pa-md"
                             v-model="Fila.observaciones"
                             :toolbar="false"
-                            :readonly="readonly"
+                            :readonly="editMode"
                           />
                         </div>
                       </div>
@@ -541,7 +552,7 @@
           </div>
         </div>
 
-        <div class="row justify-center">
+        <div class="row justify-center" v-if="editMode">
           <div class="col-auto">
             <q-card flat>
               <div class="q-pa-md" v-if="TablaDetalles">
@@ -732,10 +743,11 @@
       </q-card-section>
       <q-separator />
 
-      <q-card-section v-show="!readonly">
+      <q-card-section v-show="!editMode">
         <div class="row">
           <div class="col-12" style="display: flex">
             <q-btn
+              :disabled="visible"
               label="Actualizar"
               style="margin-left: auto; margin-right: auto"
               color="primary"
@@ -942,7 +954,7 @@ const recordedAudio = ref(null);
 const recordingDuration = ref(0);
 const base64Audio = ref(null);
 const progressValue = ref(0);
-const readonly = ref(false);
+const editMode = ref(false);
 let recorder;
 let startTime;
 let progressInterval;
@@ -1228,9 +1240,10 @@ const columnsDetalles = [
 ];
 
 const clickRow = (row) => {
-  readonly.value = true;
+  editMode.value = true;
   Fila.value = row;
   modalDetalles.value = true;
+  TipoSeleccion();
   getDetalleTiquete();
 };
 
@@ -1406,7 +1419,6 @@ const PostTiquete = async () => {
   // agregar saltos de linea al campo Comentarios
   FilaDetalle.value.comentarios = textSaltoLinea.value;
   FilaDetalle.value.evidencia = valorDatosExportado.value;
-  console.log(FilaDetalle.value);
   await services
     .putTiquetes(`id=eq.${FilaFinalizar.value.id}`, FilaFinalizar.value)
     .then((response) => {
@@ -1443,13 +1455,14 @@ const PostTiquete = async () => {
 };
 
 const UpdateTiquete = async () => {
-  console.log(Fila.value);
+  visible.value = true;
+  Fila.value.evidencia = valorDatosExportado.value;
   await services
     .putTiquetes(`id=eq.${Fila.value.id}`, Fila.value)
     .then((response) => {
       loadData();
       modalDetalles.value = false;
-      // enviarCorreo(dataMessage);
+      visible.value = false;
       if (
         response.status == 201 ||
         response.status == 200 ||
@@ -1466,15 +1479,17 @@ const UpdateTiquete = async () => {
 };
 
 const TipoSeleccion = (value) => {
-  SubtipoOptions.value = Subtipos.value.filter((tipo) => tipo.tipo == value);
-  Fila.value.subtipo = null;
+  SubtipoOptions.value = Subtipos.value.filter(
+    (tipo) => tipo.tipo == Fila.value.tipo
+  );
+  // Fila.value.subtipo = null;
 };
 
 const SubTipoSeleccion = (value) => {
-  EquiposOptions.value = Equipos.value.filter(
-    (equipo) => equipo.subtipo == value
-  );
-  Fila.value.equipo = null;
+  // EquiposOptions.value = Equipos.value.filter(
+  //   (equipo) => equipo.subtipo == Fila.value.subtipo
+  // );
+  // Fila.value.equipo = null;
 };
 
 const AgregarTicket = async () => {

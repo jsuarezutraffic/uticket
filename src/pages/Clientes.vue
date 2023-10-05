@@ -355,7 +355,6 @@ const updateCliente = async () => {
 
 const loadData = async () => {
   visible.value = true;
-  console.log(store.generalData.cliente[0].concesion);
   await services
     .getCliente(`concesion=eq.${store.generalData.concesion[0].id}&`)
     .then((response) => {

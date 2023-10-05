@@ -70,7 +70,6 @@ export const useMainStore = defineStore("main", {
       let generalData = {};
       await services.getCliente(``).then((response) => {
         generalData.clientes = response.data;
-        console.log(response.data);
       });
       await services
         .getCliente(`usuario=eq.${LocalStorage.getItem("IdUsuario")}&`)
@@ -107,6 +106,12 @@ export const useMainStore = defineStore("main", {
       });
       await services.getEquipo("").then((response) => {
         generalData.equipo = response.data;
+        generalData.equipo.push({
+          created_at: "",
+          descripcion: "Ninguno",
+          id: null,
+          subtipo: null,
+        });
       });
       await services.getMetodoConsulta("").then((response) => {
         generalData.metodoconsulta = response.data;

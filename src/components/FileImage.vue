@@ -59,16 +59,20 @@
 
 <script setup>
 /*eslint-disable */
-import { ref, watch } from "vue";
+import { ref, watch, toRefs } from "vue";
 import { createBase64Image } from "boot/global";
 import { useQuasar } from "quasar";
+
+const props = defineProps(["imagenesInput"]);
+let { imagenesInput } = toRefs(props);
+
 const DatosExportado = ref("");
 const loadingImage = ref(false);
 const filaavatar = ref([]);
 const archivos = ref([]);
 const archivos2 = ref("");
 const fileInput = ref(null);
-const tamanoMaximoImagen = ref("400000");
+const tamanoMaximoImagen = ref("4000000");
 let $q = useQuasar();
 const activateInput = () => {
   fileInput.value.pickFiles();
@@ -120,7 +124,7 @@ const onRejected = (rejectedEntries) => {
   for (const iterator of rejectedEntries) {
     $q.notify({
       type: "negative",
-      message: `La imagen "${iterator.file.name}" supera el tamaño maximo de 400M`,
+      message: `La imagen "${iterator.file.name}" supera el tamaño maximo de 4M`,
     });
   }
 };

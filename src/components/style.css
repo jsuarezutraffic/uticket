@@ -1,0 +1,22 @@
+body,
+html {
+  height: 100%;
+  margin: 0;
+}
+
+.contenedor-imagen {
+  overflow: hidden;
+  width: 500px; /* Ajusta el tamaño según tus necesidades */
+  height: 500px; /* Ajusta el tamaño según tus necesidades */
+}
+
+.imagen {
+  width: 100%;
+  height: 100%;
+  transition: transform 0.2s ease-out;
+}
+
+.imagen.zoom {
+  transform-origin: center center;
+  transform: scale(1.2);
+}
