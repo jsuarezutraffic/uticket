@@ -2337,6 +2337,7 @@ const GestionTiquete = async (accionValue) => {
     mostrarConfirm.value = true;
     if (accionValue == "ConfimarCerrar") {
       mostrarConfirm.value = false;
+      mostrarSolucionarTiquetes.value = false;
       FilaDetalle.value.campomodificador = "--";
       FilaDetalle.value.valoranterior = `--`;
       FilaDetalle.value.valornuevo = "--";
