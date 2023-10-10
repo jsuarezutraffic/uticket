@@ -747,6 +747,8 @@ import { supabase } from "src/supabase";
 import { mostrarMensajes } from "boot/global";
 import * as services from "../services/services.js";
 import * as servicesEmail from "../services/serviceEmail.js";
+import { api } from "boot/axios";
+
 const showMaintable = {
   showGraficas: true,
   showColums: [
@@ -968,7 +970,8 @@ const clickGestionar = () => {
 
 async function getData() {
   visible.value = true;
-  await services.getTiquetes(`asignado=eq.${idusuario}&`).then((response) => {
+  await services.getTiquetes(``).then((response) => {
+    // await services.getTiquetes(`asignado=eq.${idusuario}&`).then((response) => {
     tiquete.value = response.data;
   });
 
@@ -983,6 +986,12 @@ async function getData() {
   table.value = true;
   visible.value = false;
   store.setListNotificaciones("clear");
+}
+
+async function getAsignacionesOperador() {
+  // await services.getAsignaciones(``).then((response) => {
+  //   console.log(response.data);
+  // });
 }
 
 async function clickRow(row) {
@@ -1080,7 +1089,6 @@ const CargarContactos = async () => {
   FilaContacto.value.telefono = null;
   await services.getContactos("").then((response) => {
     contactos.value = response.data;
-    console.log(contactos.value[0]);
   });
 };
 
@@ -1228,6 +1236,7 @@ onUnmounted(() => {
 });
 
 onMounted(() => {
+  getAsignacionesOperador();
   getData();
 });
 

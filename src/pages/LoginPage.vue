@@ -170,6 +170,8 @@ const IniciarSesion = async () => {
       api
         .get(`usuarios?id=eq.` + response.data.user.id + `&select=*`)
         .then((response2) => {
+          console.log(response2.data);
+
           if (response2.data.length > 0) {
             async function iniciar(params) {
               await store.inicio(response.data);

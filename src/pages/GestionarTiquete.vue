@@ -2000,7 +2000,7 @@ const GestionTiquete = async (accionValue) => {
       });
     await getDetalleTiquete();
   } else if (accion.value == "AsignarTicket") {
-    mostrarAsignarTiquetes.value = false;
+    // mostrarAsignarTiquetes.value = false;
     if (oldProridad.value != next.value.prioridad) {
       if (FilaTemporal.value.tipo != Fila.value.tipo) {
         FilaDetalle.value.campomodificador =
@@ -2254,12 +2254,24 @@ const GestionTiquete = async (accionValue) => {
     // agregar saltos de linea al campo Comentarios
     FilaDetalle.value.comentarios = textSaltoLinea.value;
     FilaDetalle.value.evidencia = valorDatosExportado.value;
-
+    console.log(Fila.value);
     await services
       .postDetallesTiquetes(FilaDetalle.value)
       .then((response) => {
         delete Fila.value["contador"];
         delete Fila.value["tiempo"];
+        services
+          .patchTiquetes(`id=eq.${Fila.value.id}`, Fila.value)
+          .then((response) => {
+            servicesEmail.enviarNotify();
+            mensajeAsignacion();
+            mostrarMensajes({
+              tipomensaje: 1,
+              mensaje: "El ticket se asignó correctamente al siguiete nivel",
+            });
+
+            valorDatosExportado.value = "";
+          });
         services
           .patchTiquetes(`id=eq.${Fila.value.id}`, Fila.value)
           .then((response) => {

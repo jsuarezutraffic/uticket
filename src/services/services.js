@@ -1,6 +1,9 @@
 import { api } from "boot/axios";
 import axios from "axios";
+import { LocalStorage, useQuasar } from "quasar";
 
+
+const idusuario = LocalStorage.getItem("IdUsuario")
 //Gets
 const getTiquetes = (filtro) => {
   return api.get(`tiquete?${filtro}select=*`);
@@ -51,7 +54,9 @@ const getEnvioCorreos = (filtro) => {
 const getContactos = (filtro) => {
   return api.get(`contactos?select=*`);
 };
+const  getAsignaciones = async (filtro) => {
 
+};
 /// datos generales
 const getDatosGenerales = async (idusuario) => {
   let data = {
@@ -116,6 +121,7 @@ const getDatosGenerales = async (idusuario) => {
     data.Usuarios = response.data;
   });
 
+
   return data;
 };
 
@@ -153,6 +159,8 @@ const putCliente = (filtro, postData) => {
 const putUsuarios = (filtro, postData) => {
   return api.put(`usuarios?${filtro}`, postData);
 };
+
+
 
 const patchTiquetes = (filtro, postData) => {
   return api.patch(`tiquete?${filtro}`, postData);
@@ -193,6 +201,7 @@ export {
   getDetalleTiquete,
   getMetodoConsulta,
   getEnvioCorreos,
+  getAsignaciones,
   postDetallesTiquetes,
   postTiquetes,
   postCorreo,
