@@ -331,10 +331,16 @@ const cambiarEstadoTabla = (newValue) => {
 const loadData = async () => {
   visible.value = true;
   if (users.value.filter((p) => p.id == idusuario)[0].nivel === 3) {
-    await services.getTiquetes(`asignado=eq.${idusuario}&`).then((response) => {
-      tiquetes.value = response.data;
-      visible.value = false;
-    });
+    await services
+      .getTiquetesSuperOperador({ iduser: idusuario })
+      .then((response) => {
+        tiquetes.value = response.data;
+        visible.value = false;
+      });
+    // await services.getTiquetes(`asignado=eq.${idusuario}&`).then((response) => {
+    //   tiquetes.value = response.data;
+    //   visible.value = false;
+    // });
   } else if (users.value.filter((p) => p.id == idusuario)[0].nivel === 1) {
     await services.getTiquetes("").then((response) => {
       tiquetes.value = response.data;
@@ -425,10 +431,11 @@ supabase
     { event: "*", schema: "public", table: "tiquete" },
     (payload) => {
       store.setListNotificaciones(payload.eventType);
-      if (payload.new.estado === 2) {
+      console.log(payload);
+      if (payload.new.estado === 1) {
         $q.notify({
           type: "positive",
-          message: `Se ha agregado el ticket N° ${payload.old.id}`,
+          message: `Se ha agregado el ticket N° ${payload.new.id}`,
           timeout: 4000,
         });
       } else {

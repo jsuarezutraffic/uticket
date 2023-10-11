@@ -2000,7 +2000,7 @@ const GestionTiquete = async (accionValue) => {
       });
     await getDetalleTiquete();
   } else if (accion.value == "AsignarTicket") {
-    // mostrarAsignarTiquetes.value = false;
+    mostrarAsignarTiquetes.value = false;
     if (oldProridad.value != next.value.prioridad) {
       if (FilaTemporal.value.tipo != Fila.value.tipo) {
         FilaDetalle.value.campomodificador =
@@ -2249,12 +2249,16 @@ const GestionTiquete = async (accionValue) => {
       (p) => p.orden == Fila.value.estado
     )[0].vercliente;
     Fila.value.proceso = next.value.nivel;
-    Fila.value.asignado = next.value.operador;
+    // Fila.value.asignado = next.value.operador;
     Fila.value.prioridad = next.value.prioridad;
     // agregar saltos de linea al campo Comentarios
     FilaDetalle.value.comentarios = textSaltoLinea.value;
     FilaDetalle.value.evidencia = valorDatosExportado.value;
-    console.log(Fila.value);
+    console.log(next.value.operador);
+    const dataAsignacion = {
+      usuario: next.value.operador,
+      asignacion: Fila.value.asignacion,
+    };
     await services
       .postDetallesTiquetes(FilaDetalle.value)
       .then((response) => {
@@ -2263,18 +2267,7 @@ const GestionTiquete = async (accionValue) => {
         services
           .patchTiquetes(`id=eq.${Fila.value.id}`, Fila.value)
           .then((response) => {
-            servicesEmail.enviarNotify();
-            mensajeAsignacion();
-            mostrarMensajes({
-              tipomensaje: 1,
-              mensaje: "El ticket se asignó correctamente al siguiete nivel",
-            });
-
-            valorDatosExportado.value = "";
-          });
-        services
-          .patchTiquetes(`id=eq.${Fila.value.id}`, Fila.value)
-          .then((response) => {
+            services.postAsignaciones(dataAsignacion);
             servicesEmail.enviarNotify();
             mensajeAsignacion();
             mostrarMensajes({
@@ -2407,12 +2400,15 @@ const AccionTiquete = (key) => {
         "No se puede realizar esta acción. El ticket debe estar solucionado ";
       mostrarConfirm.value = true;
       return true;
-    } else if (key == "SolucionarTicket" && Fila.value.asignado != idusuario) {
-      accion.value = "alerta";
-      mensaje.value = `El ticket no se encuentra asignado a usted`;
-      mostrarConfirm.value = true;
-      return true;
-    } else if (
+    }
+    // if (key == "SolucionarTicket" && Fila.value.asignado != idusuario) {
+    // // } else if (key == "SolucionarTicket" && Fila.value.asignado != idusuario) {
+    //   accion.value = "alerta";
+    //   mensaje.value = `El ticket no se encuentra asignado a usted`;
+    //   mostrarConfirm.value = true;
+    //   return true;
+    // } else
+    else if (
       Estados.value.filter((p) => p.orden == Fila.value.estado)[0]
         .descripcion == "Solucionado" ||
       Estados.value.filter((p) => p.orden == Fila.value.estado)[0]

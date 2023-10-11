@@ -54,9 +54,16 @@ const getEnvioCorreos = (filtro) => {
 const getContactos = (filtro) => {
   return api.get(`contactos?select=*`);
 };
-const  getAsignaciones = async (filtro) => {
-
+const  getTiquetesOperador =  (filtro) => {
+  return api.post(`rpc/get_tiquetes_operador`,filtro);
 };
+const  getTiquetesSuperOperador =  (filtro) => {
+  return api.post(`rpc/get_tiquetes_super_operador`,filtro);
+};
+const getTabla = (filtro) => {
+  return api.post(`rpc/get_tiquetes_asignacion`,filtro);
+};
+
 /// datos generales
 const getDatosGenerales = async (idusuario) => {
   let data = {
@@ -160,7 +167,9 @@ const putUsuarios = (filtro, postData) => {
   return api.put(`usuarios?${filtro}`, postData);
 };
 
-
+const postAsignaciones = (postData) => {
+  return api.post(`asignacion`, postData);
+};
 
 const patchTiquetes = (filtro, postData) => {
   return api.patch(`tiquete?${filtro}`, postData);
@@ -201,7 +210,8 @@ export {
   getDetalleTiquete,
   getMetodoConsulta,
   getEnvioCorreos,
-  getAsignaciones,
+  getTiquetesOperador,
+  getTiquetesSuperOperador,
   postDetallesTiquetes,
   postTiquetes,
   postCorreo,
@@ -209,10 +219,12 @@ export {
   postContactos,
   postUsuarios,
   postEnvioCorreos,
+  postAsignaciones,
   putTiquetes,
   putCliente,
   putUsuarios,
   patchTiquetes,
   getContactos,
+  getTabla
 };
 

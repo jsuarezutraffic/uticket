@@ -465,13 +465,6 @@
 
                 <q-card-section align="right" class="buttons no-padding">
                   <q-btn
-                    v-close-popup
-                    label="Cerrar"
-                    color="primary"
-                    class="q-ma-md close-buttons"
-                    text-color="white"
-                  />
-                  <q-btn
                     v-popup
                     label="Enviar"
                     color="primary"
@@ -479,6 +472,13 @@
                     text-color="white"
                     @click="dialog2 = true"
                     :disable="ticketState === null"
+                  />
+                  <q-btn
+                    v-close-popup
+                    flat
+                    label="Cerrar"
+                    color="primary"
+                    class="q-ma-md close-buttons"
                   />
 
                   <q-dialog v-model="dialog2">
@@ -970,10 +970,14 @@ const clickGestionar = () => {
 
 async function getData() {
   visible.value = true;
-  await services.getTiquetes(``).then((response) => {
-    // await services.getTiquetes(`asignado=eq.${idusuario}&`).then((response) => {
+  await services.getTiquetesOperador({ iduser: idusuario }).then((response) => {
     tiquete.value = response.data;
   });
+  // await services.getTiquetes(``).then((response) => {
+  //   // await services.getTiquetes(`asignado=eq.${idusuario}&`).then((response) => {
+  //   tiquete.value = response.data;
+  //   console.log("tiquete:", response.data);
+  // });
 
   await services.getCliente("").then((response) => {
     cliente.value = response.data;
@@ -1065,6 +1069,10 @@ async function gestionarTicket() {
     services
       .putTiquetes(`id=eq.${Fila.value.id}`, Fila.value)
       .then((response) => {
+        mostrarMensajes({
+          tipomensaje: 1,
+          mensaje: `Tiquete ${ticketState.value.descripcion} Correctamente`,
+        });
         clickRow(selected.value[0]);
       });
   });
