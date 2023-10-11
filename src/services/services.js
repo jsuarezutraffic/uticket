@@ -123,6 +123,11 @@ const postDetallesTiquetes = (postData) => {
 const postCliente = (postData) => {
   return api.post(`cliente`, postData);
 };
+
+const postAsignaciones = (postData) => {
+  return api.post(`asignacion`, postData);
+};
+
 //Put
 const putTiquetes = (filtro, postData) => {
   return api.put(`tiquete?${filtro}`, postData);
@@ -170,6 +175,7 @@ export {
   postTiquetes,
   postCorreo,
   postCliente,
+  postAsignaciones,
   putTiquetes,
   putCliente,
 };

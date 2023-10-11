@@ -53,8 +53,7 @@ export const useMainStore = defineStore("main", {
         this.isAuthenticated = true;
         LocalStorage.set("Token", token);
         api.defaults.headers.common.Authorization = "Bearer " + this.token;
-        api.defaults.headers.common.apikey =
-          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh6b3ZrbmprZGZ5a3Z4aW1wZ3hoIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTY4MzMyMjY2NCwiZXhwIjoxOTk4ODk4NjY0fQ.Vm7vlm4xnk5FxXwTR66_GcFw8iF5SISvo8U9JRwXvh0";
+        api.defaults.headers.common.apikey = configJson.API_KEY;
         this.loadGeneralDataLocal();
       } else {
         this.borrar();
@@ -120,6 +119,7 @@ export const useMainStore = defineStore("main", {
         generalData.usuario = response.data;
       });
       localStorage.setItem("generalData", this.encryptptData(generalData));
+
       this.generalData = generalData;
     },
 

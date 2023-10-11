@@ -1021,6 +1021,7 @@ const countArrayPrioridad = ref([]);
 const countArrayTipo = ref([]);
 const countArraySolicitud = ref([]);
 const configJson = require("/public/config.json");
+const { v4: uuidv4 } = require("uuid");
 
 const imagen = ref("");
 var dataMessage = {};
@@ -1628,6 +1629,9 @@ const AgregarTicketStore = async () => {
   Fila.value.asignado = Usuarios.value.filter(
     (p) => p.nivel == 1 && p.estado == true
   )[0].id;
+
+  // Ejemplo de uso
+  Fila.value.asignacion = generarNumeroAleatorioUUID();
   Fila.value.privado = null;
   Fila.value.proceso = 1;
   Fila.value.estado = 1;
@@ -1641,10 +1645,15 @@ const AgregarTicketStore = async () => {
     LocalStorage.getItem("transcript")
   );
   Fila.value.solicitud = 2;
+  console.log(Fila.value);
   await services
     .postTiquetes(Fila.value)
     .then((response) => {
       if (response.status == 201 || response.status == 200) {
+        services.postAsignaciones({
+          usuario: Fila.value.asignado,
+          asignacion: Fila.value.asignacion,
+        });
         $q.notify({
           type: "positive",
           message: "Ticket Creado exitosamente",
@@ -1705,6 +1714,25 @@ const enviarCorreo = async (data) => {
   };
   await services.postCorreo(data2);
 };
+
+// Genera un nuevo UUID
+
+function generarNumeroAleatorioUUID() {
+  const nuevoUuid = uuidv4();
+  // console.log("Nuevo UUID:", nuevoUuid);
+
+  // // Generar un número decimal entre 0 y 1
+  // var numeroDecimal = Math.random();
+
+  // // Multiplicar por 256 para obtener un número en el rango de 0 a 255
+  // var numeroEnRango = numeroDecimal * 256;
+
+  // // Redondear hacia abajo para obtener un número entero
+  // var numeroEntero = Math.floor(numeroEnRango);
+
+  // return numeroEntero;
+  return nuevoUuid;
+}
 
 const formatDate = (value) => {
   const date = new Date(value);
