@@ -55,7 +55,6 @@ export const useMainStore = defineStore('main', {
 
     init () {
       console.log('init')
-
       const token = LocalStorage.getItem('token')
       if (token) {
         this.token = token

@@ -406,6 +406,8 @@
                           option-value="id"
                           input-debounce="0"
                           class="q-pa-md"
+                          emit-value
+                          map-options
                         />
                       </div>
                       <div class="col-md-5 col-sm-5 col-xs-12">
@@ -443,6 +445,8 @@
                           option-label="descripcion"
                           label="Método de consulta"
                           class="q-pa-md"
+                          emit-value
+                          map-options
                         />
                       </div>
                     </div>
@@ -480,7 +484,6 @@
                     color="primary"
                     class="q-ma-md close-buttons"
                   />
-
                   <q-dialog v-model="dialog2">
                     <q-card>
                       <q-card-section>
@@ -775,7 +778,6 @@ const audioPlayer = ref(null);
 const store = useMainStore();
 const $q = useQuasar();
 const imagen = ref("");
-const methodState = ref(null);
 const dialog2 = ref(false);
 const dialog = ref(false);
 const selected = ref([]);
@@ -1061,7 +1063,6 @@ async function gestionarTicket() {
   FilaDetalle.value.campomodificador = "Estado";
   FilaDetalle.value.valoranterior = "Asignado";
   FilaDetalle.value.valornuevo = ticketState.value.descripcion;
-  FilaDetalle.value.metodoconsulta = methodState.value;
   FilaDetalle.value.operador = idusuario;
   FilaDetalle.value.comentarios = textSaltoLinea.value;
   FilaDetalle.value.evidencia = valorDatosExportado.value;
