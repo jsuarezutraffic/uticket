@@ -406,6 +406,8 @@
                           option-value="id"
                           input-debounce="0"
                           class="q-pa-md"
+                          emit-value
+                          map-options
                         />
                       </div>
                       <div class="col-md-5 col-sm-5 col-xs-12">
@@ -443,6 +445,8 @@
                           option-label="descripcion"
                           label="Método de consulta"
                           class="q-pa-md"
+                          emit-value
+                          map-options
                         />
                       </div>
                     </div>
@@ -465,13 +469,6 @@
 
                 <q-card-section align="right" class="buttons no-padding">
                   <q-btn
-                    v-close-popup
-                    label="Cerrar"
-                    color="primary"
-                    class="q-ma-md close-buttons"
-                    text-color="white"
-                  />
-                  <q-btn
                     v-popup
                     label="Enviar"
                     color="primary"
@@ -480,7 +477,13 @@
                     @click="dialog2 = true"
                     :disable="ticketState === null"
                   />
-
+                  <q-btn
+                    v-close-popup
+                    flat
+                    label="Cerrar"
+                    color="primary"
+                    class="q-ma-md close-buttons"
+                  />
                   <q-dialog v-model="dialog2">
                     <q-card>
                       <q-card-section>
@@ -773,7 +776,6 @@ const audioPlayer = ref(null);
 const store = useMainStore();
 const $q = useQuasar();
 const imagen = ref("");
-const methodState = ref(null);
 const dialog2 = ref(false);
 const dialog = ref(false);
 const selected = ref([]);
@@ -1048,7 +1050,6 @@ async function gestionarTicket() {
   FilaDetalle.value.campomodificador = "Estado";
   FilaDetalle.value.valoranterior = "Asignado";
   FilaDetalle.value.valornuevo = ticketState.value.descripcion;
-  FilaDetalle.value.metodoconsulta = methodState.value;
   FilaDetalle.value.operador = idusuario;
   FilaDetalle.value.comentarios = textSaltoLinea.value;
   FilaDetalle.value.evidencia = valorDatosExportado.value;
@@ -1080,7 +1081,6 @@ const CargarContactos = async () => {
   FilaContacto.value.telefono = null;
   await services.getContactos("").then((response) => {
     contactos.value = response.data;
-    console.log(contactos.value[0]);
   });
 };
 
