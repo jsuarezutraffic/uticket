@@ -275,6 +275,7 @@
     v-model="modalNuevoTicket"
     transition-show="scale"
     transition-hide="scale"
+    persistent
   >
     <q-card style="max-width: 100%; width: 50%">
       <!-- <q-form autofocus @submit.prevent="AgregarTicket()">AgregarTicketStore -->
@@ -930,7 +931,6 @@ import * as services from "../services/services";
 import * as servicesEmail from "../services/serviceEmail";
 import { useChatStore } from "src/stores/chat"; // Asegúrate de que la ruta sea correcta según la ubicación de tu almacén
 import { useMainStore } from "src/stores/main"; // Asegúrate de que la ruta sea correcta según la ubicación de tu almacén
-import { mostrarMensajes } from "boot/global";
 const mostrarSolucionarTiquetes = ref(false);
 const mostrarConfirm = ref(false);
 
