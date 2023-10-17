@@ -549,6 +549,7 @@
                     'valoranterior',
                     'valornuevo',
                     'observaciones',
+                    'estado',
                     'comentarios',
                     'created_at',
                     'metodoconsulta',
@@ -731,6 +732,22 @@
                             }}
                           </div>
                         </div>
+                        <div v-else-if="col.name == 'estado'">
+                          <div v-if="col.value == true">
+                            <q-icon
+                              name="visibility"
+                              size="2em"
+                              color="primary"
+                            />
+                          </div>
+                          <div v-if="col.value == false">
+                            <q-icon
+                              name="visibility_off"
+                              size="2em"
+                              color="primary"
+                            />
+                          </div>
+                        </div>
                         <div v-else>
                           {{ col.value }}
                         </div>
@@ -896,11 +913,9 @@
         <q-card-actions align="right" class="bg-white text-teal q-pr-md">
           <q-btn
             v-if="accion != 'Ver'"
-            flat
             color="primary"
             :label="'Aceptar'"
             type="submit"
-            text-color="dark"
             no-caps
           />
           <q-btn
@@ -959,12 +974,11 @@
                     label="Persona Consultada"
                     transition-show="scale"
                     transition-hide="scale"
-                    use-input
                     outlined
                     dense
                     class="q-pa-md"
                     v-model="FilaDetalle.consultado"
-                    :options="contactos"
+                    :options="contactosFilter"
                     option-label="nombres"
                     option-value="id"
                     input-debounce="0"
@@ -985,7 +999,7 @@
                     outlined
                     v-model="FilaDetalle.consultado"
                     dense
-                    :options="contactos"
+                    :options="contactosFilter"
                     option-label="telefono"
                     option-value="id"
                     class="q-pa-md"
@@ -1027,6 +1041,19 @@
                 >
                   <q-input
                     readonly
+                    v-model="
+                      cliente.filter((p) => p.id === Fila.cliente)[0].telefono
+                    "
+                    label="Telefono Cliente"
+                    mask="(###) ### - ####"
+                    unmasked-value
+                    required
+                    dense
+                    class="q-pa-md"
+                    outlined
+                  />
+                  <!-- <q-input
+                    readonly
                     outlined
                     dense
                     class="q-pa-md"
@@ -1035,7 +1062,7 @@
                     "
                     type="text"
                     label="Telefono Cliente"
-                  />
+                  /> -->
                 </div>
                 <div class="col-md-4 col-sm-4 col-xs-6">
                   <q-toggle
@@ -1062,7 +1089,6 @@
           <q-btn
             v-if="accion != 'CerrarTicket'"
             :disable="textSaltoLinea == ''"
-            flat
             color="primary"
             :label="'Aceptar'"
             type="submit"
@@ -1077,12 +1103,10 @@
             no-caps />
           <q-btn
             v-if="accion == 'CerrarTicket'"
-            flat
             color="primary"
             :label="'Aceptar'"
             type="submit"
             @click="accion = 'CerrarTicket'"
-            text-color="dark"
             no-caps
         /></q-card-actions>
       </q-form>
@@ -1108,6 +1132,22 @@
             <div class="col-12">
               <div class="row" style="background: #ffffff">
                 <div class="col-md-12 col-sm-12 col-xs-12">
+                  <q-select
+                    outlined
+                    v-model="FilaContacto.concesion"
+                    :options="concesion"
+                    option-label="nombre"
+                    option-value="id"
+                    label="Concesion"
+                    dense
+                    class="q-pa-md"
+                    emit-value
+                    :rules="rules"
+                    lazy-rules
+                    map-options
+                  ></q-select>
+                </div>
+                <div class="col-md-12 col-sm-12 col-xs-12">
                   <q-input
                     :rules="inputRules"
                     outlined
@@ -1120,16 +1160,14 @@
                 </div>
                 <div class="col-md-12 col-sm-12 col-xs-12">
                   <q-input
-                    outlined
                     v-model="FilaContacto.telefono"
-                    dense
-                    type="number"
                     label="Telefono"
-                    class="q-pa-md"
-                    :rules="[
-                      (val) =>
-                        val.length <= 10 || 'Please use maximum 3 characters',
-                    ]"
+                    mask="(###) ### - ####"
+                    unmasked-value
+                    required
+                    dense
+                    class="col-xs-12 q-pa-md"
+                    outlined
                   />
                 </div>
                 <div class="col-md-12 col-sm-12 col-xs-12">
@@ -1158,14 +1196,7 @@
         </q-card-section>
 
         <q-card-actions align="right" class="bg-white text-teal q-pr-md">
-          <q-btn
-            flat
-            color="primary"
-            :label="'Aceptar'"
-            type="submit"
-            text-color="dark"
-            no-caps
-          />
+          <q-btn color="primary" :label="'Aceptar'" type="submit" no-caps />
           <q-btn
             flat
             :label="'Cerrar'"
@@ -1488,14 +1519,7 @@
         </q-card-section>
 
         <q-card-actions align="right" class="bg-white text-teal q-pr-md">
-          <q-btn
-            flat
-            color="primary"
-            :label="'Aceptar'"
-            type="submit"
-            text-color="dark"
-            no-caps
-          />
+          <q-btn color="primary" :label="'Aceptar'" type="submit" no-caps />
           <q-btn
             flat
             :label="'Cerrar'"
@@ -1602,6 +1626,7 @@ const table = ref(true);
 const TablaDetalles = ref(false);
 const verDetalleCliente = ref(false);
 const modalNuevoTicket = ref(false);
+const contactosFilter = ref([]);
 const next = ref({
   nivel: null,
   operador: null,
@@ -1769,6 +1794,13 @@ const columnsDetalles = [
     sortable: true,
   },
   {
+    name: "estado",
+    label: "Ver Cliente",
+    align: "center",
+    field: "estado",
+    sortable: true,
+  },
+  {
     name: "comentarios",
     align: "left",
     label: "Comentarios",
@@ -1831,6 +1863,7 @@ const columnsDetalles = [
     field: "consultado",
     sortable: true,
   },
+
   {
     name: "verevidencias",
     required: false,
@@ -1855,7 +1888,9 @@ const clickRow = (row) => {
     (equipo) => equipo.subtipo == row.subtipo
   );
   SubtipoOptions.value = Subtipos.value.filter((tipo) => tipo.tipo == row.tipo);
-
+  contactosFilter.value = contactos.value.filter(
+    (x) => x.concesion == Fila.value.concesion
+  );
   getDetalleTiquete();
 };
 const TipoSeleccion = (value) => {
@@ -2585,6 +2620,9 @@ const CargarContactos = async () => {
   FilaContacto.telefono = null;
   await services.getContactos("").then((response) => {
     contactos.value = response.data;
+    contactosFilter.value = contactos.value.filter(
+      (x) => x.concesion == Fila.value.concesion
+    );
   });
 };
 const addPersonConsulta = async () => {
@@ -2592,7 +2630,12 @@ const addPersonConsulta = async () => {
   if (FilaContacto.telefono != null) {
     FilaContacto.telefono = parseInt(FilaContacto.telefono);
   }
-  await services.postContactos(FilaContacto.value);
+  await services.postContactos(FilaContacto.value).then((response) => {
+    mostrarMensajes({
+      tipomensaje: 1,
+      mensaje: "Se agregó el contacto correctamente",
+    });
+  });
   await CargarContactos();
 };
 // -------------------------------------------------------

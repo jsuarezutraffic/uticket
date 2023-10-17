@@ -424,6 +424,8 @@
                           option-value="id"
                           input-debounce="0"
                           class="q-pa-md"
+                          emit-value
+                          map-options
                         />
                       </div>
                       <div class="col-md-2 col-sm-2 col-xs-12 container2">
@@ -498,15 +500,13 @@
                           label="Aceptar"
                           color="primary"
                           class="q-mr-md close-buttons"
-                          text-color="white"
                           @click="gestionarTicket()"
                         />
                         <q-btn
+                          flat
                           v-close-popup
                           label="Cancelar"
-                          color="negative"
                           class="q-mr-md close-buttons"
-                          text-color="white"
                         />
                       </q-card-section>
                     </q-card>
@@ -563,6 +563,22 @@
               <div class="col-12">
                 <div class="row" style="background: #ffffff">
                   <div class="col-md-12 col-sm-12 col-xs-12">
+                    <q-select
+                      outlined
+                      v-model="FilaContacto.concesion"
+                      :options="concesion"
+                      option-label="nombre"
+                      option-value="id"
+                      label="Concesion"
+                      dense
+                      class="q-pa-md"
+                      emit-value
+                      :rules="rules"
+                      lazy-rules
+                      map-options
+                    ></q-select>
+                  </div>
+                  <div class="col-md-12 col-sm-12 col-xs-12">
                     <q-input
                       :rules="inputRules"
                       outlined
@@ -575,16 +591,14 @@
                   </div>
                   <div class="col-md-12 col-sm-12 col-xs-12">
                     <q-input
-                      outlined
                       v-model="FilaContacto.telefono"
-                      dense
-                      type="number"
                       label="Telefono"
-                      class="q-pa-md"
-                      :rules="[
-                        (val) =>
-                          val.length <= 10 || 'Please use maximum 3 characters',
-                      ]"
+                      mask="(###) ### - ####"
+                      unmasked-value
+                      required
+                      dense
+                      class="col-xs-12 q-pa-md"
+                      outlined
                     />
                   </div>
                   <div class="col-md-12 col-sm-12 col-xs-12">
@@ -613,14 +627,7 @@
           </q-card-section>
 
           <q-card-actions align="right" class="bg-white text-teal q-pr-md">
-            <q-btn
-              flat
-              color="primary"
-              :label="'Aceptar'"
-              type="submit"
-              text-color="dark"
-              no-caps
-            />
+            <q-btn color="primary" :label="'Aceptar'" type="submit" no-caps />
             <q-btn
               flat
               :label="'Cerrar'"
@@ -673,11 +680,9 @@
             <q-btn
               v-if="accion != 'CerrarTicket'"
               :disable="textSaltoLinea == ''"
-              flat
               color="primary"
               :label="'Aceptar'"
               type="submit"
-              text-color="dark"
               no-caps
             />
             <q-btn
@@ -815,6 +820,7 @@ const FilaDetalle = ref({});
 const FilaContacto = ref({});
 const mostrarAddPersonaContacto = ref(false);
 const contactos = ref([]);
+const contactosFilter = ref([]);
 const cliente = ref([]);
 const verDetalleCliente = ref(false);
 const columns = [
@@ -1007,7 +1013,9 @@ async function clickRow(row) {
   optionState.value = estado.value.filter(
     (p) => p.descripcion === "Escalado" || p.descripcion === "Solucionado"
   );
-
+  contactosFilter.value = contactos.value.filter(
+    (x) => x.concesion == Fila.value.concesion
+  );
   await getDetalleTiquete();
 
   tipoDisplay.value = tipo.value.filter(
@@ -1090,14 +1098,23 @@ const addPersonConsulta = async () => {
   if (FilaContacto.value.telefono != null) {
     FilaContacto.value.telefono = parseInt(FilaContacto.value.telefono);
   }
-  await services.postContactos(FilaContacto.value).then((response) => {});
-  await CargarContactos();
+
+  await services.postContactos(FilaContacto.value).then((response) => {
+    mostrarMensajes({
+      tipomensaje: 1,
+      mensaje: "Se agregó el contacto correctamente",
+    });
+  });
+  CargarContactos();
 };
 const CargarContactos = async () => {
   FilaContacto.value = {};
   FilaContacto.value.telefono = null;
   await services.getContactos("").then((response) => {
     contactos.value = response.data;
+    contactosFilter.value = contactos.value.filter(
+      (x) => x.concesion == Fila.value.concesion
+    );
   });
 };
 
