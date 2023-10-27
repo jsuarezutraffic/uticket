@@ -1,6 +1,6 @@
 <template>
   <q-card>
-    <q-card-section>
+    <q-card-section class="row items-center q-pb-none">
       <!-- Mostrar la pregunta actual -->
       <div
         v-if="chatStore.preguntas[chatStore.indicePreguntaActual]"
@@ -10,6 +10,8 @@
           {{ chatStore.preguntas[chatStore.indicePreguntaActual].pregunta }}
         </span>
       </div>
+      <q-space />
+      <q-btn icon="close" flat round dense v-close-popup />
     </q-card-section>
     <q-card-section>
       <!-- Mostrar las opciones de respuesta si están disponibles -->
