@@ -1,3 +1,0 @@
-uticket.bak.utraffic.co {
-    reverse_proxy vue-app:7000
-}

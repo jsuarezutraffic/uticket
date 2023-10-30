@@ -6,10 +6,3 @@ services:
       dockerfile: Dockerfile.prod
     ports:
       - 7000:80
-
-  caddy:
-    image: caddy
-    ports:
-      - 80:80
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
