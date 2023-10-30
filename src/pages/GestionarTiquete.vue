@@ -1092,7 +1092,6 @@
             color="primary"
             :label="'Aceptar'"
             type="submit"
-            text-color="dark"
             no-caps />
           <q-btn
             v-if="accion != 'CerrarTicket'"
@@ -1578,6 +1577,7 @@ function actualizarTextExport(nuevoValor) {
   textSaltoLinea.value = nuevoValor;
 }
 let $q = useQuasar();
+const { v4: uuidv4 } = require("uuid");
 const idusuario = LocalStorage.getItem("IdUsuario");
 const selected = ref([]);
 const selectedDetalle = ref([]);
@@ -2289,7 +2289,6 @@ const GestionTiquete = async (accionValue) => {
     // agregar saltos de linea al campo Comentarios
     FilaDetalle.value.comentarios = textSaltoLinea.value;
     FilaDetalle.value.evidencia = valorDatosExportado.value;
-    console.log(next.value.operador);
     const dataAsignacion = {
       usuario: next.value.operador,
       asignacion: Fila.value.asignacion,
@@ -2520,6 +2519,7 @@ const AgregarTicket = async () => {
   Fila.value.asignado = users.value.filter(
     (p) => p.nivel == 1 && p.estado == true
   )[0].id;
+  Fila.value.asignacion = uuidv4();
   Fila.value.privado = null;
   Fila.value.proceso = 1;
   Fila.value.estado = 1;
@@ -2533,10 +2533,15 @@ const AgregarTicket = async () => {
     Fila.value.prioridad = 3;
   }
   Fila.value.audio = "";
+  const dataAsignacion = {
+    usuario: Fila.value.asignado,
+    asignacion: Fila.value.asignacion,
+  };
   await services
     .postTiquetes(Fila.value)
     .then((response) => {
       if (response.status == 201 || response.status == 200) {
+        services.postAsignaciones(dataAsignacion);
         $q.notify({
           type: "positive",
           message: "Ticket Creado exitosamente",

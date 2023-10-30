@@ -401,7 +401,7 @@
                           filled
                           square
                           v-model="FilaDetalle.consultado"
-                          :options="contactos"
+                          :options="contactosFilter"
                           option-label="nombres"
                           option-value="id"
                           input-debounce="0"

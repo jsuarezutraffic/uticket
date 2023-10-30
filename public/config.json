@@ -2,7 +2,7 @@
   "host": "104.42.222.68",
   "portMail": 3000,
   "port": 8095,
-  "nivel": 2,
+  "nivel":  2,
   "API_URL":"https://xzovknjkdfykvximpgxh.supabase.co",
   "API_URL_BAK":"https://uticket.bak.utraffic.co/#/",
   "API_URL_CUS":"https://uticket.cus.utraffic.co/#/"

@@ -19,6 +19,7 @@
     "apexcharts": "^3.40.0",
     "axios": "^1.4.0",
     "bootstrap": "^5.2.3",
+    "moment": "^2.29.1",
     "child_process": "^1.0.2",
     "core-js": "^3.6.5",
     "cors": "^2.8.5",
@@ -30,6 +31,7 @@
     "pinia": "^2.0.36",
     "quasar": "^2.6.0",
     "recorder-js": "^1.0.7",
+    "uuid": "^9.0.1",
     "vue": "^3.0.0",
     "vue-router": "^4.0.0",
     "vue3-apexcharts": "^1.4.1"

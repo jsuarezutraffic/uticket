@@ -1,0 +1,8 @@
+version: "3.8"
+services:
+  vue-app-backoffice:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    ports:
+      - 7100:80

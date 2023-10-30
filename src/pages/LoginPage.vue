@@ -137,6 +137,7 @@ const configJson = require("/public/config.json");
 // stores
 const store = useMainStore();
 const config = useConfigStore().config;
+// store.borrar();
 let $q = useQuasar();
 const visible = ref(false);
 const isPwd = ref(true);
