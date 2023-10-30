@@ -1,0 +1,3 @@
+uticket.cus.utraffic.co {
+    reverse_proxy vue-app:7000
+}
