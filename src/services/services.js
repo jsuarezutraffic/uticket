@@ -177,7 +177,7 @@ const patchTiquetes = (filtro, postData) => {
 
 const postCorreo = async (data2) => {
   const apiKey =
-    "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";
+    "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";
   await axios
     .post("https://api.brevo.com/v3/smtp/email", data2, {
       headers: {
